@@ -4,6 +4,7 @@ import { generateBoard, pipeMask, waterFlow, E, W, type PipeBoard } from './boar
 import { PipesEngine, NEXT_BOARD_DELAY_MS } from './PipesEngine';
 import { pipesDefinition } from '../../../../../shared/minigames/pipes';
 import { validateResult } from '../../../../../shared/minigames/ranking';
+import { deriveRoundSeed } from '../../../../../shared/minigames/context';
 
 test('2,000 seeds are reproducible, initially unsolved and have a valid solution', () => {
   for (let seed = 0; seed < 2_000; seed++) {
@@ -90,4 +91,19 @@ test('late input cannot award a circuit and duplicate seed sources advance', () 
   now = 60_000; game.rotateAt(0);
   assert.equal(game.getResult()?.reason, 'timeout');
   assert.equal(game.getSnapshot().score, 100);
+});
+
+test('shared context seed produces identical board sequence for all players', () => {
+  const seed = deriveRoundSeed('phase-42', 'MARS', 2, 'pipes');
+  let nowA = 0, nowB = 0;
+  const playerA = new PipesEngine(undefined, () => nowA, { resources: { energy: 10, food: 10, radiation: 0 }, seed });
+  const playerB = new PipesEngine(undefined, () => nowB, { resources: { energy: 6, food: 7, radiation: 2 }, seed });
+  playerA.start(); playerB.start();
+  assert.deepEqual(playerA.getSnapshot().data.board, playerB.getSnapshot().data.board);
+
+  solve(playerA, () => { nowA += 400; });
+  solve(playerB, () => { nowB += 400; });
+  nowA += NEXT_BOARD_DELAY_MS; nowB += NEXT_BOARD_DELAY_MS;
+  playerA.tick(); playerB.tick();
+  assert.deepEqual(playerA.getSnapshot().data.board, playerB.getSnapshot().data.board);
 });

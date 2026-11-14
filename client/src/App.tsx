@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { CARDS_MS, PHASE_LABELS, RESULTS_MS } from '../../shared/constants';
 import type { Phase, Stats } from '../../shared/types';
 import { socket, useGame } from './hooks/useGame';
@@ -7,6 +7,7 @@ import RoleSelect from './components/RoleSelect';
 import Lobby from './components/Lobby';
 import Hud, { BottomCrewDock } from './components/Hud';
 import StartScreen from './components/StartScreen';
+import LaunchTransition from './components/LaunchTransition';
 import RoomEntryScreen from './components/RoomEntryScreen';
 import MarsBackdrop from './components/MarsBackdrop';
 import { PROFESSIONS } from './components/professions';
@@ -33,6 +34,31 @@ export default function App() {
   const phase: Phase = game?.phase ?? (prepared ? 'lobby' : 'stats');
   const entry = { name, stats };
 
+  const [launch, setLaunch] = useState({
+    key: 1,
+    label: 'ARES OUTPOST // MISSION LINK ESTABLISHED',
+  });
+  const prevRoomCodeRef = useRef<string | null>(null);
+
+  const triggerLaunch = (label: string) => {
+    setLaunch(prev => ({ key: prev.key + 1, label }));
+  };
+
+  useEffect(() => {
+    const code = game?.code ?? null;
+    if (code && prevRoomCodeRef.current !== code) {
+      triggerLaunch(`AIRLOCK ENGAGED // ROOM ${code}`);
+    }
+    prevRoomCodeRef.current = code;
+  }, [game?.code]);
+
+  const withFx = (content: ReactNode) => (
+    <>
+      {content}
+      <LaunchTransition launchKey={launch.key} label={launch.label} />
+    </>
+  );
+
   const quickLiveLobby = () => {
     const quickName = name.trim() || 'Tester';
     setName(quickName);
@@ -48,7 +74,7 @@ export default function App() {
 
   if (game) {
     if (phase === 'lobby') {
-      return (
+      return withFx(
         <Lobby
           game={game}
           connected={connected}
@@ -66,7 +92,7 @@ export default function App() {
       );
     }
 
-    return (
+    return withFx(
       <div className="mars-stage">
         <MarsBackdrop />
         <main className="mars-stage__main">
@@ -213,7 +239,7 @@ export default function App() {
   }
 
   if (view === 'create' || view === 'join') {
-    return (
+    return withFx(
       <RoomEntryScreen
         mode={view}
         connected={connected}
@@ -236,10 +262,16 @@ export default function App() {
   }
 
   if (view === 'start') {
-    return (
+    return withFx(
       <StartScreen
-        onCreateScreen={() => setView('create')}
-        onJoinScreen={() => setView('join')}
+        onCreateScreen={() => {
+          triggerLaunch('INITIALIZING COMMAND ROOM');
+          setView('create');
+        }}
+        onJoinScreen={() => {
+          triggerLaunch('SYNCING ORBITAL BEACON');
+          setView('join');
+        }}
         onOpenTest={() => setView('test-panel')}
       />
     );

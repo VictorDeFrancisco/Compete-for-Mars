@@ -1,4 +1,4 @@
-/* Pantalla inicial Retro-NASA 100% cohesiva con MarsBackdrop, tarjetas crema y botones táctiles */
+/* Pantalla inicial Retro-NASA con aura orbital + animaciones cinemáticas de entrada */
 .start-screen {
   position: relative;
   height: 100dvh;
@@ -9,13 +9,38 @@
   color: var(--ink-black, #1A1817);
 }
 
+.start-screen__aura-glow {
+  position: absolute;
+  inset: -12%;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 28% 54%, rgba(252, 61, 33, 0.24), transparent 52%),
+    radial-gradient(circle at 76% 42%, rgba(245, 194, 66, 0.16), transparent 44%);
+  animation: startAuraPulse 5.5s ease-in-out infinite alternate;
+}
+
+.start-screen__scanlines {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(245, 239, 224, 0.02) 0px,
+    rgba(245, 239, 224, 0.02) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+}
+
 .start-screen__hud {
   position: relative;
   z-index: 2;
   height: 100dvh;
   max-height: 100dvh;
   width: 100%;
-  padding: 16px 26px 14px;
+  padding: 16px 28px 14px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -26,6 +51,14 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  animation: startTopDrop 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.start-screen__top-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .start-screen__stamp {
@@ -44,15 +77,39 @@
   text-transform: uppercase;
 }
 
+.start-screen__live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  background: rgba(11, 25, 44, 0.86);
+  color: #F5EFE0;
+  border: 2.5px solid #F5EFE0;
+  border-radius: 8px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.start-screen__led {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #38D37E;
+  box-shadow: 0 0 8px #38D37E;
+  animation: ledBlink 1.8s ease-in-out infinite;
+}
+
 .start-screen__test-btn {
-  padding: 7px 14px;
+  padding: 7px 15px;
   background: var(--paper-cream, #F5EFE0);
   color: var(--ink-black, #1A1817);
   border: 3px solid var(--ink-black, #1A1817);
   border-radius: 8px;
   box-shadow: 0 4px 0 var(--ink-black, #1A1817);
   font-family: 'Archivo', sans-serif;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 900;
   letter-spacing: 0.08em;
   cursor: pointer;
@@ -72,23 +129,36 @@
 
 .start-screen__center {
   flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  padding-left: clamp(8px, 4vw, 60px);
+  justify-content: space-between;
+  gap: clamp(20px, 4vw, 64px);
+  padding: 0 clamp(6px, 3.5vw, 52px);
 }
 
 .start-screen__hero-card {
-  width: min(560px, 100%);
+  width: min(580px, 100%);
   background: var(--paper-cream, #F5EFE0);
   border: 4px solid var(--ink-black, #1A1817);
   border-top: 10px solid var(--nasa-orange, #FC3D21);
   border-radius: 14px;
-  padding: 26px 30px 28px;
-  box-shadow: 0 8px 0 var(--ink-black, #1A1817);
+  padding: 24px 28px 26px;
+  box-shadow:
+    0 9px 0 var(--ink-black, #1A1817),
+    0 24px 54px rgba(252, 61, 33, 0.25);
   display: flex;
   flex-direction: column;
   gap: 12px;
+  animation: startHeroBoot 0.72s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
+}
+
+.start-screen__card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .start-screen__kicker {
@@ -99,19 +169,34 @@
   color: var(--nasa-blue, #0B3D91);
 }
 
+.start-screen__patch-code {
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #1A1817;
+  color: #F5C242;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
 .start-screen__title {
   margin: 0;
   font-family: 'Archivo', sans-serif;
   font-weight: 900;
-  font-size: clamp(2.1rem, 4.4vw, 3.2rem);
-  line-height: 1.02;
-  letter-spacing: 0.03em;
+  font-size: clamp(2.2rem, 4.5vw, 3.35rem);
+  line-height: 1;
+  letter-spacing: 0.025em;
   text-transform: uppercase;
   color: var(--ink-black, #1A1817);
 }
 
+.start-screen__title-accent {
+  color: var(--nasa-orange, #FC3D21);
+}
+
 .start-screen__subtitle {
-  margin: 0 0 8px;
+  margin: 0;
   font-family: 'Courier Prime', monospace;
   font-size: 0.96rem;
   font-weight: 700;
@@ -119,13 +204,48 @@
   color: #3F3830;
 }
 
+.start-screen__specs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 2px 0 4px;
+}
+
+.start-screen__spec {
+  background: #EAE0CA;
+  border: 2px solid var(--ink-black, #1A1817);
+  border-radius: 6px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.start-screen__spec span {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #5C5245;
+}
+
+.start-screen__spec b {
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.84rem;
+  font-weight: 900;
+  color: var(--ink-black, #1A1817);
+}
+
 .start-screen__menu {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+  margin-top: 4px;
 }
 
 .start-screen__btn {
+  position: relative;
+  overflow: hidden;
   height: 58px;
   padding: 0 18px;
   border-radius: 10px;
@@ -137,7 +257,19 @@
   text-transform: uppercase;
   cursor: pointer;
   box-shadow: 0 5px 0 var(--ink-black, #1A1817);
-  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.1s ease;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.12s ease;
+}
+
+.start-screen__btn-sheen {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -45%;
+  width: 35%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.38), transparent);
+  transform: skewX(-20deg);
+  animation: ctaSheen 3.6s ease-in-out infinite;
+  pointer-events: none;
 }
 
 .start-screen__btn--primary {
@@ -167,16 +299,84 @@
   box-shadow: 0 2px 0 var(--ink-black, #1A1817);
 }
 
-.start-screen__footer {
+/* --- EMBLEMA RADAR ORBITAL DERECHO (AURA) --- */
+.start-screen__orbital-crest {
+  flex: 0 0 auto;
   display: flex;
-  justify-content: flex-start;
-  padding-left: clamp(8px, 4vw, 60px);
+  align-items: center;
+  justify-content: center;
+  animation: startCrestFloat 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.18s both;
 }
 
-.start-screen__brand {
+.orbital-crest__frame {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(11, 25, 44, 0.56);
+  border: 2.5px solid rgba(245, 239, 224, 0.42);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.48);
+  backdrop-filter: blur(4px);
+}
+
+.orbital-crest__svg {
+  width: clamp(210px, 23vw, 310px);
+  height: auto;
+  display: block;
+}
+
+.orbital-crest__ring-outer {
+  transform-origin: 160px 160px;
+  animation: crestRotateSlow 36s linear infinite;
+}
+
+.orbital-crest__ring-inner {
+  transform-origin: 160px 160px;
+  animation: crestRotateReverse 24s linear infinite;
+}
+
+.orbital-crest__sweep {
+  transform-origin: 160px 160px;
+  animation: crestRotateSlow 6.5s linear infinite;
+}
+
+.orbital-crest__probe {
+  transform-origin: 160px 160px;
+  animation: crestRotateSlow 10s linear infinite;
+}
+
+.orbital-crest__readout {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: rgba(245, 239, 224, 0.92);
+  border: 2px solid var(--ink-black, #1A1817);
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--ink-black, #1A1817);
+}
+
+.start-screen__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 clamp(6px, 3.5vw, 52px);
+  animation: startFooterUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.25s both;
+}
+
+.start-screen__brand,
+.start-screen__telemetry-feed {
   display: inline-block;
-  padding: 4px 10px;
-  background: rgba(245, 239, 224, 0.9);
+  padding: 5px 11px;
+  background: rgba(245, 239, 224, 0.92);
   border: 2px solid var(--ink-black, #1A1817);
   border-radius: 6px;
   font-family: 'Courier Prime', monospace;
@@ -186,9 +386,68 @@
   color: var(--ink-black, #1A1817);
 }
 
+@keyframes startAuraPulse {
+  from { opacity: 0.72; transform: scale(1); }
+  to { opacity: 1; transform: scale(1.04); }
+}
+
+@keyframes ledBlink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.82); }
+}
+
+@keyframes startTopDrop {
+  from { opacity: 0; transform: translateY(-16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes startHeroBoot {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes startCrestFloat {
+  from { opacity: 0; transform: scale(0.86) rotate(-6deg); }
+  to { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+@keyframes startFooterUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ctaSheen {
+  0%, 60% { left: -45%; }
+  100% { left: 135%; }
+}
+
+@keyframes crestRotateSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes crestRotateReverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@media (max-width: 960px) {
+  .start-screen__orbital-crest {
+    display: none;
+  }
+
+  .start-screen__center {
+    justify-content: center;
+  }
+}
+
 @media (max-width: 600px) {
   .start-screen__center {
-    padding-left: 0;
+    padding: 0;
+  }
+
+  .start-screen__specs {
+    grid-template-columns: 1fr;
   }
 
   .start-screen__menu {

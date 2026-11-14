@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { deriveRoundSeed } from '../../../shared/minigames/context';
 import type { MinigameProps } from '../../../shared/types';
 import MinigameWrapper from '../minigames/MinigameWrapper';
 import { PipesSceneProvider } from '../minigames/games/pipes/PipesScene';
@@ -36,6 +37,7 @@ export default function PlayMinigame({ game, onSubmit, onProgress }: PlayMinigam
       food: Math.min(10, Math.max(0, game.self.resources.food / 10)),
       radiation: Math.min(10, Math.max(0, game.self.resources.radiation)),
     },
+    seed: deriveRoundSeed(game.phaseId, game.code, game.round, game.minigame.id),
   };
   const debuffClasses = [
     lowEnergy ? 'phase-playing--low-energy' : '',

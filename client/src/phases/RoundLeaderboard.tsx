@@ -23,7 +23,6 @@ function outcomeBadge(outcome: string): { label: string; mod: string } {
 
 export default function RoundLeaderboard({ game, onContinue }: RoundLeaderboardProps) {
   const sortedResults = [...game.lastResults].sort((a, b) => a.rank - b.rank || b.score - a.score);
-  const alivePlayers = game.players.filter(p => p.health > 0);
   const matchOver = Boolean(game.matchFinished || game.winnerId != null);
   const matchWinner = game.winnerId ? game.players.find(p => p.id === game.winnerId) : null;
   const selfConfirmed = game.self.ready || game.self.health <= 0;
@@ -122,23 +121,6 @@ export default function RoundLeaderboard({ game, onContinue }: RoundLeaderboardP
       </div>
 
       <footer className="leaderboard-sheet__foot">
-        <div className="leaderboard-crew-checks" aria-label="Confirmaciones">
-          {alivePlayers.map((player, index) => {
-            const isSelf = player.id === game.self.id;
-            const suitColor = isSelf ? suitColorForPlayer(game.self.stats, index) : suitColorByIndex(index);
-            return (
-              <div
-                key={player.id}
-                className={`leaderboard-crew-chip${player.ready ? ' is-ready' : ''}`}
-                title={`${player.name}: ${player.ready ? 'Listo' : 'Viendo resultados'}`}
-              >
-                <AstronautPortraitSvg suitColor={suitColor} variant={index} className="leaderboard-crew-chip__svg" />
-                {player.ready && <span className="leaderboard-crew-chip__tick">✓</span>}
-              </div>
-            );
-          })}
-        </div>
-
         <button
           type="button"
           className="leaderboard-continue-btn"
