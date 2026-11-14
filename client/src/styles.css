@@ -1,11 +1,21 @@
 :root {
-  --font-display: 'Chakra Petch', 'Space Grotesk', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
-  font-family: var(--font-display);
-  color: #f4f1ea;
-  background: #07090e;
-  font-synthesis: none;
-  color-scheme: dark;
+  color-scheme: light;
+  font-family: 'Courier Prime', 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Reusable Retro-NASA / Mars Outpost Palette */
+  --mars-sky: #0B192C;
+  --mars-rust: #C1440E;
+  --mars-rust-dark: #7A2506;
+  --nasa-orange: #FC3D21;
+  --nasa-orange-hover: #FF553B;
+  --nasa-blue: #0B3D91;
+  --paper-cream: #F5EFE0;
+  --manila-folder: #EFE6D5;
+  --ink-black: #1A1817;
+  --stamp-red: #C63120;
+
+  background: var(--mars-sky);
+  color: var(--ink-black);
 }
 
 * {
@@ -14,117 +24,226 @@
 
 body {
   margin: 0;
-  min-height: 100dvh;
-  background:
-    radial-gradient(ellipse 80% 45% at 80% 100%, rgba(255, 90, 31, 0.14) 0%, rgba(0, 0, 0, 0) 70%),
-    linear-gradient(180deg, #06080e 0%, #0d1018 55%, #1c1010 100%);
+  min-height: 100vh;
+  background: var(--mars-sky);
+  color: var(--ink-black);
+}
+
+/* Fixed Mars Outpost Window Backdrop + Subtle Analog Grain */
+.mars-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.mars-backdrop__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.mars-backdrop__grain {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+}
+
+.mars-stage {
+  position: relative;
+  min-height: 100vh;
+}
+
+.mars-stage__main {
+  position: relative;
+  z-index: 2;
+}
+
+/* Shared SVG Watermark, Metallic Paperclip & NASA Blue Orbital Stamp */
+.manila-topo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.095;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+.dossier-paperclip {
+  position: absolute;
+  top: -15px;
+  left: 16px;
+  width: 24px;
+  height: 44px;
+  pointer-events: none;
+  z-index: 4;
+  filter: drop-shadow(1px 2px 1px rgba(0, 0, 0, 0.28));
+}
+
+.nasa-stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 11px 5px 8px;
+  border: 2px solid var(--nasa-blue);
+  border-radius: 3px;
+  color: var(--nasa-blue);
+  background: rgba(245, 239, 224, 0.72);
+  transform: rotate(-1.5deg);
+  pointer-events: none;
+  user-select: none;
+}
+
+.nasa-stamp__orbit {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+}
+
+.nasa-stamp__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.nasa-stamp__agency {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+}
+
+.nasa-stamp__sub {
+  font-family: 'Courier Prime', monospace;
+  font-weight: 700;
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
 }
 
 main {
-  max-width: 1180px;
+  max-width: 1120px;
   margin: 0 auto;
-  padding: clamp(20px, 3.6vh, 36px) clamp(16px, 3vw, 32px);
+  padding: 24px 20px 36px;
 }
 
-header,
-.room-bar,
-.actions {
+header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  align-items: center;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
-h1 {
-  font-family: var(--font-display);
-  font-size: clamp(1.75rem, 3.4vw, 2.5rem);
-  letter-spacing: 0.05em;
+main header {
+  background: var(--manila-folder);
+  border: 3px solid var(--ink-black);
+  border-radius: 4px;
+  padding: 14px 18px;
+  box-shadow: 0 5px 0 var(--ink-black);
+  margin-bottom: 12px;
+}
+
+main header h1 {
+  margin: 2px 0 0;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 1.45rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  margin: 4px 0 18px;
+  color: var(--ink-black);
 }
 
-h2 {
-  font-family: var(--font-display);
-  font-size: 1.35rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  margin-top: 0;
-}
-
-h3 {
-  font-family: var(--font-display);
-  font-size: 1rem;
-  letter-spacing: 0.04em;
-}
-
-p,
-li {
-  line-height: 1.55;
-}
-
-p {
-  color: rgba(244, 241, 234, 0.78);
-}
-
-.eyebrow {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: #ff5a1f;
-  margin: 0 0 6px;
-}
-
+/* Phase progress tabs (manila file tabs) */
 nav {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin: 8px 0 22px;
+  margin: 14px 0 18px;
 }
 
 nav span {
-  padding: 7px 12px;
-  font-family: var(--font-mono);
-  font-size: 0.74rem;
+  padding: 7px 14px;
+  border-radius: 4px 4px 0 0;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 0.78rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(244, 241, 234, 0.55);
-  background: rgba(12, 16, 24, 0.72);
-  box-shadow: inset 0 0 0 1px rgba(244, 241, 234, 0.14);
-  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  background: #d5c8b0;
+  color: #3f3830;
+  border: 2.5px solid var(--ink-black);
+  box-shadow: 0 3px 0 var(--ink-black);
 }
 
-nav [aria-current] {
-  background: rgba(255, 90, 31, 0.16);
-  color: #f4f1ea;
-  box-shadow: inset 0 0 0 1px #ff5a1f;
-}
-
-.panel {
-  position: relative;
-  padding: 24px;
-  margin-bottom: 20px;
-  background: rgba(11, 14, 21, 0.74);
-  backdrop-filter: blur(10px);
-  box-shadow: inset 0 0 0 1px rgba(244, 241, 234, 0.14);
-  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+nav span[aria-current='step'] {
+  background: var(--paper-cream);
+  color: var(--nasa-blue);
+  border-bottom: 4px solid var(--nasa-orange);
+  transform: translateY(-2px);
 }
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(250px, 1fr);
+  grid-template-columns: 1fr 310px;
   gap: 20px;
+  align-items: start;
 }
 
-.layout aside {
-  align-self: start;
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Manila folder / clipboard panel */
+.panel {
+  position: relative;
+  background: linear-gradient(180deg, #f6eedf 0%, var(--manila-folder) 60%, #e5d8c2 100%);
+  border: 3px solid var(--ink-black);
+  border-radius: 4px 8px 6px 6px;
+  padding: 20px 22px;
+  color: var(--ink-black);
+  box-shadow:
+    0 7px 0 var(--ink-black),
+    0 18px 34px rgba(0, 0, 0, 0.44);
+}
+
+.panel h2,
+.panel h3 {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-black);
+  margin-top: 0;
+}
+
+.panel p,
+.panel li,
+.panel label {
+  color: #2f2a23;
+}
+
+/* HUD Clipboard & Physical Reserve Indicators */
+.hud-panel {
+  position: sticky;
+  top: 16px;
+  background: var(--paper-cream);
+  transform: rotate(0.45deg);
 }
 
 .hud-panel ul {
   list-style: none;
-  margin: 0 0 14px;
   padding: 0;
+  margin: 8px 0 16px;
   display: grid;
   gap: 6px;
 }
@@ -132,195 +251,299 @@ nav [aria-current] {
 .hud-panel li {
   display: flex;
   justify-content: space-between;
+  gap: 8px;
+  padding: 7px 9px;
+  background: var(--manila-folder);
+  border: 2px solid var(--ink-black);
+  border-radius: 2px;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.hud-meters {
+  display: grid;
   gap: 10px;
-  padding: 6px 10px;
-  font-family: var(--font-mono);
+  margin-bottom: 12px;
+}
+
+.hud-meter__head {
+  display: flex;
+  justify-content: space-between;
   font-size: 0.78rem;
-  background: rgba(18, 24, 34, 0.75);
-  border-left: 2px solid #ff5a1f;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
 }
 
-.status {
-  color: #4ade80;
+.hud-meter__track {
+  height: 12px;
+  background: #dfd3bc;
+  border: 2px solid var(--ink-black);
+  border-radius: 1px;
+  overflow: hidden;
 }
 
-.offline {
-  color: #ffd37c;
+.hud-meter__fill {
+  height: 100%;
+  transition: width 0.2s ease;
+}
+
+.hud-meter__fill--energy {
+  background: #d97706;
+}
+
+.hud-meter__fill--food {
+  background: #2f855a;
+}
+
+.hud-rad-gauge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: #efe2c0;
+  border: 2px solid var(--ink-black);
+  border-left: 5px solid #9a5b08;
+  border-radius: 2px;
+  color: #3f2b04;
+}
+
+.hud-rad-gauge--active {
+  background: #f9d8d2;
+  border-left-color: var(--stamp-red);
+  color: #8c1c0f;
+}
+
+.hud-rad-gauge__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+}
+
+.hud-rad-gauge__val {
+  font-size: 1.05rem;
 }
 
 .room-bar {
-  margin-bottom: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
   padding: 10px 14px;
-  font-family: var(--font-mono);
-  font-size: 0.84rem;
-  background: rgba(11, 14, 21, 0.65);
-  box-shadow: inset 0 0 0 1px rgba(244, 241, 234, 0.12);
+  margin-bottom: 14px;
+  border-radius: 3px;
+  background: var(--paper-cream);
+  border: 3px solid var(--ink-black);
+  color: var(--ink-black);
+  font-weight: 700;
+  box-shadow: 0 4px 0 var(--ink-black);
 }
 
-.code {
-  letter-spacing: 0.15em;
-  color: #22d3ee;
+.room-bar strong[role='timer'] {
+  padding: 3px 10px;
+  background: var(--nasa-blue);
+  color: var(--paper-cream);
+  border: 2px solid var(--ink-black);
+  border-radius: 2px;
+  font-family: 'Courier Prime', monospace;
 }
 
-label {
-  display: block;
-  margin: 14px 0;
-  font-family: var(--font-mono);
+.preview-banner {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--paper-cream);
+  border: 2.5px solid var(--ink-black);
+  border-radius: 3px;
+  color: var(--ink-black);
+  font-weight: 700;
   font-size: 0.8rem;
+  box-shadow: 0 4px 0 var(--ink-black);
+}
+
+/* Tactile retro buttons (scoped away from StartScreen, Dossier and CRT minigame area) */
+main button:not(.minigame-area button),
+.lobby-hud button,
+.preview-banner button {
+  font: inherit;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
   letter-spacing: 0.08em;
-  color: rgba(244, 241, 234, 0.78);
+  text-transform: uppercase;
+  padding: 10px 18px;
+  border-radius: 3px;
+  border: 3px solid var(--ink-black);
+  background: var(--nasa-orange);
+  color: var(--paper-cream);
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--ink-black);
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.12s ease, opacity 0.12s ease;
+}
+
+main button:not(.minigame-area button):hover:not(:disabled),
+.lobby-hud button:hover:not(:disabled),
+.preview-banner button:hover:not(:disabled) {
+  background: var(--nasa-orange-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 0 var(--ink-black);
+}
+
+main button:not(.minigame-area button):active:not(:disabled),
+.lobby-hud button:active:not(:disabled),
+.preview-banner button:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--ink-black);
+}
+
+main button.secondary:not(.minigame-area button),
+.lobby-hud button.secondary,
+.preview-banner button.secondary {
+  background: var(--paper-cream);
+  color: var(--ink-black);
+  border-color: var(--ink-black);
+}
+
+main button.secondary:not(.minigame-area button):hover:not(:disabled),
+.lobby-hud button.secondary:hover:not(:disabled),
+.preview-banner button.secondary:hover:not(:disabled) {
+  background: #fff9ee;
+}
+
+main button:not(.minigame-area button):disabled,
+.lobby-hud button:disabled,
+.preview-banner button:disabled {
+  background: var(--nasa-orange);
+  color: var(--paper-cream);
+  border-color: var(--ink-black);
+  box-shadow: 0 4px 0 var(--ink-black);
+  opacity: 0.54;
+  cursor: not-allowed;
+  transform: none;
+}
+
+main button.secondary:not(.minigame-area button):disabled,
+.lobby-hud button.secondary:disabled {
+  background: #d5cab6;
+  color: #4f483d;
+  opacity: 0.72;
 }
 
 input {
-  display: block;
-  width: 100%;
-  padding: 10px 12px;
-  margin-top: 8px;
-  border: 0;
-  border-bottom: 1.5px solid rgba(244, 241, 234, 0.28);
-  border-radius: 0;
-  background: rgba(12, 16, 24, 0.6);
-  color: #f4f1ea;
-  font-family: var(--font-mono);
-  font-size: 0.95rem;
-}
-
-input[type='range'] {
-  padding: 0;
-  accent-color: #ff5a1f;
-}
-
-button {
-  padding: 11px 20px;
-  border: 0;
-  border-radius: 0;
-  background: #ff5a1f;
-  color: #090b0e;
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  cursor: pointer;
-  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
-  transition: transform 0.15s ease, background-color 0.15s ease;
-}
-
-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  background: #f4f1ea;
-  color: #090b0e;
-}
-
-button.secondary {
-  background: rgba(14, 18, 26, 0.75);
-  color: rgba(244, 241, 234, 0.88);
-  box-shadow: inset 0 0 0 1px rgba(244, 241, 234, 0.24);
-}
-
-button.secondary:hover:not(:disabled) {
-  background: rgba(26, 32, 46, 0.9);
-  color: #ffffff;
-  box-shadow: inset 0 0 0 1px #ff5a1f;
-}
-
-button:disabled {
-  opacity: 0.45;
-  cursor: default;
-}
-
-button:focus-visible,
-input:focus-visible {
-  outline: 2px solid #ffda80;
-  outline-offset: 2px;
-}
-
-form {
-  margin: 24px 0;
-}
-
-.actions {
-  justify-content: flex-start;
-}
-
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 14px;
-}
-
-.card {
-  padding: 18px;
-  background: rgba(14, 19, 28, 0.82);
-  box-shadow: inset 0 0 0 1px rgba(244, 241, 234, 0.16);
-  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: inset 0 0 0 1px rgba(255, 90, 31, 0.68);
-}
-
-.card p {
-  min-height: 64px;
-}
-
-.players {
-  list-style: none;
-  padding: 0;
-}
-
-.players li {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  justify-content: space-between;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(244, 241, 234, 0.12);
-  flex-wrap: wrap;
-}
-
-.score {
-  font-family: var(--font-mono);
-  font-size: 2.3rem;
-  color: #ff5a1f;
-}
-
-.error {
-  padding: 12px 14px;
-  border-left: 3px solid #ff5a1f;
-  background: rgba(92, 22, 14, 0.72);
-  color: #ffd0c6;
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
+  font: inherit;
+  padding: 9px 12px;
+  border-radius: 2px;
+  border: 2px solid var(--ink-black);
+  background: var(--paper-cream);
+  color: var(--ink-black);
 }
 
 fieldset {
-  border: 0;
+  border: none;
   padding: 0;
   margin: 0;
   min-width: 0;
 }
 
-footer {
-  font-family: var(--font-mono);
-  font-size: 0.76rem;
-  color: rgba(244, 241, 234, 0.5);
-  margin: 24px 0;
+.row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
-@media (max-width: 760px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
-  main {
-    padding: 18px 12px;
-  }
-  .panel {
-    padding: 18px;
-  }
+.grid {
+  display: grid;
+  gap: 14px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.card {
+  background: var(--paper-cream);
+  border: 3px solid var(--ink-black);
+  border-radius: 3px;
+  padding: 14px;
+  color: var(--ink-black);
+  box-shadow: 0 4px 0 var(--ink-black);
+  display: grid;
+  gap: 10px;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 3px;
+  background: var(--paper-cream);
+  border: 2px solid var(--ink-black);
+  color: var(--ink-black);
+}
+
+/* Keep the CRT minigame bezel dark so game components retain high contrast */
+.minigame-area {
+  min-height: 240px;
+  padding: 18px;
+  border-radius: 4px;
+  border: 3px solid var(--ink-black);
+  background: #101614;
+  color: #f4f1ea;
+  box-shadow:
+    inset 0 0 0 2px #262e29,
+    0 5px 0 var(--ink-black);
+}
+
+.minigame-area p,
+.minigame-area li,
+.minigame-area label,
+.minigame-area h2,
+.minigame-area h3 {
+  color: inherit;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  color: var(--nasa-blue);
+}
+
+.error {
+  padding: 9px 12px;
+  border-radius: 3px;
+  background: #f9d8d2;
+  border: 2px solid #b42818;
+  color: #8c1c0f;
+  font-weight: 700;
+}
+
+.ok {
+  color: #166534;
+  font-weight: 700;
 }

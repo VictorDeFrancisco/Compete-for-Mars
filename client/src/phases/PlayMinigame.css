@@ -3,14 +3,148 @@
   position: relative;
 }
 
+.phase-playing > :not(.manila-topo) {
+  position: relative;
+  z-index: 1;
+}
+
+.phase-playing__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.phase-playing__head h2 {
+  margin: 0;
+}
+
+.oscilloscope-leds {
+  display: flex;
+  gap: 6px;
+}
+
+.osc-led {
+  padding: 3px 8px;
+  border: 2px solid var(--ink-black);
+  border-radius: 2px;
+  font-family: 'Courier Prime', monospace;
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+.osc-led--ok {
+  background: #d2eedd;
+  color: #144d2e;
+}
+
+.osc-led--warn {
+  background: #f9d8d2;
+  color: #8c1c0f;
+}
+
+.osc-led--idle {
+  background: #e3d7bf;
+  color: #4b4338;
+}
+
 .phase-playing__debuff {
   margin: 0 0 12px;
-  padding: 8px 12px;
+  padding: 8px 14px;
+  border-radius: 3px;
+  background: #f9d8d2;
+  border: 2px solid #b42818;
+  color: #8c1c0f;
+  font-family: 'Courier Prime', monospace;
+  font-weight: 700;
+  font-size: 0.86rem;
+  box-shadow: 0 3px 0 #8c1c0f;
+}
+
+.phase-playing__outcome {
+  margin: 0 0 12px;
+  padding: 8px 14px;
+  border-radius: 3px;
+  background: #e4ebf8;
+  border: 2px solid var(--nasa-blue);
+  color: var(--nasa-blue);
+  font-family: 'Courier Prime', monospace;
+  font-weight: 700;
+  font-size: 0.86rem;
+}
+
+/* Chunky Retro-NASA CRT / Oscilloscope Monitor Frame */
+.oscilloscope-bezel {
+  background: #2b2d2a;
+  border: 3px solid var(--ink-black);
   border-radius: 6px;
-  background: rgba(112, 34, 24, 0.55);
-  border: 1px solid rgba(255, 138, 92, 0.55);
-  color: #ffd8c2;
-  font-size: 0.85rem;
+  padding: 12px 14px 14px;
+  box-shadow:
+    inset 0 2px 0 #474a44,
+    0 6px 0 var(--ink-black);
+}
+
+.oscilloscope-bezel__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.oscilloscope-bezel__plate {
+  display: inline-block;
+  padding: 2px 9px;
+  background: var(--nasa-blue);
+  color: var(--paper-cream);
+  border: 2px solid var(--ink-black);
+  border-radius: 2px;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.oscilloscope-bezel__screws {
+  display: flex;
+  gap: 8px;
+}
+
+.oscilloscope-bezel__screws span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #5c6058;
+  border: 2px solid var(--ink-black);
+  display: inline-block;
+}
+
+/* Keep the inner minigame CRT screen dark so minigame UI text remains legible */
+.phase-playing .minigame-area {
+  background: #101614;
+  color: #f4f1ea;
+  border: 3px solid var(--ink-black);
+  border-radius: 4px;
+  padding: 18px;
+  box-shadow: inset 0 0 0 2px #262e29;
+}
+
+.phase-playing__state {
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.phase-playing__status {
+  margin: 12px 0 0;
+  font-family: 'Courier Prime', monospace;
+  font-weight: 700;
+  color: #3f3830;
 }
 
 .phase-playing--low-energy .minigame-area {
@@ -18,5 +152,7 @@
 }
 
 .phase-playing--low-food .minigame-area {
-  box-shadow: inset 0 0 46px rgba(130, 18, 12, 0.55);
+  box-shadow:
+    inset 0 0 46px rgba(170, 26, 16, 0.55),
+    inset 0 0 0 2px #262e29;
 }

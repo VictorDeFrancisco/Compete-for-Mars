@@ -85,7 +85,9 @@
   padding: 6px 4px 6px 0;
   border: 0;
   border-radius: 0;
+  clip-path: none;
   background: transparent;
+  box-shadow: none;
   color: rgba(240, 245, 252, 0.92);
   font-family: 'Michroma', 'Orbitron', system-ui, sans-serif;
   font-weight: 400;
@@ -117,16 +119,20 @@
   color: rgba(145, 237, 201, 0.82);
 }
 
-.start-screen .start-screen__btn:hover,
-.start-screen .start-screen__btn:focus-visible {
+.start-screen button.start-screen__btn:hover:not(:disabled),
+.start-screen button.start-screen__btn:focus-visible {
+  background: transparent;
+  box-shadow: none;
   color: #ffd399;
   transform: translateX(6px);
   text-shadow: 0 0 18px rgba(245, 156, 66, 0.55);
   outline: none;
 }
 
-.start-screen .start-screen__btn--test:hover,
-.start-screen .start-screen__btn--test:focus-visible {
+.start-screen button.start-screen__btn--test:hover:not(:disabled),
+.start-screen button.start-screen__btn--test:focus-visible {
+  background: transparent;
+  box-shadow: none;
   color: #a6f2d7;
   text-shadow: 0 0 16px rgba(115, 212, 194, 0.55);
 }

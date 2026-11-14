@@ -1,31 +1,297 @@
-.phase-cards.panel { padding: 24px; }
-.phase-cards .cards-heading { display: flex; justify-content: space-between; gap: 18px; align-items: center; }
-.phase-cards .cards-heading .eyebrow { margin: 0 0 7px; color: #ff5a1f; font-size: 10px; letter-spacing: .14em; }
-.phase-cards .cards-heading h2 { font-size: clamp(20px, 2vw, 27px); font-weight: 500; margin: 0; }
-.phase-cards .cards-heading > span { font-family: var(--font-mono); color: #94a2ae; font: 10px ui-monospace, monospace; white-space: nowrap; }
-.phase-cards .cards-resources { display: flex; flex-wrap: wrap; gap: 12px 22px; padding: 18px 0; margin-top: 15px; border-top: 1px solid #35424e; border-bottom: 1px solid #35424e; }
-.phase-cards .cards-resources span { display: flex; align-items: center; gap: 10px; color: #9fadb8; font-size: 11px; }
-.phase-cards .cards-resources b { color: #e3e8ed; font: 500 18px ui-monospace, monospace; }
-.phase-cards .cards-intro { font-size: 12px; color: #a5b2be; margin: 16px 0 20px; }
-.phase-cards .cards-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; align-items: stretch; }
-.phase-cards .action-card { --card-accent: #87a594; display: flex; flex-direction: column; padding: 17px 14px 14px; min-width: 0; border: 1px solid #3a4a55; border-top: 3px solid var(--card-accent); background: rgba(14, 19, 28, .82); }
-.phase-cards .action-card[data-category=risk] { --card-accent: #c09b70; }
-.phase-cards .action-card[data-category=defense] { --card-accent: #7d9eb0; }
-.phase-cards .action-card[data-category=interaction] { --card-accent: #a394b1; }
-.phase-cards .action-card--selected { border-color: #a9d6b7; background: #23372e; }
-.phase-cards .action-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--card-accent); text-transform: uppercase; font-size: 9px; letter-spacing: .06em; }
-.phase-cards .action-card h3 { text-transform: uppercase; margin: 23px 0 13px; min-height: 45px; color: #e6ebef; font-size: 18px; font-weight: 500; line-height: 1.25; }
-.phase-cards .action-card-description { margin: 0 0 18px; color: #b3bfc9; font-size: 12px; line-height: 1.65; }
-.phase-cards .action-card-detail { margin: 3px 0 8px; color: #a4b1bc; font-size: 11px; display: flex; justify-content: space-between; gap: 8px; }
-.phase-cards .action-card-detail b { color: #e3d3b9; font-weight: 500; }
-.phase-cards .action-card-target { color: #b5c1ca; font-size: 11px; margin: 12px 0 0; }
-.phase-cards .action-card-target select { display: block; max-width: 100%; width: 100%; margin-top: 7px; padding: 9px 5px; background: #111b24; border: 1px solid #526371; border-radius: 0; color: #e0e8ee; font: inherit; }
-.phase-cards .action-card-bottom { margin-top: auto; }
-.phase-cards .action-card-warning { font-size: 10px; color: #dfb18f; margin: 12px 0 7px; min-height: 16px; }
-.phase-cards .action-card button { width: 100%; border-radius: 0; border: 0; background: #ff5a1f; color: #090b0e; font-size: 12px; font-weight: 500; padding: 10px 4px; }
-.phase-cards .action-card button:hover:not(:disabled) { background: #f4f1ea; }
-.phase-cards .action-card--selected button { background: #3d624b; border-color: #89b89a; }
-.phase-cards .cards-status { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-top: 20px; color: #91a4b1; font-size: 11px; line-height: 1.6; }
-.phase-cards .cards-status > :first-child { color: #d3dce3; }
-.phase-cards .cards-protection { padding-top: 13px; margin: 15px 0 0; border-top: 1px solid #35424e; color: #a7c9b3; font-size: 11px; }
-@media (max-width: 650px) { .phase-cards.panel { padding: 18px 12px; } .phase-cards .cards-options { grid-template-columns: 1fr; } .phase-cards .action-card h3 { text-transform: uppercase; margin-top: 15px; min-height: 0; } }
+/* Estilos de fase 3: Retro-NASA Manila Dossier / Cardstock Cards */
+.phase-cards {
+  position: relative;
+  color: var(--ink-black);
+}
+
+.phase-cards > :not(.manila-topo) {
+  position: relative;
+  z-index: 1;
+}
+
+.phase-cards .cards-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  border-bottom: 2.5px solid var(--ink-black);
+  padding-bottom: 12px;
+}
+
+.phase-cards .cards-heading h2 {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: clamp(1.3rem, 2.2vw, 1.75rem);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0;
+  color: var(--ink-black);
+}
+
+.phase-cards .cards-resources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  padding: 12px 14px;
+  margin-top: 14px;
+  background: var(--paper-cream);
+  border: 2.5px solid var(--ink-black);
+  border-radius: 3px;
+  box-shadow: 0 3px 0 var(--ink-black);
+}
+
+.phase-cards .cards-resources span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #4a4136;
+}
+
+.phase-cards .cards-resources b {
+  color: var(--nasa-blue);
+  font-family: 'Courier Prime', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.phase-cards .cards-intro {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #363028;
+  margin: 14px 0 18px;
+}
+
+.phase-cards .cards-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  align-items: stretch;
+  padding: 4px 2px 8px;
+}
+
+.phase-cards .action-card {
+  --card-accent: #2F6F4E;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 14px 14px;
+  min-width: 0;
+  background: var(--paper-cream);
+  border: 3px solid var(--ink-black);
+  border-top: 7px solid var(--card-accent);
+  border-radius: 3px;
+  color: var(--ink-black);
+  box-shadow: 0 5px 0 var(--ink-black);
+  transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
+}
+
+.phase-cards .action-card:nth-child(3n + 1) {
+  transform: rotate(-1.15deg);
+}
+
+.phase-cards .action-card:nth-child(3n + 2) {
+  transform: rotate(0.9deg);
+}
+
+.phase-cards .action-card:nth-child(3n) {
+  transform: rotate(-0.75deg);
+}
+
+.phase-cards .action-card[data-category='risk'] {
+  --card-accent: var(--mars-rust);
+}
+
+.phase-cards .action-card[data-category='defense'] {
+  --card-accent: var(--nasa-blue);
+}
+
+.phase-cards .action-card[data-category='interaction'] {
+  --card-accent: #6D4B8C;
+}
+
+.phase-cards .action-card:hover {
+  transform: translateY(-4px) rotate(0deg);
+  box-shadow: 0 8px 0 var(--ink-black);
+  background: #fffaf0;
+  z-index: 3;
+}
+
+.phase-cards .action-card--selected {
+  transform: translateY(-3px) rotate(0deg) scale(1.015) !important;
+  background: #fff9eb;
+  box-shadow: 0 6px 0 var(--ink-black), 0 0 0 2px var(--nasa-orange) inset;
+  z-index: 4;
+}
+
+.phase-cards .action-card__stamp {
+  position: absolute;
+  top: 28px;
+  right: 8px;
+  padding: 2px 7px;
+  border: 2.5px solid var(--stamp-red);
+  border-radius: 3px;
+  color: var(--stamp-red);
+  background: rgba(245, 239, 224, 0.92);
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transform: rotate(-10deg);
+  pointer-events: none;
+  z-index: 5;
+  animation: card-stamp-slam 0.2s cubic-bezier(0.22, 1.3, 0.36, 1) forwards;
+}
+
+@keyframes card-stamp-slam {
+  0% {
+    opacity: 0;
+    transform: rotate(-15deg) scale(1.4);
+  }
+  100% {
+    opacity: 0.94;
+    transform: rotate(-10deg) scale(1);
+  }
+}
+
+.phase-cards .action-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--card-accent);
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+}
+
+.phase-cards .action-card__patch {
+  display: flex;
+  justify-content: center;
+  margin: 12px 0 8px;
+}
+
+.phase-cards .action-card__svg {
+  width: 60px;
+  height: 60px;
+  display: block;
+}
+
+.phase-cards .action-card h3 {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  text-align: center;
+  margin: 4px 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--ink-black);
+  color: var(--ink-black);
+  font-size: 1.02rem;
+  line-height: 1.2;
+}
+
+.phase-cards .action-card-description {
+  margin: 0 0 12px;
+  color: #2f2a23;
+  font-size: 0.86rem;
+  line-height: 1.48;
+}
+
+.phase-cards .action-card-detail {
+  margin: 3px 0 6px;
+  padding: 4px 8px;
+  background: #e8dcc5;
+  border: 1.5px solid var(--ink-black);
+  border-radius: 2px;
+  color: #3a332b;
+  font-size: 0.78rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.phase-cards .action-card-detail b {
+  color: var(--ink-black);
+  font-weight: 700;
+}
+
+.phase-cards .action-card-target {
+  color: var(--nasa-blue);
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  margin: 10px 0 0;
+}
+
+.phase-cards .action-card-target select {
+  display: block;
+  max-width: 100%;
+  width: 100%;
+  margin-top: 5px;
+  padding: 8px 6px;
+  background: #fffaf0;
+  border: 2px solid var(--ink-black);
+  border-radius: 2px;
+  color: var(--ink-black);
+  font-family: 'Courier Prime', monospace;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.phase-cards .action-card-bottom {
+  margin-top: auto;
+}
+
+.phase-cards .action-card-warning {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #8c1c0f;
+  margin: 10px 0 6px;
+  min-height: 18px;
+}
+
+.phase-cards .action-card button {
+  width: 100%;
+}
+
+.phase-cards .cards-status {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 2px solid rgba(26, 24, 23, 0.25);
+  color: #4a4136;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.phase-cards .cards-status > :first-child {
+  color: var(--ink-black);
+}
+
+.phase-cards .cards-protection {
+  padding: 10px 12px;
+  margin: 14px 0 0;
+  background: #d2eedd;
+  border: 2px solid #1d6b41;
+  border-radius: 3px;
+  color: #144d2e;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+@media (max-width: 780px) {
+  .phase-cards .cards-options {
+    grid-template-columns: 1fr;
+  }
+}

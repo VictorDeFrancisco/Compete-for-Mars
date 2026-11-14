@@ -1,5 +1,7 @@
 import type { PresentationProps } from '../../../shared/types';
+import { NasaOrbitStampSvg, PaperclipSvg, TopoWatermarkSvg } from '../components/NasaMarks';
 import MinigameInfo from '../minigames/MinigameInfo';
+import { playUiConfirm } from '../utils/uiAudio';
 import './MinigamePresentation.css';
 
 // Phase 2: this component does not create sockets or change phases by itself.
@@ -16,20 +18,43 @@ export default function MinigamePresentation({ game, onReady }: PresentationProp
 
   return (
     <section className="panel phase-presentation">
-      <p className="eyebrow">2 · Minigame Briefing · Round {game.round}</p>
+      <TopoWatermarkSvg />
+      <PaperclipSvg className="briefing-paperclip" />
+
+      <div className="phase-presentation__head">
+        <div>
+          <p className="eyebrow">2 · Minigame Briefing · Round {game.round}</p>
+        </div>
+        <NasaOrbitStampSvg label={`BRIEFING // ROUND 0${game.round}`} />
+      </div>
+
       <MinigameInfo definition={game.minigame} />
-      <p>
-        <strong>This round:</strong> All players spend 5 energy and 5 food. Winner gets +{roundBonus} {resource}.
-        Last place loses {loserPenalty} health. Radiation deals 5 health per point, and each resource at 0 costs 10 health.
-      </p>
-      <p>Next: choose one of three action cards. Reinforced suits block radiation damage only; other survival penalties still apply.</p>
-      <button disabled={game.self.ready || game.self.health <= 0} onClick={onReady}>
-        {game.self.health <= 0 ? 'Eliminated' : game.self.ready ? 'Waiting for crew…' : 'Got it'}
-      </button>
-      <p>
-        {game.players.filter(p => p.health > 0 && p.ready).length}/{game.players.filter(p => p.health > 0).length} ready.
-        The phase also advances when time expires.
-      </p>
+
+      <div className="phase-presentation__rules">
+        <p>
+          <strong>This round:</strong> All players spend 5 energy and 5 food. Winner gets +{roundBonus} {resource}.
+          Last place loses {loserPenalty} health. Radiation deals 5 health per point, and each resource at 0 costs 10 health.
+        </p>
+        <p>
+          Next: choose one of three action cards. Reinforced suits block radiation damage only; other survival penalties still apply.
+        </p>
+      </div>
+
+      <div className="phase-presentation__actions">
+        <button
+          disabled={game.self.ready || game.self.health <= 0}
+          onClick={() => {
+            playUiConfirm();
+            onReady();
+          }}
+        >
+          {game.self.health <= 0 ? 'Eliminated' : game.self.ready ? 'Waiting for crew…' : 'Got it'}
+        </button>
+        <p className="phase-presentation__status">
+          {game.players.filter(p => p.health > 0 && p.ready).length}/{game.players.filter(p => p.health > 0).length} ready.
+          The phase also advances when time expires.
+        </p>
+      </div>
     </section>
   );
 }
