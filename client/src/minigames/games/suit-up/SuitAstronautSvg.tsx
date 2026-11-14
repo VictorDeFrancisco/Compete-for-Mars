@@ -77,37 +77,37 @@ export function SuitAstronautSvg({
           </filter>
         </defs>
 
-        {/* --- FONDO DE LA ESCLUSA / SOPORTE DE TRAJE --- */}
+        {/* --- FONDO DE LA ESCLUSA / PLANO RETRO-NASA (SIN FONDO AZUL) --- */}
         <g className="suit-layer--backdrop">
-          {/* Estructura del marco de vestimenta */}
-          <rect x="35" y="15" width="250" height="410" rx="16" fill="#111622" stroke="#253246" strokeWidth="3" />
-          <line x1="50" y1="15" x2="50" y2="425" stroke="#1d2737" strokeWidth="1" strokeDasharray="6 6" />
-          <line x1="270" y1="15" x2="270" y2="425" stroke="#1d2737" strokeWidth="1" strokeDasharray="6 6" />
-          
-          {/* Rieles de acople superior */}
-          <line x1="70" y1="40" x2="250" y2="40" stroke="#37485e" strokeWidth="4" />
-          <circle cx="85" cy="40" r="5" fill="#506680" />
-          <circle cx="235" cy="40" r="5" fill="#506680" />
+          {/* Marco de plano técnico en crema cálido */}
+          <rect x="20" y="10" width="280" height="420" rx="14" fill="#EAE0CA" stroke="#1A1817" strokeWidth="3.5" />
+          <line x1="40" y1="10" x2="40" y2="430" stroke="#C6B79B" strokeWidth="1.5" strokeDasharray="6 6" />
+          <line x1="280" y1="10" x2="280" y2="430" stroke="#C6B79B" strokeWidth="1.5" strokeDasharray="6 6" />
 
-          {/* Indicador de cuadrícula del escáner */}
-          <circle cx="160" cy="205" r="130" fill="none" stroke="#1a2536" strokeWidth="1" />
-          <circle cx="160" cy="205" r="85" fill="none" stroke="#1a2536" strokeWidth="1" strokeDasharray="4 4" />
+          {/* Rieles de acople superior */}
+          <line x1="65" y1="34" x2="255" y2="34" stroke="#6E6252" strokeWidth="4" />
+          <circle cx="80" cy="34" r="5" fill="#463E34" />
+          <circle cx="240" cy="34" r="5" fill="#463E34" />
+
+          {/* Indicador de cuadrícula del escáner en sepia suave */}
+          <circle cx="160" cy="210" r="126" fill="none" stroke="#C8B99D" strokeWidth="1.5" />
+          <circle cx="160" cy="210" r="84" fill="none" stroke="#C8B99D" strokeWidth="1.5" strokeDasharray="5 5" />
         </g>
 
         {/* --- CAPA 0: SILUETA BASE DEL ASTRONAUTA --- */}
         <g className="suit-layer--mannequin">
           {/* Cabeza interna */}
-          <circle cx="160" cy="85" r="28" fill="#1e2635" stroke="#313f56" strokeWidth="2" />
+          <circle cx="160" cy="85" r="28" fill="#5B5349" stroke="#342E27" strokeWidth="2.5" />
           {/* Cuello */}
-          <rect x="150" y="112" width="20" height="14" fill="#20293a" />
+          <rect x="150" y="112" width="20" height="14" fill="#4F483F" />
           {/* Torso base */}
-          <path d="M120 126 L200 126 L192 230 L128 230 Z" fill="#18212e" stroke="#28374d" strokeWidth="2" />
+          <path d="M120 126 L200 126 L192 230 L128 230 Z" fill="#4F483F" stroke="#342E27" strokeWidth="2.5" />
           {/* Brazos base */}
-          <path d="M120 130 L85 200 L75 250 L90 252 L100 206 L124 150 Z" fill="#1c2534" />
-          <path d="M200 130 L235 200 L245 250 L230 252 L220 206 L196 150 Z" fill="#1c2534" />
+          <path d="M120 130 L85 200 L75 250 L90 252 L100 206 L124 150 Z" fill="#4F483F" stroke="#342E27" strokeWidth="1.5" />
+          <path d="M200 130 L235 200 L245 250 L230 252 L220 206 L196 150 Z" fill="#4F483F" stroke="#342E27" strokeWidth="1.5" />
           {/* Piernas base */}
-          <path d="M130 230 L124 350 L115 390 L145 390 L152 350 L156 230 Z" fill="#1a2230" />
-          <path d="M190 230 L196 350 L205 390 L175 390 L168 350 L164 230 Z" fill="#1a2230" />
+          <path d="M130 230 L124 350 L115 390 L145 390 L152 350 L156 230 Z" fill="#4F483F" stroke="#342E27" strokeWidth="1.5" />
+          <path d="M190 230 L196 350 L205 390 L175 390 L168 350 L164 230 Z" fill="#4F483F" stroke="#342E27" strokeWidth="1.5" />
         </g>
 
         {/* --- CAPA 6 (Detrás del torso): MOCHILA DE SOPORTE VITAL PLSS --- */}
@@ -123,9 +123,9 @@ export function SuitAstronautSvg({
             width="128"
             height="140"
             rx="12"
-            fill={hasBackpack ? '#243242' : '#141a24'}
-            stroke={hasBackpack ? '#4deeea' : '#2b394d'}
-            strokeWidth={hasBackpack ? '3' : '1.5'}
+            fill={hasBackpack ? '#E2D8C4' : '#D5C9B2'}
+            stroke={hasBackpack ? '#1A1817' : '#8B7D68'}
+            strokeWidth={hasBackpack ? '3.5' : '2'}
           />
           {/* Antena de comunicaciones de alta ganancia */}
           <line
@@ -133,15 +133,15 @@ export function SuitAstronautSvg({
             y1="70"
             x2="102"
             y2="30"
-            stroke={hasBackpack ? '#4deeea' : '#2b394d'}
-            strokeWidth="3"
+            stroke={hasBackpack ? '#FC3D21' : '#8B7D68'}
+            strokeWidth="3.5"
             strokeLinecap="round"
           />
-          <circle cx="102" cy="28" r="4" fill={hasBackpack ? '#4deeea' : '#2b394d'} />
+          <circle cx="102" cy="28" r="4.5" fill={hasBackpack ? '#FC3D21' : '#8B7D68'} />
           
           {/* Tanques cilíndricos gemelos de O2 */}
-          <rect x="110" y="80" width="45" height="100" rx="8" fill={hasBackpack ? '#2d3d50' : '#171f2b'} />
-          <rect x="165" y="80" width="45" height="100" rx="8" fill={hasBackpack ? '#2d3d50' : '#171f2b'} />
+          <rect x="110" y="80" width="45" height="100" rx="8" fill={hasBackpack ? '#C5B89E' : '#BFB29B'} stroke="#1A1817" strokeWidth="1.5" />
+          <rect x="165" y="80" width="45" height="100" rx="8" fill={hasBackpack ? '#C5B89E' : '#BFB29B'} stroke="#1A1817" strokeWidth="1.5" />
 
           {/* Válvula de purga y mangueras */}
           {hasBackpack && (
@@ -206,14 +206,14 @@ export function SuitAstronautSvg({
           {/* Perneras presurizadas */}
           <path
             d="M125 228 L118 348 L108 388 L148 388 L154 348 L158 228 Z"
-            fill={hasBoots ? 'url(#suitHull)' : '#1e2938'}
-            stroke={hasBoots ? '#e2ebf3' : '#33445c'}
+            fill={hasBoots ? 'url(#suitHull)' : '#9C907D'}
+            stroke={hasBoots ? '#1A1817' : '#5E5549'}
             strokeWidth="2"
           />
           <path
             d="M195 228 L202 348 L212 388 L172 388 L166 348 L162 228 Z"
-            fill={hasBoots ? 'url(#suitHull)' : '#1e2938'}
-            stroke={hasBoots ? '#e2ebf3' : '#33445c'}
+            fill={hasBoots ? 'url(#suitHull)' : '#9C907D'}
+            stroke={hasBoots ? '#1A1817' : '#5E5549'}
             strokeWidth="2"
           />
 
@@ -226,20 +226,20 @@ export function SuitAstronautSvg({
           {/* Botas de regolito macizas con suela reforzada */}
           <path
             d="M98 388 L150 388 L152 408 L94 408 Z"
-            fill={hasBoots ? '#3b4859' : '#19222e'}
-            stroke={hasBoots ? '#00e5ff' : '#2b394d'}
+            fill={hasBoots ? '#3b4859' : '#7A7061'}
+            stroke={hasBoots ? '#1A1817' : '#4E463C'}
             strokeWidth="2"
           />
           <path
             d="M170 388 L222 388 L226 408 L168 408 Z"
-            fill={hasBoots ? '#3b4859' : '#19222e'}
-            stroke={hasBoots ? '#00e5ff' : '#2b394d'}
+            fill={hasBoots ? '#3b4859' : '#7A7061'}
+            stroke={hasBoots ? '#1A1817' : '#4E463C'}
             strokeWidth="2"
           />
 
           {/* Suela de tracción con tacos */}
-          <rect x="94" y="408" width="58" height="6" fill="#1b2330" />
-          <rect x="168" y="408" width="58" height="6" fill="#1b2330" />
+          <rect x="94" y="408" width="58" height="6" fill="#2A2622" />
+          <rect x="168" y="408" width="58" height="6" fill="#2A2622" />
         </g>
 
         {/* --- CAPA 3: TORSO RÍGIDO SUPERIOR (HUT) --- */}
@@ -251,8 +251,8 @@ export function SuitAstronautSvg({
           {/* Coraza de fibra de vidrio blindada del torso */}
           <path
             d="M112 120 L208 120 L200 234 L120 234 Z"
-            fill={hasTorso ? 'url(#suitHull)' : '#212d3d'}
-            stroke={hasTorso ? '#ffffff' : '#374a63'}
+            fill={hasTorso ? 'url(#suitHull)' : '#A49884'}
+            stroke={hasTorso ? '#1A1817' : '#5E5549'}
             strokeWidth={hasTorso ? '2.5' : '1.5'}
           />
 
@@ -304,14 +304,14 @@ export function SuitAstronautSvg({
           {/* Brazos presurizados */}
           <path
             d="M112 126 L80 196 L70 240 L88 244 L98 202 L120 146 Z"
-            fill={hasGloves ? 'url(#suitHull)' : '#1e2938'}
-            stroke={hasGloves ? '#d6e2ed' : '#2b394d'}
+            fill={hasGloves ? 'url(#suitHull)' : '#9C907D'}
+            stroke={hasGloves ? '#1A1817' : '#5E5549'}
             strokeWidth="2"
           />
           <path
             d="M208 126 L240 196 L250 240 L232 244 L222 202 L200 146 Z"
-            fill={hasGloves ? 'url(#suitHull)' : '#1e2938'}
-            stroke={hasGloves ? '#d6e2ed' : '#2b394d'}
+            fill={hasGloves ? 'url(#suitHull)' : '#9C907D'}
+            stroke={hasGloves ? '#1A1817' : '#5E5549'}
             strokeWidth="2"
           />
 
@@ -322,8 +322,8 @@ export function SuitAstronautSvg({
             width="24"
             height="8"
             rx="2"
-            fill={hasGloves ? '#2070b4' : '#1a2536'}
-            stroke={hasGloves ? '#4deeea' : '#2d3e54'}
+            fill={hasGloves ? '#2070b4' : '#7A7061'}
+            stroke={hasGloves ? '#1A1817' : '#4E463C'}
             strokeWidth="1.5"
           />
           <rect
@@ -332,22 +332,22 @@ export function SuitAstronautSvg({
             width="24"
             height="8"
             rx="2"
-            fill={hasGloves ? '#c8382c' : '#1a2536'}
-            stroke={hasGloves ? '#f5c242' : '#2d3e54'}
+            fill={hasGloves ? '#c8382c' : '#7A7061'}
+            stroke={hasGloves ? '#1A1817' : '#4E463C'}
             strokeWidth="1.5"
           />
 
           {/* Guantes de EVA con yemas táctiles de alta adherencia */}
           <path
             d="M68 246 L62 278 L78 284 L88 258 L84 246 Z"
-            fill={hasGloves ? '#2e3a49' : '#171f2b'}
-            stroke={hasGloves ? '#8ba2bb' : '#273445'}
+            fill={hasGloves ? '#2e3a49' : '#6B6155'}
+            stroke={hasGloves ? '#1A1817' : '#4E463C'}
             strokeWidth="2"
           />
           <path
             d="M252 246 L258 278 L242 284 L232 258 L236 246 Z"
-            fill={hasGloves ? '#2e3a49' : '#171f2b'}
-            stroke={hasGloves ? '#8ba2bb' : '#273445'}
+            fill={hasGloves ? '#2e3a49' : '#6B6155'}
+            stroke={hasGloves ? '#1A1817' : '#4E463C'}
             strokeWidth="2"
           />
 
@@ -384,9 +384,9 @@ export function SuitAstronautSvg({
             cx="160"
             cy="78"
             r="38"
-            fill={hasHelmet ? '#101c2b88' : '#0e1622'}
-            stroke={hasHelmet ? '#b7cbdf' : '#2d3d52'}
-            strokeWidth={hasHelmet ? '3' : '2'}
+            fill={hasHelmet ? '#F5EFE0AA' : '#D9CEB7'}
+            stroke={hasHelmet ? '#1A1817' : '#7A6D5C'}
+            strokeWidth={hasHelmet ? '3.5' : '2'}
           />
 
           {/* Visor dorado de 24 quilates extravehicular (EVVA) */}
@@ -394,12 +394,12 @@ export function SuitAstronautSvg({
             <path
               d="M132 64 Q160 52 188 64 Q196 92 184 100 Q160 106 136 100 Q124 92 132 64 Z"
               fill="url(#goldVisor)"
-              stroke="#ffd859"
-              strokeWidth="2"
+              stroke="#1A1817"
+              strokeWidth="2.5"
               filter="url(#glowGold)"
             />
           ) : (
-            <ellipse cx="160" cy="80" rx="26" ry="20" fill="#141d2a" stroke="#253549" strokeWidth="1.5" />
+            <ellipse cx="160" cy="80" rx="26" ry="20" fill="#6B6155" stroke="#342E27" strokeWidth="1.5" />
           )}
 
           {/* Reflejo especular en el visor dorado */}
