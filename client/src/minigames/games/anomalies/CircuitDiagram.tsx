@@ -26,12 +26,10 @@ export function CircuitPart({ kind, state }: { kind: ComponentKind; state: Compo
       <circle cx="-23" r="4" fill="#606b5d" />
     </>;
     case 'capacitor': return <>
-      <path d="M-51 0H-28M28 0H51" stroke="#b7bbaf" strokeWidth="4" />
-      <rect x="-28" y="-23" width="56" height="46" rx="8" fill="#36586d" stroke="#9fbbc0" strokeWidth="2.5" />
-      <path d="M-18-22V22" stroke="#6a90a2" strokeWidth="5" /><path d="M-7-22V22" stroke="#c5d3ce" strokeWidth="10" />
-      <path d="M-10-12H-4M-10 0H-4M-10 12H-4" stroke="#48616b" strokeWidth="2.5" />
-      <ellipse cx="22" rx="6" ry="21" fill={state ? '#9d8770' : '#b7c1b9'} stroke="#66827f" strokeWidth="2" />
-      {state ? <path d="m19-18 7 10-9 8 10 7-6 12" stroke="#3a302b" strokeWidth="4" fill="none" /> : <path d="M19-12 25 12M25-12 19 12" stroke="#7d918b" strokeWidth="1.5" />}
+      <path d="M-51 0H-12M12 0H51" stroke="#b7bbaf" strokeWidth="4" />
+      <path d="M-12-29V29" stroke="#d4dfcf" strokeWidth="7" />
+      <path d={state ? 'M12-29V-10M12 10V29' : 'M12-29V29'} stroke={state ? '#dfa784' : '#d4dfcf'} strokeWidth="7" />
+      {state && <path d="m8-10 4-4 4 4m-8 20 4 4 4-4" stroke="#dfa784" strokeWidth="2" fill="none" />}
     </>;
     case 'diode': return <g transform={state ? 'rotate(180)' : undefined}>
       <path d="M-51 0H-30M30 0H51" stroke="#b7bbaf" strokeWidth="4" />
