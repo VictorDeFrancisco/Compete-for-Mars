@@ -11,7 +11,10 @@ export default function MinigameInfo({ definition }: { definition: MinigameDefin
   return <><h2>{definition.title}</h2><p>{definition.instructions}</p><p><strong>{definition.objective}</strong></p>
     <p>Time limit: {definition.durationMs / 1000} s · {definition.mode === 'score' ? 'Highest score' : 'Fastest completion'}</p>
     <h3>Controls</h3><ul>{controls.describe().map(action => <li key={action.id}><strong>{action.label}: {action.inputs}</strong> — {action.description}</li>)}</ul>
-    <p>Winner: {describeReward(definition.rewards.winner)}. Loser: {describeReward(definition.rewards.loser)}.</p>
+    <p>
+      Winner: {describeReward(definition.rewards.winner)} (scales down with rounds). Last place:{' '}
+      {Object.keys(definition.rewards.loser).length ? describeReward(definition.rewards.loser) : '-(round × (deaths + 1)) health'}.
+    </p>
     <p>Ties: {definition.rewards.ties === 'share' ? 'rewards or penalties are shared among tied players' : 'tied positions receive no reward or penalty'}. If everyone ties or you play solo, there is no ranking reward or penalty.</p>
   </>;
 }

@@ -17,7 +17,8 @@ export interface RoomEntryScreenProps {
   onBack: () => void;
 }
 
-const STAT_MAX = 5;
+const STAT_STEPS = 3;
+const STAT_STEP_VALUE = 10;
 
 const STARS = Array.from({ length: 44 }, (_, index) => ({
   id: index,
@@ -110,18 +111,22 @@ function ProfessionIcon({ id }: { id: Profession['id'] }) {
 }
 
 function SegmentedStatBar({ label, value }: { label: string; value: number }) {
+  const filledSteps = Math.round(value / STAT_STEP_VALUE);
   return (
     <div className="entry-stat">
       <span className="entry-stat__label">{label}</span>
-      <div className="entry-stat__blocks" aria-label={`${label} ${value} out of ${STAT_MAX}`}>
-        {Array.from({ length: STAT_MAX }, (_, idx) => (
+      <div
+        className="entry-stat__blocks entry-stat__blocks--three"
+        aria-label={`${label} +${value} (max ${100 + value})`}
+      >
+        {Array.from({ length: STAT_STEPS }, (_, idx) => (
           <span
             key={idx}
-            className={`entry-stat__block ${idx < value ? 'entry-stat__block--filled' : ''}`.trim()}
+            className={`entry-stat__block ${idx < filledSteps ? 'entry-stat__block--filled' : ''}`.trim()}
           />
         ))}
       </div>
-      <span className="entry-stat__value">0{value}</span>
+      <span className="entry-stat__value">+{value}</span>
     </div>
   );
 }
@@ -398,7 +403,6 @@ export default function RoomEntryScreen({
                   <div className="entry-patch__stats">
                     <SegmentedStatBar label="ENERGY" value={profession.stats.energy} />
                     <SegmentedStatBar label="FOOD" value={profession.stats.food} />
-                    <SegmentedStatBar label="SHIELD" value={profession.stats.shielding} />
                   </div>
                 </button>
               );

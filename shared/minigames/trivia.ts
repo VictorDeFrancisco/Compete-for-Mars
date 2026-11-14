@@ -31,8 +31,8 @@ export const triviaDefinition = defineMinigame({
     },
   ],
   rewards: {
-    winner: { resources: { energy: 1, food: 1 } },
-    loser: { health: -10 },
+    winner: { resources: { energy: 20 } },
+    loser: {},
     ties: 'share',
   },
 });

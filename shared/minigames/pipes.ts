@@ -13,5 +13,5 @@ export const pipesDefinition = defineMinigame({
       { device: 'touch' as const, label: 'Tocar una tubería' },
     ],
   }],
-  rewards: { winner: { resources: { energy: 2, food: 1 } }, loser: { health: -10 }, ties: 'share' },
+  rewards: { winner: { resources: { food: 20 } }, loser: {}, ties: 'share' },
 });

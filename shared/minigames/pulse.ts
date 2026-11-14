@@ -8,5 +8,5 @@ export const pulseDefinition = defineMinigame({
     { device: 'pointer', button: 0, label: 'Clic en el botón' },
     { device: 'touch', label: 'Tocar el botón' },
   ] }],
-  rewards: { winner: { resources: { energy: 2, food: 1 } }, loser: { health: -10 }, ties: 'share' },
+  rewards: { winner: { resources: { energy: 20 } }, loser: {}, ties: 'share' },
 });

@@ -1,1 +1,10 @@
 /* Estilos de fase 3: usar selectores que empiecen por .phase-cards. */
+.phase-cards .cards {
+  margin: 16px 0;
+}
+
+.phase-cards .card h3 {
+  color: #ff5a1f;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}

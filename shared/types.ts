@@ -1,5 +1,5 @@
 export type Phase = 'stats' | 'lobby' | 'presentation' | 'cards' | 'playing';
-export interface Stats { energy: number; food: number; shielding: number }
+export interface Stats { energy: number; food: number; health: number }
 export interface Resources { energy: number; food: number; radiation: number }
 export interface Card {
   id: string;
@@ -13,6 +13,7 @@ export interface PublicPlayer {
   id: string;
   name: string;
   health: number;
+  maxHealth: number;
   isBot: boolean;
   connected: boolean;
   ready: boolean;
@@ -44,6 +45,7 @@ export interface GameView {
   cards: Card[];
   minigame: MinigameDefinition;
   lastResults: RoundResult[];
+  winnerId?: string | null;
 }
 export type Reply = (result: { ok: boolean; error?: string }) => void;
 export interface Entry { name: string; stats: Stats }

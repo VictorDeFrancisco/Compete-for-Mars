@@ -540,7 +540,7 @@
 
 .entry-stat {
   display: grid;
-  grid-template-columns: 54px 1fr 22px;
+  grid-template-columns: 54px 1fr 28px;
   align-items: center;
   gap: 8px;
   font-family: var(--font-mono);
@@ -557,6 +557,11 @@
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 4px;
+}
+
+.entry-stat__blocks--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
 }
 
 .entry-stat__block {
