@@ -1,0 +1,37 @@
+ENUNCIADO HACKATON:
+Build a Junior Astronaut Mission Trainer   Event
+2026 NASA Space Apps Challenge   Difficulty   Intermediate   Beginner/Youth   Subjects   Games   Planets & Moons   Software   Space Exploration   Sun   
+
+Space-themed STEM content often oversimplifies the engineering trade-offs that define a real mission or presents them at a level too complex to hold a young learner's attention. Few tools make those trade-offs both tangible and fun. Your challenge is to design and build an interactive game or app that lets students run a lunar or Martian outpost, balancing competing demands like life support, radiation shielding, power, and food production, so they experience firsthand the decisions that determine whether a mission fails or succeeds. 
+
+
+
+-----------------------------
+
+Astronautas en cochete atrapados en una base. Solo 1 puede sobrevivir. Experimento social
+
+
+Eliges al principio de la partida personaje con ciertos bufos	 (anonimos o privados)
+
+Hay minijuegos. Minijuegos simples (conectar cosas... etc). Ganador bufos, al que peor quede le quitan vida.
+
+Rondas. Al principio de la ronda salen cartas: para recursos, beneficios para el minijuego, enviar debufos a los enemigos 
+-> Another door (distribucion de recursos) -> DESCANSAR (ganas recursos), MINIJUEGO (pierdes carne, bufo minijuego), JODER 
+									
+									-> EXPEDICION (gabling), IR_AL_BAÑO (solo el primero, te quita radiacion)
+									
+
+RECURSOS: Comida, Energía y Radación (privado);  vida (pública);       (Radacion como veneno)
+
+Menos recursos->peor juegas en el minijuego.
+
+Rondas de irse a cenara/dormir -> ganan energia. EL q tenga menos vida elige aumento simple de estadísticas (+2 de comida)
+
+
+MINIJUEGOS:
+Encontrar cosas en 3D
+Cables
+Tipo test, trivial
+Movimientos rapidos con el raton raton, darle a teclas (ponerse el traje)
+Carrera, avanzar con robver esquivando etc. en marte
+
