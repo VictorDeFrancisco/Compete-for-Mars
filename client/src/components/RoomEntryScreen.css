@@ -120,33 +120,39 @@
   box-shadow: 0 1px 0 var(--ink-black);
 }
 
-/* Compact ID Credential + optional Room Code slip (max 360px for name card) */
+/* Large, legible Astronaut Credential + Room Code slip */
 .entry-inputs {
   display: flex;
   flex-wrap: wrap;
   align-items: stretch;
-  gap: 14px;
+  gap: 16px;
 }
 
 .id-card {
-  width: min(360px, 100%);
+  width: min(560px, 100%);
   background: var(--paper-cream);
-  border: 3px solid var(--ink-black);
-  border-radius: 3px;
-  padding: 12px 15px;
+  border: 3.5px solid var(--ink-black);
+  border-radius: 6px;
+  padding: 18px 22px;
   display: flex;
   align-items: center;
-  gap: 14px;
-  transform: rotate(-1deg);
-  box-shadow: 0 5px 0 var(--ink-black);
+  gap: 18px;
+  transform: rotate(-0.6deg);
+  box-shadow: 0 6px 0 var(--ink-black);
+}
+
+.id-card--error {
+  border-color: var(--stamp-red);
+  box-shadow: 0 6px 0 var(--stamp-red);
+  background: #fff5f2;
 }
 
 .id-card__portrait-svg {
   flex-shrink: 0;
-  width: 54px;
-  height: 62px;
-  border: 2.5px solid var(--ink-black);
-  border-radius: 2px;
+  width: 74px;
+  height: 84px;
+  border: 3px solid var(--ink-black);
+  border-radius: 4px;
   display: block;
 }
 
@@ -155,14 +161,14 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .id-card__label {
   font-family: 'Archivo', sans-serif;
-  font-weight: 800;
-  font-size: 0.68rem;
-  letter-spacing: 0.14em;
+  font-weight: 900;
+  font-size: 0.92rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--nasa-blue);
 }
@@ -171,12 +177,12 @@
   width: 100%;
   background: transparent;
   border: none;
-  border-bottom: 2.5px solid var(--ink-black);
+  border-bottom: 3px solid var(--ink-black);
   border-radius: 0;
-  padding: 4px 2px 4px;
+  padding: 7px 4px;
   font-family: 'Courier Prime', monospace;
-  font-weight: 700;
-  font-size: 1.15rem;
+  font-weight: 800;
+  font-size: 1.65rem;
   letter-spacing: 0.04em;
   color: var(--ink-black);
   outline: none;
@@ -194,23 +200,23 @@
 }
 
 .code-slip {
-  width: 195px;
+  width: 245px;
   background: #f5e5c0;
-  border: 3px solid var(--ink-black);
-  border-radius: 3px;
-  padding: 12px 15px;
+  border: 3.5px solid var(--ink-black);
+  border-radius: 6px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 4px;
-  transform: rotate(1deg);
-  box-shadow: 0 5px 0 var(--ink-black);
+  gap: 6px;
+  transform: rotate(0.8deg);
+  box-shadow: 0 6px 0 var(--ink-black);
 }
 
 .id-card__input--code {
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  font-size: 1.28rem;
+  font-size: 1.7rem;
 }
 
 /* Bottom row anchored over Martian ground: 4 class cards + ENTER BASE button on right */
@@ -390,16 +396,16 @@
 
 .entry-error {
   margin: 0;
-  max-width: 260px;
-  padding: 7px 11px;
+  max-width: 340px;
+  padding: 10px 14px;
   background: #f9d8d2;
-  border: 2.5px solid #b42818;
-  border-radius: 3px;
+  border: 3px solid #b42818;
+  border-radius: 6px;
   color: #8c1c0f;
-  font-family: 'Courier Prime', monospace;
-  font-weight: 700;
-  font-size: 0.82rem;
-  box-shadow: 0 3px 0 var(--ink-black);
+  font-family: 'Archivo', sans-serif;
+  font-weight: 900;
+  font-size: 0.92rem;
+  box-shadow: 0 4px 0 var(--ink-black);
 }
 
 .entry-submit {

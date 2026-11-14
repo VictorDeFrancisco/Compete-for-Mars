@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import type { MinigameDefinition } from '../../../shared/minigames/types';
 import type { PresentationProps } from '../../../shared/types';
 import AstronautPortraitSvg, { suitColorByIndex, suitColorForPlayer } from '../components/AstronautPortraitSvg';
-import { playUiConfirm } from '../utils/uiAudio';
+import { playUiClick, playUiConfirm } from '../utils/uiAudio';
 import './MinigamePresentation.css';
 
 function MinigamePreviewSvg({ id }: { id: string }) {
@@ -82,8 +83,9 @@ function extractKeycaps(controls: MinigameDefinition['controls']): string[] {
   return caps.slice(0, 8);
 }
 
-// Phase 2/3: Unified Retro-NASA Briefing Card centered without redundant tabs or side boxes.
+// Phase 2/3: Mario Party-inspired Retro-NASA Briefing Card with DESCRIPTION & CONTROLS tabs.
 export default function MinigamePresentation({ game, onReady }: PresentationProps) {
+  const [activeTab, setActiveTab] = useState<'description' | 'controls'>('description');
   const alivePlayers = game.players.filter(p => p.health > 0);
   const rewardFood = game.minigame.rewards.winner.resources?.food ?? 0;
   const rewardEnergy = game.minigame.rewards.winner.resources?.energy ?? 0;
@@ -104,75 +106,139 @@ export default function MinigamePresentation({ game, onReady }: PresentationProp
   }
 
   return (
-    <section className="briefing-card" aria-label={`Briefing: ${game.minigame.title}`}>
-      <div className="briefing-card__body">
-        {/* Left Zone (35%): Minigame SVG preview + 3D physical keycaps */}
-        <div className="briefing-card__visual">
-          <div className="briefing-card__frame">
-            <MinigamePreviewSvg id={game.minigame.id} />
-          </div>
-
-          <div className="briefing-keycaps" aria-label="Controls">
-            {keycaps.map(cap => (
-              <kbd
-                key={cap}
-                className={`briefing-keycap3d${cap.length > 2 ? ' briefing-keycap3d--wide' : ''}`}
-              >
-                {cap}
-              </kbd>
-            ))}
-          </div>
-        </div>
-
-        {/* Right Zone (65%): Big Title + Concise Objective + Stakes Strip */}
-        <div className="briefing-card__info">
-          <span className="briefing-card__kicker">MISSION BRIEFING</span>
-          <h2 className="briefing-card__title">{game.minigame.title}</h2>
-          <p className="briefing-card__objective">{game.minigame.objective}</p>
-
-          <div className="briefing-stakes-strip" aria-label="Round rewards and penalties">
-            <span className="briefing-stake briefing-stake--cost">-18 Energy · -18 Food</span>
-            <span className="briefing-stake briefing-stake--win">+{roundBonus} {resourceLabel} Winner</span>
-            <span className="briefing-stake briefing-stake--loss">-{loserPenalty} HP Last</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer: Small Crew Avatars with Ready Tick + Single NASA Orange READY Button */}
-      <footer className="briefing-card__footer">
-        <div className="briefing-crew" aria-label="Crew readiness">
-          {alivePlayers.map((player, idx) => (
-            <div
-              key={player.id}
-              className={`briefing-crew__chip${player.ready ? ' is-ready' : ''}`}
-              title={`${player.name}: ${player.ready ? 'Ready' : 'Waiting'}`}
-            >
-              <AstronautPortraitSvg
-                suitColor={player.id === game.self.id ? suitColorForPlayer(game.self.stats, idx) : suitColorByIndex(idx)}
-                variant={idx}
-                className="briefing-crew__avatar"
-              />
-              {player.ready && (
-                <span className="briefing-crew__tick" aria-label="Ready">
-                  ✓
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-
+    <section className="briefing-shell" aria-label={`Briefing: ${game.minigame.title}`}>
+      {/* Pestañas superiores estilo Mario Party (DESCRIPTION / CONTROLS) */}
+      <div className="briefing-tabs" role="tablist" aria-label="Briefing sections">
         <button
           type="button"
-          className="briefing-ready-btn"
-          disabled={game.self.ready || game.self.health <= 0}
+          role="tab"
+          aria-selected={activeTab === 'description'}
+          className={`briefing-tab${activeTab === 'description' ? ' is-active' : ''}`}
           onClick={() => {
-            playUiConfirm();
-            onReady();
+            playUiClick();
+            setActiveTab('description');
           }}
         >
-          {game.self.ready ? 'READY ✓' : 'READY'}
+          DESCRIPTION
         </button>
-      </footer>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'controls'}
+          className={`briefing-tab${activeTab === 'controls' ? ' is-active' : ''}`}
+          onClick={() => {
+            playUiClick();
+            setActiveTab('controls');
+          }}
+        >
+          CONTROLS
+        </button>
+      </div>
+
+      <div className="briefing-card">
+        {activeTab === 'description' ? (
+          <div className="briefing-card__body">
+            {/* Left Zone (35%): Minigame SVG preview + 3D physical keycaps */}
+            <div className="briefing-card__visual">
+              <div className="briefing-card__frame">
+                <MinigamePreviewSvg id={game.minigame.id} />
+              </div>
+
+              <div className="briefing-keycaps" aria-label="Controls">
+                {keycaps.map(cap => (
+                  <kbd
+                    key={cap}
+                    className={`briefing-keycap3d${cap.length > 2 ? ' briefing-keycap3d--wide' : ''}`}
+                  >
+                    {cap}
+                  </kbd>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Zone (65%): Big Title + Concise Objective + Stakes Strip */}
+            <div className="briefing-card__info">
+              <span className="briefing-card__kicker">MISSION BRIEFING</span>
+              <h2 className="briefing-card__title">{game.minigame.title}</h2>
+              <p className="briefing-card__objective">{game.minigame.objective}</p>
+
+              <div className="briefing-stakes-strip" aria-label="Round rewards and penalties">
+                <span className="briefing-stake briefing-stake--cost">-18 Energy · -18 Food</span>
+                <span className="briefing-stake briefing-stake--win">+{roundBonus} {resourceLabel} Winner</span>
+                <span className="briefing-stake briefing-stake--loss">-{loserPenalty} HP Last</span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="briefing-controls-panel" role="tabpanel" aria-label="Minigame controls">
+            <div className="briefing-controls-panel__head">
+              <span className="briefing-card__kicker">HARDWARE CONTROLS</span>
+              <h2 className="briefing-card__title">{game.minigame.title}</h2>
+            </div>
+
+            <div className="briefing-controls-grid">
+              {game.minigame.controls.map(action => (
+                <div key={action.id} className="briefing-control-item">
+                  <div className="briefing-control-item__keys">
+                    {action.bindings.map((binding, idx) => {
+                      const raw = binding.label.toUpperCase();
+                      const keyLabel = raw === 'ESPACIO' ? 'SPACE' : raw;
+                      return (
+                        <kbd
+                          key={`${action.id}-${idx}`}
+                          className={`briefing-keycap3d${keyLabel.length > 2 ? ' briefing-keycap3d--wide' : ''}`}
+                        >
+                          {keyLabel}
+                        </kbd>
+                      );
+                    })}
+                  </div>
+                  <div className="briefing-control-item__copy">
+                    <strong>{action.label}</strong>
+                    <span>{action.description}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Footer: Small Crew Avatars with Ready Tick + Single NASA Orange READY Button */}
+        <footer className="briefing-card__footer">
+          <div className="briefing-crew" aria-label="Crew readiness">
+            {alivePlayers.map((player, idx) => (
+              <div
+                key={player.id}
+                className={`briefing-crew__chip${player.ready ? ' is-ready' : ''}`}
+                title={`${player.name}: ${player.ready ? 'Ready' : 'Waiting'}`}
+              >
+                <AstronautPortraitSvg
+                  suitColor={player.id === game.self.id ? suitColorForPlayer(game.self.stats, idx) : suitColorByIndex(idx)}
+                  variant={idx}
+                  className="briefing-crew__avatar"
+                />
+                {player.ready && (
+                  <span className="briefing-crew__tick" aria-label="Ready">
+                    ✓
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            className="briefing-ready-btn"
+            disabled={game.self.ready || game.self.health <= 0}
+            onClick={() => {
+              playUiConfirm();
+              onReady();
+            }}
+          >
+            {game.self.ready ? 'READY ✓' : 'READY'}
+          </button>
+        </footer>
+      </div>
     </section>
   );
 }

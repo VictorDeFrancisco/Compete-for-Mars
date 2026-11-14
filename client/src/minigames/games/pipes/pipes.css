@@ -18,7 +18,7 @@ body:has(.pipes-game:not(.pipes-game--embedded)) {
 }
 
 .pipes-game--embedded {
-  --board-edge: min(58dvh, 520px, calc(100vw - 400px));
+  --board-edge: min(60dvh, 550px, calc(100vw - 380px));
   position: relative;
   inset: auto;
   z-index: 1;
@@ -243,6 +243,15 @@ body:has(.pipes-game:not(.pipes-game--embedded)) {
   box-shadow: 0 5px 0 #1a1817;
 }
 
+.pipes-game--embedded .pipes-console {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
 .pipes-game .pipes-instruction {
   margin: 0 0 10px;
   text-align: center;
@@ -272,20 +281,24 @@ body:has(.pipes-game:not(.pipes-game--embedded)) {
   container-type: inline-size;
 }
 
-/* Tablero en crema/manila técnica estilo plano de ingeniería Retro-NASA (sin azul oscuro) */
+/* Tablero industrial en grafito cálido oscuro (#26221F) sin azul oscuro: hace resaltar las tuberías y combina con #1A1817 */
 .pipes-board-frame {
   position: relative;
   padding: var(--frame-inset);
-  border: 3px solid #1a1817;
-  border-radius: 6px;
-  background: #d5c8b0;
+  border: 3.5px solid #1a1817;
+  border-radius: 8px;
+  background: #3a332d;
+  box-shadow: 0 5px 0 #1a1817;
 }
 
 .pipes-board {
   display: grid;
   grid-template-columns: repeat(var(--pipe-size), minmax(0, 1fr));
-  background: #efe6d5;
-  border: 2px solid #8c7e65;
+  background-color: #23201d;
+  background-image:
+    radial-gradient(rgba(245, 239, 224, 0.14) 1px, transparent 1px);
+  background-size: 16px 16px;
+  border: 2.5px solid #1a1817;
 }
 
 .pipes-game .pipes-cell {
@@ -295,7 +308,7 @@ body:has(.pipes-game:not(.pipes-game--embedded)) {
   aspect-ratio: 1;
   padding: 0;
   margin: 0;
-  border: 1px solid rgba(26, 24, 23, 0.14);
+  border: 1px solid rgba(245, 239, 224, 0.08);
   border-radius: 0;
   background: transparent;
   cursor: pointer;
@@ -304,7 +317,7 @@ body:has(.pipes-game:not(.pipes-game--embedded)) {
 }
 
 .pipes-game .pipes-cell:hover:not(:disabled) {
-  background-color: rgba(252, 61, 33, 0.12);
+  background-color: rgba(252, 61, 33, 0.18);
 }
 
 .pipes-game .pipes-cell:focus-visible {

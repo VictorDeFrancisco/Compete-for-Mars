@@ -240,26 +240,29 @@
 
 .leaderboard-row__score {
   text-align: right;
-  padding: 6px 12px;
+  padding: 7px 14px;
   border-radius: 8px;
-  background: #0D1B2A;
-  color: #F5EFE0;
+  background: #F5C242;
+  color: #1A1817;
   border: 2.5px solid var(--ink-black, #1A1817);
-  min-width: 112px;
+  box-shadow: 0 3px 0 var(--ink-black, #1A1817);
+  min-width: 118px;
 }
 
 .leaderboard-row__score b {
   display: block;
   font-family: 'Courier Prime', monospace;
-  font-size: 1.25rem;
-  font-weight: 800;
+  font-size: 1.3rem;
+  font-weight: 900;
   line-height: 1.1;
+  color: #1A1817;
 }
 
 .leaderboard-row__score span {
   font-family: 'Courier Prime', monospace;
-  font-size: 0.72rem;
-  color: #9CB3C9;
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: #3D352C;
 }
 
 .leaderboard-sheet__foot {

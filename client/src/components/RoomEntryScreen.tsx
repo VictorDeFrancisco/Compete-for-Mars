@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react';
+import { useRef, useState, type CSSProperties } from 'react';
 import type { Stats } from '../../../shared/types';
 import { playUiClick, playUiConfirm } from '../utils/uiAudio';
 import AstronautPortraitSvg, { CLASS_SUIT_COLORS } from './AstronautPortraitSvg';
@@ -97,11 +97,14 @@ export default function RoomEntryScreen({
   onBack,
 }: RoomEntryScreenProps) {
   const [code, setCode] = useState('');
+  const [validationError, setValidationError] = useState('');
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const codeInputRef = useRef<HTMLInputElement>(null);
 
   const selectedIndex = Math.max(0, PROFESSIONS.findIndex(p => sameStats(p.stats, stats)));
   const selectedProfession = PROFESSIONS[selectedIndex] ?? PROFESSIONS[0];
   const suitColor = CLASS_SUIT_COLORS[selectedProfession.id];
-  const canSubmit = connected && name.trim().length > 0 && (mode === 'create' || code.trim().length === 6);
+  const displayedError = validationError || error;
 
   const handleSelectProfession = (profession: Profession) => {
     playUiClick();
@@ -111,6 +114,7 @@ export default function RoomEntryScreen({
   const handleTabSwitch = (nextMode: 'create' | 'join') => {
     if (nextMode === mode) return;
     playUiClick();
+    setValidationError('');
     onSwitchMode(nextMode);
   };
 
@@ -121,7 +125,20 @@ export default function RoomEntryScreen({
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    if (!canSubmit) return;
+    if (!connected) return;
+    if (name.trim().length === 0) {
+      playUiClick();
+      setValidationError('You must enter an astronaut name first.');
+      nameInputRef.current?.focus();
+      return;
+    }
+    if (mode === 'join' && code.trim().length !== 6) {
+      playUiClick();
+      setValidationError('Enter the 6-character room code.');
+      codeInputRef.current?.focus();
+      return;
+    }
+    setValidationError('');
     playUiConfirm();
     onSubmit(mode === 'join' ? code : undefined);
   };
@@ -163,7 +180,7 @@ export default function RoomEntryScreen({
             </div>
 
             <div className="entry-inputs">
-              <div className="id-card">
+              <div className={`id-card${validationError && name.trim().length === 0 ? ' id-card--error' : ''}`}>
                 <AstronautPortraitSvg
                   suitColor={suitColor}
                   variant={selectedIndex}
@@ -174,28 +191,36 @@ export default function RoomEntryScreen({
                     ASTRONAUT NAME
                   </label>
                   <input
+                    ref={nameInputRef}
                     id="entry-callsign"
                     className="id-card__input"
                     value={name}
                     maxLength={24}
-                    onChange={event => onName(event.target.value)}
-                    placeholder="Your name"
+                    onChange={event => {
+                      if (validationError) setValidationError('');
+                      onName(event.target.value);
+                    }}
+                    placeholder="Enter your name..."
                     autoFocus={mode === 'create'}
                   />
                 </div>
               </div>
 
               {mode === 'join' && (
-                <div className="code-slip">
+                <div className={`code-slip${validationError && code.trim().length !== 6 ? ' id-card--error' : ''}`}>
                   <label htmlFor="entry-room-code" className="id-card__label">
                     ROOM CODE
                   </label>
                   <input
+                    ref={codeInputRef}
                     id="entry-room-code"
                     className="id-card__input id-card__input--code"
                     value={code}
                     maxLength={6}
-                    onChange={event => setCode(event.target.value.toUpperCase())}
+                    onChange={event => {
+                      if (validationError) setValidationError('');
+                      setCode(event.target.value.toUpperCase());
+                    }}
                     placeholder="ABC123"
                     autoFocus
                   />
@@ -245,12 +270,12 @@ export default function RoomEntryScreen({
           </div>
 
           <div className="entry-cta">
-            {error && (
+            {displayedError && (
               <p className="entry-error" role="alert">
-                {error}
+                {displayedError}
               </p>
             )}
-            <button type="submit" className="entry-submit" disabled={!canSubmit}>
+            <button type="submit" className="entry-submit" disabled={!connected}>
               ENTER BASE
             </button>
           </div>
