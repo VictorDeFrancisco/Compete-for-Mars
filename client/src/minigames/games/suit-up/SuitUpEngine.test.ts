@@ -275,3 +275,16 @@ test('Timeout al expirar durationMs genera resultado válido según contrato', (
   assert.equal(result.elapsedMs, suitUpDefinition.durationMs);
   assert.doesNotThrow(() => validateResult(suitUpDefinition, result));
 });
+
+test('Semilla compartida genera pasos aleatorios idénticos para la misma ronda y distintos entre semillas', () => {
+  const ctxA = { resources: { energy: 10, food: 10, radiation: 0 }, seed: 10101 };
+  const ctxB = { resources: { energy: 7, food: 8, radiation: 1 }, seed: 10101 };
+  const ctxC = { resources: { energy: 10, food: 10, radiation: 0 }, seed: 90909 };
+
+  const engineA = new SuitUpEngine(suitUpDefinition, () => 0, ctxA);
+  const engineB = new SuitUpEngine(suitUpDefinition, () => 0, ctxB);
+  const engineC = new SuitUpEngine(suitUpDefinition, () => 0, ctxC);
+
+  assert.deepEqual(engineA.steps, engineB.steps);
+  assert.notDeepEqual(engineA.steps, engineC.steps);
+});

@@ -1,0 +1,256 @@
+/* Intro cinematográfica de apertura del juego (~3.35s) */
+.game-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: #050b16;
+  font-family: 'Archivo', system-ui, sans-serif;
+  animation: introMasterFade 3.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.game-intro__space {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 48%, #182b47 0%, #091324 54%, #040811 100%);
+}
+
+.game-intro__stars {
+  position: absolute;
+  inset: -10%;
+  background-image:
+    radial-gradient(2px 2px at 12% 24%, rgba(245, 239, 224, 0.85), transparent),
+    radial-gradient(1.5px 1.5px at 26% 72%, rgba(245, 239, 224, 0.65), transparent),
+    radial-gradient(2px 2px at 42% 18%, rgba(245, 194, 66, 0.8), transparent),
+    radial-gradient(1.5px 1.5px at 66% 80%, rgba(245, 239, 224, 0.7), transparent),
+    radial-gradient(2px 2px at 78% 28%, rgba(245, 239, 224, 0.85), transparent),
+    radial-gradient(1.5px 1.5px at 88% 64%, rgba(245, 239, 224, 0.6), transparent),
+    radial-gradient(2px 2px at 54% 88%, rgba(252, 61, 33, 0.75), transparent),
+    radial-gradient(1.5px 1.5px at 18% 55%, rgba(245, 239, 224, 0.65), transparent);
+  background-size: 540px 420px;
+  animation: introStarsZoom 3.35s ease-out forwards;
+}
+
+.game-intro__stage {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 24px;
+  text-align: center;
+}
+
+.game-intro__planet-wrap {
+  position: relative;
+  width: clamp(200px, 32vw, 320px);
+  height: clamp(200px, 32vw, 320px);
+  display: grid;
+  place-items: center;
+  animation: introPlanetApproach 2.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.game-intro__corona {
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(252, 61, 33, 0.62) 0%, rgba(245, 194, 66, 0.25) 48%, transparent 72%);
+  filter: blur(18px);
+  animation: introCoronaFlare 2.8s ease-out forwards;
+}
+
+.game-intro__planet-svg {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.game-intro__orbit-arc {
+  stroke-dasharray: 860;
+  stroke-dashoffset: 860;
+  animation: introOrbitDraw 1.65s cubic-bezier(0.22, 1, 0.36, 1) 0.35s forwards;
+}
+
+.game-intro__titles {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.game-intro__studio {
+  font-family: 'Courier Prime', monospace;
+  font-size: clamp(0.78rem, 1.4vw, 0.96rem);
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  color: #f5c242;
+  opacity: 0;
+  animation: introSlideUp 0.7s ease-out 0.45s forwards;
+}
+
+.game-intro__logo {
+  margin: 0;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 900;
+  font-size: clamp(2.4rem, 6.6vw, 5.2rem);
+  line-height: 0.96;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #f5efe0;
+  text-shadow:
+    0 5px 0 #1a1817,
+    0 14px 36px rgba(0, 0, 0, 0.7);
+  opacity: 0;
+  animation: introLogoSlam 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.9s forwards;
+}
+
+.game-intro__logo span {
+  color: #fc3d21;
+}
+
+.game-intro__bar-wrap {
+  width: min(320px, 76vw);
+  height: 8px;
+  border-radius: 999px;
+  border: 2px solid #f5efe0;
+  background: rgba(11, 25, 44, 0.8);
+  overflow: hidden;
+  opacity: 0;
+  animation: introFadeIn 0.4s ease-out 1.2s forwards;
+}
+
+.game-intro__bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #fc3d21, #f5c242);
+  animation: introProgressFill 1.45s cubic-bezier(0.4, 0, 0.2, 1) 1.25s forwards;
+}
+
+.game-intro__status {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: rgba(245, 239, 224, 0.78);
+  opacity: 0;
+  animation: introFadeIn 0.5s ease-out 1.3s forwards;
+}
+
+.game-intro__skip {
+  position: absolute;
+  right: 22px;
+  bottom: 20px;
+  z-index: 4;
+  padding: 7px 14px;
+  border-radius: 7px;
+  border: 2px solid rgba(245, 239, 224, 0.6);
+  background: rgba(11, 25, 44, 0.75);
+  color: #f5efe0;
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.game-intro__skip:hover {
+  background: #f5efe0;
+  color: #1a1817;
+}
+
+@keyframes introMasterFade {
+  0%, 82% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes introStarsZoom {
+  from {
+    transform: scale(0.95);
+    opacity: 0.55;
+  }
+  to {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+}
+
+@keyframes introPlanetApproach {
+  0% {
+    transform: scale(0.68) translateY(24px);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes introCoronaFlare {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.25;
+  }
+  65% {
+    transform: scale(1.16);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.04);
+    opacity: 0.85;
+  }
+}
+
+@keyframes introOrbitDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes introSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes introLogoSlam {
+  0% {
+    opacity: 0;
+    transform: scale(1.14) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes introFadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes introProgressFill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}

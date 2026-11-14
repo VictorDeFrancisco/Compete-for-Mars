@@ -72,12 +72,12 @@
 
 .crew-dock-card {
   flex: 1 1 0;
-  min-width: 0;
-  max-width: 340px;
+  min-width: 195px;
+  max-width: 360px;
   display: flex;
   align-items: center;
   gap: 11px;
-  padding: 9px 12px;
+  padding: 10px 13px;
   background: var(--manila-folder);
   border: 3px solid var(--ink-black);
   border-radius: 8px;
@@ -86,8 +86,9 @@
 }
 
 .crew-dock-card--self {
-  flex: 2.15 1 0;
-  max-width: 720px;
+  flex: 2.35 1 0;
+  min-width: 420px;
+  max-width: 780px;
   background: var(--paper-cream);
   border-color: var(--ink-black);
   justify-content: space-between;
@@ -102,7 +103,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  flex: 1 1 auto;
+  flex: 1.05 1 190px;
   min-width: 0;
 }
 
@@ -138,19 +139,20 @@
 .crew-dock-card__name-row {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 6px;
   min-width: 0;
 }
 
 .crew-dock-card__name {
   font-family: 'Archivo', sans-serif;
-  font-size: 0.94rem;
+  font-size: 0.92rem;
   font-weight: 900;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.15;
 }
 
 .crew-dock-card__you {
@@ -253,18 +255,18 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding-left: 12px;
+  padding-left: 14px;
   border-left: 2.5px dashed #c4b59c;
-  flex: 1.35 1 auto;
+  flex: 1.25 1 250px;
   min-width: 0;
 }
 
 .crew-dock-res {
-  flex: 1 1 112px;
+  flex: 1 1 108px;
   min-width: 96px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
 }
 
 .crew-dock-res__head {

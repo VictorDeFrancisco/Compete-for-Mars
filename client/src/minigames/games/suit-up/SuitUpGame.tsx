@@ -355,7 +355,12 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
 
 export default defineModule(
   suitUpDefinition,
-  (definition: MinigameDefinition, context: MinigameContext) =>
-    new SuitUpEngine(definition, undefined, context),
+  (definition: MinigameDefinition, context: MinigameContext) => {
+    const seededContext =
+      typeof context.seed === 'number'
+        ? context
+        : { ...context, seed: Math.floor(Math.random() * 0x100000000) || 1 };
+    return new SuitUpEngine(definition, undefined, seededContext);
+  },
   SuitUpView,
 );

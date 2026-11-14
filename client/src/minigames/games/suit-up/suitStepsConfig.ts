@@ -252,3 +252,123 @@ export const ACTION_LABELS: Record<string, { key: string; label: string; icon: s
   'action-left': { key: '←', label: 'Acople Izq.', icon: '◀' },
   'action-right': { key: '→', label: 'Acople Der.', icon: '▶' },
 };
+
+const SEQ_POOL = ['action-up', 'action-down', 'action-left', 'action-right', 'action-primary'] as const;
+const QTE_TYPES: readonly QteType[] = ['timing', 'mash', 'sequence', 'hold'];
+
+/**
+ * Genera una secuencia aleatoria de montaje del traje espacial (orden, nº de pasos,
+ * tipo de QTE y parámetros aleatorios) usando el PRNG indicado.
+ */
+export function generateRandomSuitSteps(rng: () => number = Math.random): SuitStep[] {
+  const pool = [...DEFAULT_SUIT_STEPS];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+
+  // Varía entre 5 y 6 piezas por montaje + posible doble verificación final (hasta 7 pasos)
+  const stepCount = 5 + Math.floor(rng() * 2); // 5 o 6 pasos base
+  const selected = pool.slice(0, stepCount);
+  const addFinalCheck = rng() < 0.45;
+  if (addFinalCheck) {
+    const base = pool[Math.floor(rng() * pool.length)];
+    selected.push({
+      ...base,
+      id: `${base.id}-verify`,
+      code: `${base.code}-CHK`,
+      name: `Verificación Final · ${base.name}`,
+    });
+  }
+
+  return selected.map((baseStep, idx) => {
+    // Asegura variedad de mecánicas sin repetir exactamente la anterior cuando hay opciones
+    const chosenType = QTE_TYPES[Math.floor(rng() * QTE_TYPES.length)];
+
+    if (chosenType === 'timing') {
+      const sweetWidth = 0.18 + rng() * 0.08;
+      const sweetSpotStart = Math.round((0.18 + rng() * (0.76 - sweetWidth)) * 100) / 100;
+      const sweetSpotEnd = Math.round((sweetSpotStart + sweetWidth) * 100) / 100;
+      const sweepPeriodMs = 1050 + Math.floor(rng() * 450);
+      return {
+        ...baseStep,
+        prompt: '¡PULSA ESPACIO JUSTO EN LA ZONA VERDE DE SELLADO!',
+        description: 'Sincroniza el indicador móvil dentro del rango de acople estanco.',
+        qte: {
+          type: 'timing',
+          actionId: 'action-primary',
+          sweepPeriodMs,
+          sweetSpotStart,
+          sweetSpotEnd,
+          perfectTolerance: 0.06,
+          durationMs: 7000,
+          basePoints: 120 + idx * 5,
+          perfectBonus: 40,
+        },
+      };
+    }
+
+    if (chosenType === 'mash') {
+      const targetCount = 6 + Math.floor(rng() * 10); // 6 a 15 pulsaciones aleatorias
+      return {
+        ...baseStep,
+        prompt: `¡PULSA RÁPIDO ESPACIO O EL BOTÓN ${targetCount} VECES!`,
+        description: `Presuriza el acople de ${baseStep.code} con ${targetCount} bombeos antes de que baje la presión.`,
+        qte: {
+          type: 'mash',
+          actionId: 'action-primary',
+          targetCount,
+          leakRatePerSec: 0.35 + rng() * 0.35,
+          durationMs: 7000,
+          basePoints: 130 + idx * 5,
+          perfectBonus: 35,
+        },
+      };
+    }
+
+    if (chosenType === 'hold') {
+      const chargeDurationMs = 1250 + Math.floor(rng() * 600);
+      const zoneWidth = 0.20 + rng() * 0.06;
+      const targetMin = Math.round((0.46 + rng() * 0.24) * 100) / 100;
+      const targetMax = Math.round((targetMin + zoneWidth) * 100) / 100;
+      const mid = (targetMin + targetMax) / 2;
+      return {
+        ...baseStep,
+        prompt: '¡MANTÉN PULSADO ESPACIO Y SUELTA EN LA ZONA VERDE!',
+        description: 'Carga el sello neumático y suelta justo en la franja óptima.',
+        qte: {
+          type: 'hold',
+          actionId: 'action-primary',
+          chargeDurationMs,
+          targetMin,
+          targetMax,
+          perfectMin: Math.round((mid - 0.04) * 100) / 100,
+          perfectMax: Math.round((mid + 0.04) * 100) / 100,
+          durationMs: 7000,
+          basePoints: 135 + idx * 5,
+          perfectBonus: 40,
+        },
+      };
+    }
+
+    // 'sequence': longitud y teclas aleatorias (3 a 5 teclas)
+    const seqLen = 3 + Math.floor(rng() * 3);
+    const sequence: string[] = [];
+    for (let k = 0; k < seqLen; k++) {
+      sequence.push(SEQ_POOL[Math.floor(rng() * SEQ_POOL.length)]);
+    }
+    const readable = sequence.map(a => ACTION_LABELS[a]?.key ?? a).join(' · ');
+    return {
+      ...baseStep,
+      prompt: `¡INTRODUCE LA SECUENCIA [${readable}]!`,
+      description: 'Pulsa las teclas en orden exacto para bloquear los seguros del traje.',
+      qte: {
+        type: 'sequence',
+        sequence,
+        durationMs: 8000,
+        basePoints: 130 + idx * 5,
+        perfectBonus: 35,
+      },
+    };
+  });
+}

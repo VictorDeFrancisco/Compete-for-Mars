@@ -1,6 +1,7 @@
 import {
   DEFAULT_MINIGAME_CONTEXT,
   resourceModifiers,
+  seededPrng,
   type MinigameContext,
 } from '../../../../../shared/minigames/context';
 import { suitUpDefinition } from '../../../../../shared/minigames/suitUp';
@@ -8,6 +9,7 @@ import type { MinigameDefinition } from '../../../../../shared/minigames/types';
 import { BaseMinigame, type ActionState } from '../../core/BaseMinigame';
 import {
   DEFAULT_SUIT_STEPS,
+  generateRandomSuitSteps,
   type SuitPartKey,
   type SuitStep,
 } from './suitStepsConfig';
@@ -70,16 +72,21 @@ export class SuitUpEngine extends BaseMinigame<SuitUpData> {
     definition: MinigameDefinition = suitUpDefinition,
     clock?: () => number,
     context: MinigameContext = DEFAULT_MINIGAME_CONTEXT,
-    steps: readonly SuitStep[] = DEFAULT_SUIT_STEPS,
+    steps?: readonly SuitStep[],
   ) {
-    if (!steps.length) throw new Error('SuitUpEngine requiere al menos un paso.');
-    const firstStep = steps[0];
+    const resolvedSteps =
+      steps ??
+      (typeof context.seed === 'number'
+        ? generateRandomSuitSteps(seededPrng(context.seed))
+        : DEFAULT_SUIT_STEPS);
+    if (!resolvedSteps.length) throw new Error('SuitUpEngine requiere al menos un paso.');
+    const firstStep = resolvedSteps[0];
 
     super(
       definition,
       {
         currentStepIndex: 0,
-        totalSteps: steps.length,
+        totalSteps: resolvedSteps.length,
         completedStepIds: [],
         completedParts: [],
         currentStep: firstStep,
@@ -105,7 +112,7 @@ export class SuitUpEngine extends BaseMinigame<SuitUpData> {
       context,
     );
 
-    this.steps = steps;
+    this.steps = resolvedSteps;
   }
 
   protected onAction(actionId: string, state: ActionState): void {

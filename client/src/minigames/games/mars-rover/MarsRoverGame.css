@@ -97,9 +97,10 @@
 }
 
 .rover-hud-pill--sector {
-  max-width: 240px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  max-width: 460px;
+  white-space: normal;
+  text-align: right;
+  line-height: 1.2;
 }
 
 .rover-hud-pill--score {
@@ -185,26 +186,24 @@
 }
 
 .rover-status-banner {
-  height: 36px;
-  max-width: 480px;
-  padding: 0 12px;
+  min-height: 36px;
+  max-width: 680px;
+  padding: 6px 14px;
   border-radius: 6px;
   background: rgba(245, 239, 224, 0.93);
   border: 2.5px solid #1a1817;
   box-shadow: 0 3px 0 #1a1817;
   font-family: 'Courier Prime', monospace;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 800;
   color: #1a1817;
   display: flex;
   align-items: center;
-  overflow: hidden;
 }
 
 .rover-status-banner span {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  line-height: 1.25;
 }
 
 /* Teclas táctiles WASD compactas en la esquina inferior derecha */
