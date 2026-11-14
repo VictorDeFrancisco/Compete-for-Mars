@@ -90,9 +90,11 @@ test('Completar los 4 paquetes finaliza la carrera con validateResult válido', 
     engine.setPlayerFrequency(curPacket.targetFreq);
     engine.setPlayerAmplitude(curPacket.targetAmp);
 
-    // Si tiene llamarada solar, activamos el filtro para acelerar el lock
+    // Si tiene llamarada solar, activamos el filtro para limpiar el ruido; sin llamarada lo soltamos para recargar
     if (curPacket.hasSolarFlare) {
       engine.dispatch('filter-noise', 'press');
+    } else {
+      engine.dispatch('filter-noise', 'release');
     }
 
     // Avanzamos hasta que pase de paquete
@@ -129,4 +131,21 @@ test('Timeout al alcanzar durationMs preserva puntuación y razón timeout', () 
   assert.equal(snap.status, 'finished');
   assert.equal(snap.result?.reason, 'timeout');
   assert.equal(snap.result?.completed, false);
+});
+
+test('La batería del filtro solar se descarga rápido incluso con ticks de 60 FPS', () => {
+  let now = 0;
+  const engine = new SignalModulatorEngine(signalModulatorDefinition, () => now, DEFAULT_MINIGAME_CONTEXT);
+  engine.start();
+
+  engine.dispatch('filter-noise', 'press');
+  // Simulamos 1 segundo exacto a ~60 FPS (60 ticks de ~16.67ms)
+  for (let i = 1; i <= 60; i++) {
+    now = Math.round((i * 1000) / 60);
+    engine.tick();
+  }
+
+  const snap = engine.getSnapshot();
+  assert.ok(snap.data.filterBattery <= 65, `Batería esperada <= 65% tras 1s, fue ${snap.data.filterBattery}%`);
+  assert.ok(snap.data.filterBattery >= 50, `Batería esperada >= 50% tras 1s, fue ${snap.data.filterBattery}%`);
 });

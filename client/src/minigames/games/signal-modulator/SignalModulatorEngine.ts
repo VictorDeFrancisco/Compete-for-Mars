@@ -64,6 +64,7 @@ export class SignalModulatorEngine extends BaseMinigame<SignalModulatorData> {
 
   private ratingTimerMs = 0;
   private noisePhase = 0;
+  private filterBatteryExact = 100;
 
   constructor(
     definition: MinigameDefinition = signalModulatorDefinition,
@@ -202,15 +203,15 @@ export class SignalModulatorEngine extends BaseMinigame<SignalModulatorData> {
       newAmp = Math.min(1.0, newAmp + (0.32 * deltaMs) / 1000);
     }
 
-    // 3. Gestión del Filtro Solar y Batería de Blindaje
-    let isFiltering = this.inputState.filterNoise && data.filterBattery > 0;
-    let filterBattery = data.filterBattery;
+    // 3. Gestión del Filtro Solar y Batería de Blindaje (con precisión float independiente del FPS)
+    let isFiltering = this.inputState.filterNoise && this.filterBatteryExact > 0;
     if (isFiltering) {
-      filterBattery = Math.max(0, filterBattery - (deltaMs / 70)); // dura aprox 7s continuo
-      if (filterBattery <= 0) isFiltering = false;
+      this.filterBatteryExact = Math.max(0, this.filterBatteryExact - deltaMs / 24); // ~2.4s de uso continuo
+      if (this.filterBatteryExact <= 0) isFiltering = false;
     } else {
-      filterBattery = Math.min(100, filterBattery + (deltaMs / 35)); // recarga en 3.5s
+      this.filterBatteryExact = Math.min(100, this.filterBatteryExact + deltaMs / 25); // recarga en ~2.5s
     }
+    const filterBattery = this.filterBatteryExact;
 
     // 4. Ruido de Tormenta Solar (DONKI)
     this.noisePhase += (deltaMs / 1000) * 6;
