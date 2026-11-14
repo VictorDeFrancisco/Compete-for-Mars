@@ -215,6 +215,48 @@ export class MarsRoverGame extends BaseMinigame<MarsRoverData> {
       posX += vx * dt;
       posY += vy * dt;
 
+      // 7. Colisiones físicas con rocas y peñascos marcianos
+      const roverEffectiveRadius = 1.45;
+      for (const rock of this.sector.rocks) {
+        const dx = posX - rock.x;
+        const dy = posY - rock.y;
+        const distSq = dx * dx + dy * dy;
+        const minSafeDist = rock.radius + roverEffectiveRadius;
+        if (distSq < minSafeDist * minSafeDist && distSq > 0.0001) {
+          const dist = Math.sqrt(distSq);
+          const overlap = minSafeDist - dist;
+          const nx = dx / dist;
+          const ny = dy / dist;
+
+          // Empuje elástico: resolver penetración para que el rover no atraviese la roca
+          posX += nx * overlap;
+          posY += ny * overlap;
+
+          // Componente normal de la velocidad
+          const vDotN = vx * nx + vy * ny;
+          if (vDotN < 0) {
+            const restitution = 0.35;
+            vx = (vx - (1 + restitution) * vDotN * nx) * 0.65;
+            vy = (vy - (1 + restitution) * vDotN * ny) * 0.65;
+
+            // Sacudida física de la suspensión
+            const impactForce = Math.abs(vDotN);
+            this.suspensionVelocity += impactForce * 1.6;
+
+            // Deflexión angular por choque descentrado
+            const crossImpact = ufX * ny - ufY * nx;
+            angularVelocity += crossImpact * 40.0;
+
+            // Drenaje de energía si el choque fue a velocidad significativa
+            if (impactForce > 0.65) {
+              const energyLost = Math.min(2.5, impactForce * 0.7);
+              energy = Math.max(0, energy - energyLost);
+              lastEventMessage = `¡Colisión con roca marciana! Daño a las orugas y pérdida de energía (-${energyLost.toFixed(1)}%).`;
+            }
+          }
+        }
+      }
+
       // Límites del mapa
       if (posX <= 3 || posX >= MAP_SIZE - 3) {
         vx = -vx * 0.2;

@@ -3,6 +3,17 @@ export interface MarsWaypoint {
   y: number; // 0 a 180 metros
 }
 
+export interface MarsRock {
+  id: number;
+  x: number;
+  y: number;
+  radius: number; // Radio de colisión (1.1m a 2.7m)
+  height: number; // Altura en metros (0.9m a 2.4m)
+  rotation: number;
+  colorSeed: number;
+  shapeSeed: number;
+}
+
 export type ScenarioBiome = 'canyon_delta' | 'crater_basin' | 'volcanic_chasma' | 'dune_sea';
 
 export interface MarsSectorMap {
@@ -16,6 +27,7 @@ export interface MarsSectorMap {
   targetPos: MarsWaypoint;
   mapWidth: number; // 180m
   mapHeight: number; // 180m
+  rocks: readonly MarsRock[];
   elevationAt: (x: number, y: number) => number; // Metros (-6m a +18m)
   gradientAt: (x: number, y: number) => { gx: number; gy: number; slopeDeg: number };
   gravityForceAt: (x: number, y: number, mass: number) => { fx: number; fy: number; slopeDeg: number };
@@ -329,6 +341,50 @@ export function generateMarsSector(seed = Math.floor(Math.random() * 1_000_000))
     contourLevels.push(lvl);
   }
 
+  // 5. Rocas y peñascos marcianos (obstáculos físicos 3D y dificultad)
+  const rocks: MarsRock[] = [];
+  const targetRockCount = 52;
+  let rockIdCounter = 1;
+
+  for (let attempt = 0; attempt < 300 && rocks.length < targetRockCount; attempt++) {
+    let rx = 10 + rand() * (MAP_SIZE - 20);
+    let ry = 10 + rand() * (MAP_SIZE - 20);
+
+    // Mayor probabilidad de colocar rocas en el área entre el inicio y el destino para crear navegación y dificultad
+    if (rand() > 0.4) {
+      const t = 0.15 + rand() * 0.70; // 15% a 85% a lo largo del camino
+      const pathX = startX + dirX * (t * pathLen);
+      const pathY = startY + dirY * (t * pathLen);
+      const lateralDisp = (rand() - 0.5) * 48; // Dispersión lateral de hasta 24m
+      rx = Math.max(8, Math.min(MAP_SIZE - 8, pathX + perpX * lateralDisp));
+      ry = Math.max(8, Math.min(MAP_SIZE - 8, pathY + perpY * lateralDisp));
+    }
+
+    // Comprobar distancias mínimas al inicio y meta
+    if (Math.hypot(rx - startX, ry - startY) < 14) continue;
+    if (Math.hypot(rx - targetX, ry - targetY) < 12) continue;
+
+    const rRadius = 1.1 + rand() * 1.5; // Radio de 1.1m a 2.6m
+    const rHeight = 0.9 + rand() * 1.4; // Altura de 0.9m a 2.3m
+
+    // Evitar solapamiento excesivo entre rocas
+    const overlaps = rocks.some(
+      other => Math.hypot(rx - other.x, ry - other.y) < rRadius + other.radius + 1.2
+    );
+    if (overlaps) continue;
+
+    rocks.push({
+      id: rockIdCounter++,
+      x: rx,
+      y: ry,
+      radius: Math.round(rRadius * 10) / 10,
+      height: Math.round(rHeight * 10) / 10,
+      rotation: rand() * Math.PI * 2,
+      colorSeed: 0.85 + rand() * 0.3,
+      shapeSeed: rand(),
+    });
+  }
+
   return {
     seed,
     sectorName: scenario.name,
@@ -340,6 +396,7 @@ export function generateMarsSector(seed = Math.floor(Math.random() * 1_000_000))
     targetPos: { x: Math.round(targetX), y: Math.round(targetY) },
     mapWidth: MAP_SIZE,
     mapHeight: MAP_SIZE,
+    rocks,
     elevationAt,
     gradientAt,
     gravityForceAt,

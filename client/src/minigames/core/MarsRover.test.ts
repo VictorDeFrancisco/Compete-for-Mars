@@ -115,3 +115,16 @@ test('mars-rover: telemetría de coordenadas geográficas de Marte y metadatos N
   assert.ok(coords.formatted.length > 5, 'Debe formatear latitud y longitud');
   assert.equal(Math.round(coords.lat * 100) / 100, Math.round(sector.centerLat * 100) / 100);
 });
+
+test('mars-rover: obstáculos de rocas 3D y respuesta física de colisión', () => {
+  const game = new MarsRoverGame(marsRoverDefinition, () => 0, undefined, 4321);
+  const sector = game.sector;
+
+  assert.ok(sector.rocks.length >= 30, 'Debe generar un campo con abundantes rocas');
+  const firstRock = sector.rocks[0];
+  assert.ok(firstRock.radius >= 1.0 && firstRock.height >= 0.8, 'Dimensiones realistas de roca');
+
+  // Comprobar que no hay rocas inmediatamente encima del punto de inicio
+  const startDist = Math.hypot(firstRock.x - sector.startPos.x, firstRock.y - sector.startPos.y);
+  assert.ok(startDist >= 12, 'El rover no debe aparecer dentro de una roca');
+});
