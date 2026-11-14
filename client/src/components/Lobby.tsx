@@ -408,9 +408,9 @@ export default function Lobby({
               }}
             >
               <span className="lobby-ready-toggle__check" aria-hidden="true">
-                {game.self.ready ? '✓' : '▸'}
+                {game.self.ready ? '✓' : '☐'}
               </span>
-              <span>{game.self.ready ? 'READY ✓' : 'READY UP'}</span>
+              <span>READY</span>
             </button>
 
             <button
