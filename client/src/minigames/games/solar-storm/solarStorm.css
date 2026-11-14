@@ -1,0 +1,309 @@
+.solar-storm-view {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 660px;
+  margin: 0 auto;
+  font-family: inherit;
+  color: #f1f5f9;
+  user-select: none;
+}
+
+/* Cabecera estilo estación NASA */
+.solar-storm__header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 10px 14px;
+  gap: 8px;
+}
+
+.solar-storm__header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.solar-storm__nasa-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #38bdf8;
+  text-transform: uppercase;
+}
+
+.solar-storm__epoch-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.solar-storm__time-readout {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.solar-storm__time-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.04em;
+}
+
+.solar-storm__time-val {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #38bdf8;
+}
+
+/* Marco del Canvas Heliosférico */
+.solar-storm__screen-frame {
+  position: relative;
+  width: 100%;
+  background: #020617;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.solar-canvas-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.solar-canvas {
+  width: 100%;
+  height: auto;
+  max-height: 240px;
+  display: block;
+}
+
+/* Cuadro de alerta DONKI superpuesto */
+.solar-storm__alert-box {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(30, 41, 59, 0.92);
+  backdrop-filter: blur(6px);
+  border: 1px solid #f59e0b;
+  border-radius: 6px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.25);
+  animation: alert-slide 0.3s ease-out;
+  z-index: 5;
+}
+
+@keyframes alert-slide {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.alert-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: #78350f;
+  color: #fef08a;
+  border: 1px solid #f59e0b;
+}
+
+.alert-badge.pulse {
+  animation: pulse-border 1s infinite alternate;
+}
+
+@keyframes pulse-border {
+  from { box-shadow: 0 0 4px #f59e0b; }
+  to { box-shadow: 0 0 12px #f59e0b; }
+}
+
+.alert-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.78rem;
+  color: #f1f5f9;
+}
+
+/* Notificación de impacto activo */
+.solar-storm__impact-box {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(127, 29, 29, 0.92);
+  backdrop-filter: blur(6px);
+  border: 1px solid #ef4444;
+  border-radius: 6px;
+  padding: 8px 12px;
+  box-shadow: 0 0 18px rgba(239, 68, 68, 0.4);
+  z-index: 5;
+  animation: impact-shake 0.4s ease-in-out;
+}
+
+@keyframes impact-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+.impact-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: #991b1b;
+  color: #fecaca;
+  white-space: nowrap;
+}
+
+.impact-desc {
+  font-size: 0.76rem;
+  color: #fef2f2;
+}
+
+/* Panel de Telemetría y Dosímetro */
+.solar-storm__telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 8px;
+}
+
+.telemetry-card {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: center;
+}
+
+.card-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.04em;
+}
+
+.card-val {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.card-val.rad-safe { color: #4ade80; }
+.card-val.rad-warning { color: #facc15; }
+.card-val.rad-danger { color: #f87171; }
+
+.card-val.noaa-s0 { color: #38bdf8; }
+.card-val.noaa-s2 { color: #fbbf24; }
+.card-val.noaa-s4 { color: #ef4444; }
+
+/* Banner de estado */
+.solar-storm__banner {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 7px 12px;
+  font-size: 0.80rem;
+  color: #94a3b8;
+  text-align: center;
+}
+
+/* Controles de Defensa */
+.solar-storm__controls-cluster {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.control-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #f1f5f9;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.control-btn:hover:not(:disabled) {
+  background: #334155;
+}
+
+.control-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.btn-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.btn-text strong {
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.btn-text small {
+  font-size: 0.70rem;
+  color: #94a3b8;
+}
+
+/* Estados Activos de Botones */
+.control-btn.shield-btn.active {
+  background: #0369a1;
+  border-color: #38bdf8;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.45);
+}
+
+.control-btn.shelter-btn.active {
+  background: #854d0e;
+  border-color: #facc15;
+  box-shadow: 0 0 12px rgba(250, 204, 21, 0.45);
+}
+
+.control-btn.panels-btn.active {
+  background: #047857;
+  border-color: #34d399;
+  box-shadow: 0 0 12px rgba(52, 211, 153, 0.45);
+}
+
+.control-btn.purge-btn.active {
+  background: #6b21a8;
+  border-color: #c084fc;
+  box-shadow: 0 0 12px rgba(192, 132, 252, 0.45);
+}

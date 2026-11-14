@@ -1,0 +1,363 @@
+export type DonkiEventType = 'FLR' | 'CME' | 'SEP' | 'OVERLOAD';
+export type DefenseAction = 'shield' | 'shelter' | 'panels' | 'purge';
+
+export interface DonkiEvent {
+  id: string;
+  donkiCatalogId: string;
+  type: DonkiEventType;
+  intensity: string; // e.g. 'Clase X9.3', '1,964 km/s', 'Protones S3'
+  sourceRegion: string; // e.g. 'Región Activa AR2673'
+  message: string;
+  simulatedTimestamp: string;
+  triggerSec: number; // Segundo de juego en el que DONKI emite la alerta (0..60s)
+  impactSec: number; // Segundo en el que la onda de choque impacta Marte
+  durationSec: number; // Duración del impacto de radiación
+  requiredDefense: DefenseAction;
+  radiationRate: number; // mSv/h base sin escudo
+}
+
+export interface DonkiEpisode {
+  id: string;
+  name: string;
+  epochName: string;
+  startDate: string;
+  endDate: string;
+  description: string;
+  events: DonkiEvent[];
+}
+
+export const DONKI_EPISODES: readonly DonkiEpisode[] = [
+  {
+    id: 'sep-2017-ar2673',
+    name: 'Ciclo Solar 24 · Super-Llamarada AR2673',
+    epochName: 'Septiembre 2017',
+    startDate: '2017-09-04 00:00 UTC',
+    endDate: '2017-09-11 23:59 UTC',
+    description:
+      'Una de las regiones más activas del siglo. Produjo la super-llamarada X9.3 y múltiples CMEs supersónicos que barrieron Marte.',
+    events: [
+      {
+        id: 'ev-1',
+        donkiCatalogId: '2017-09-04T20:33:00-FLR-001',
+        type: 'FLR',
+        intensity: 'Clase M5.5',
+        sourceRegion: 'AR 2673',
+        message: 'Llamarada solar precursora en AR2673. Destello de rayos X inminente hacia Marte.',
+        simulatedTimestamp: '2017-09-04 20:33 UTC',
+        triggerSec: 4.5,
+        impactSec: 7.5,
+        durationSec: 4.0,
+        requiredDefense: 'shelter',
+        radiationRate: 140,
+      },
+      {
+        id: 'ev-2',
+        donkiCatalogId: '2017-09-06T12:02:00-FLR-002',
+        type: 'FLR',
+        intensity: 'Clase X9.3 (Extrema)',
+        sourceRegion: 'AR 2673',
+        message: '¡ALERTA MÁXIMA DONKI! Super-llamarada X9.3 detectada. ¡Refugio de regolito inmediato!',
+        simulatedTimestamp: '2017-09-06 12:02 UTC',
+        triggerSec: 15.0,
+        impactSec: 18.0,
+        durationSec: 4.5,
+        requiredDefense: 'shelter',
+        radiationRate: 420,
+      },
+      {
+        id: 'ev-3',
+        donkiCatalogId: '2017-09-06T12:24:00-CME-001',
+        type: 'CME',
+        intensity: '1,964 km/s (CME Rápido)',
+        sourceRegion: 'AR 2673',
+        message: 'Frente de choque coronal acelerado. El plasma impactará la atmósfera marciana.',
+        simulatedTimestamp: '2017-09-07 14:10 UTC',
+        triggerSec: 25.0,
+        impactSec: 29.5,
+        durationSec: 5.0,
+        requiredDefense: 'shield',
+        radiationRate: 350,
+      },
+      {
+        id: 'ev-4',
+        donkiCatalogId: '2017-09-07T16:00:00-SEP-001',
+        type: 'SEP',
+        intensity: 'Protones S3 (Severo)',
+        sourceRegion: 'Viento Solar Interplanetario',
+        message: 'Tormenta de partículas de alta energía. ¡Pliega los paneles solares para evitar sobretensión!',
+        simulatedTimestamp: '2017-09-08 09:45 UTC',
+        triggerSec: 37.0,
+        impactSec: 40.5,
+        durationSec: 4.5,
+        requiredDefense: 'panels',
+        radiationRate: 260,
+      },
+      {
+        id: 'ev-5',
+        donkiCatalogId: '2017-09-10T16:06:00-FLR-003',
+        type: 'OVERLOAD',
+        intensity: 'Sobrecarga Iónica Post-CME',
+        sourceRegion: 'Condensadores de la Base',
+        message: 'Iones atrapados en el deflector. ¡Purga la sobrecarga antes de que sature la red!',
+        simulatedTimestamp: '2017-09-10 16:30 UTC',
+        triggerSec: 47.5,
+        impactSec: 50.5,
+        durationSec: 4.0,
+        requiredDefense: 'purge',
+        radiationRate: 290,
+      },
+    ],
+  },
+  {
+    id: 'may-2024-g5-storm',
+    name: 'Ciclo Solar 25 · Tormenta Caníbal G5',
+    epochName: 'Mayo 2024',
+    startDate: '2024-05-08 00:00 UTC',
+    endDate: '2024-05-14 23:59 UTC',
+    description:
+      'La mayor tormenta geomagnética global en 20 años. Múltiples CMEs rápidos se fusionaron en una onda de choque caníbal.',
+    events: [
+      {
+        id: 'ev-1',
+        donkiCatalogId: '2024-05-08T05:09:00-FLR-001',
+        type: 'FLR',
+        intensity: 'Clase X1.0',
+        sourceRegion: 'AR 3664',
+        message: 'Llamarada clase X en el limbo solar. Destello ionizante en aproximación.',
+        simulatedTimestamp: '2024-05-08 05:09 UTC',
+        triggerSec: 5.0,
+        impactSec: 8.0,
+        durationSec: 4.0,
+        requiredDefense: 'shelter',
+        radiationRate: 160,
+      },
+      {
+        id: 'ev-2',
+        donkiCatalogId: '2024-05-09T09:13:00-CME-002',
+        type: 'CME',
+        intensity: '1,420 km/s (CME Caníbal)',
+        sourceRegion: 'AR 3664',
+        message: 'CME fusionado con eyección anterior. ¡Levanta el deflector magnético!',
+        simulatedTimestamp: '2024-05-09 18:00 UTC',
+        triggerSec: 16.0,
+        impactSec: 20.0,
+        durationSec: 5.0,
+        requiredDefense: 'shield',
+        radiationRate: 380,
+      },
+      {
+        id: 'ev-3',
+        donkiCatalogId: '2024-05-10T06:54:00-FLR-002',
+        type: 'FLR',
+        intensity: 'Clase X3.9',
+        sourceRegion: 'AR 3664',
+        message: 'Segunda llamarada violenta. ¡Búnker de regolito de emergencia!',
+        simulatedTimestamp: '2024-05-10 06:54 UTC',
+        triggerSec: 27.5,
+        impactSec: 31.0,
+        durationSec: 4.5,
+        requiredDefense: 'shelter',
+        radiationRate: 310,
+      },
+      {
+        id: 'ev-4',
+        donkiCatalogId: '2024-05-10T23:00:00-GST-001',
+        type: 'OVERLOAD',
+        intensity: 'Saturación Kp 9 (Extrema)',
+        sourceRegion: 'Burbuja Deflectora',
+        message: 'Inducción de corriente en los blindajes. ¡Disipa sobretensión electrostática!',
+        simulatedTimestamp: '2024-05-11 00:30 UTC',
+        triggerSec: 38.5,
+        impactSec: 42.0,
+        durationSec: 4.0,
+        requiredDefense: 'purge',
+        radiationRate: 280,
+      },
+      {
+        id: 'ev-5',
+        donkiCatalogId: '2024-05-11T01:23:00-SEP-002',
+        type: 'SEP',
+        intensity: 'Flujo de Protones S2',
+        sourceRegion: 'Magnetofunda de Marte',
+        message: 'Lluvia de partículas energéticas. ¡Protege y repliega paneles solares!',
+        simulatedTimestamp: '2024-05-11 08:15 UTC',
+        triggerSec: 48.0,
+        impactSec: 51.5,
+        durationSec: 4.5,
+        requiredDefense: 'panels',
+        radiationRate: 240,
+      },
+    ],
+  },
+  {
+    id: 'oct-2003-halloween',
+    name: 'Tormentas de Halloween 2003 · AR 10486',
+    epochName: 'Octubre 2003',
+    startDate: '2003-10-26 00:00 UTC',
+    endDate: '2003-11-04 23:59 UTC',
+    description:
+      'Las tormentas solares más extremas de la era espacial moderna. Destruyeron el sensor de radiación MARIE en la sonda orbital Mars Odyssey.',
+    events: [
+      {
+        id: 'ev-1',
+        donkiCatalogId: '2003-10-28T11:10:00-FLR-001',
+        type: 'FLR',
+        intensity: 'Clase X17.2 (Histórica)',
+        sourceRegion: 'AR 10486',
+        message: 'Erupción masiva histórica X17.2. ¡Todo el personal al búnker subterráneo!',
+        simulatedTimestamp: '2003-10-28 11:10 UTC',
+        triggerSec: 5.5,
+        impactSec: 8.5,
+        durationSec: 4.5,
+        requiredDefense: 'shelter',
+        radiationRate: 460,
+      },
+      {
+        id: 'ev-2',
+        donkiCatalogId: '2003-10-28T11:30:00-CME-001',
+        type: 'CME',
+        intensity: '2,459 km/s (Extrema)',
+        sourceRegion: 'AR 10486',
+        message: 'Onda de choque coronal supersónica. ¡Levanta el deflector magnético!',
+        simulatedTimestamp: '2003-10-29 06:12 UTC',
+        triggerSec: 16.5,
+        impactSec: 20.5,
+        durationSec: 5.0,
+        requiredDefense: 'shield',
+        radiationRate: 400,
+      },
+      {
+        id: 'ev-3',
+        donkiCatalogId: '2003-10-29T20:49:00-SEP-001',
+        type: 'SEP',
+        intensity: 'Protones S4 (Severo)',
+        sourceRegion: 'Onda Interplanetaria',
+        message: 'Flujo severo de protones relativistas. ¡Repliega celdas fotovoltaicas!',
+        simulatedTimestamp: '2003-10-30 02:00 UTC',
+        triggerSec: 27.0,
+        impactSec: 30.5,
+        durationSec: 4.5,
+        requiredDefense: 'panels',
+        radiationRate: 320,
+      },
+      {
+        id: 'ev-4',
+        donkiCatalogId: '2003-10-30T14:00:00-GST-001',
+        type: 'OVERLOAD',
+        intensity: 'Saturación Electrostática',
+        sourceRegion: 'Colectores de Protones',
+        message: 'Sobretensión crítica en los caloductos. ¡Purga la carga iónica!',
+        simulatedTimestamp: '2003-10-30 18:30 UTC',
+        triggerSec: 38.0,
+        impactSec: 41.5,
+        durationSec: 4.0,
+        requiredDefense: 'purge',
+        radiationRate: 270,
+      },
+      {
+        id: 'ev-5',
+        donkiCatalogId: '2003-11-04T19:29:00-FLR-002',
+        type: 'FLR',
+        intensity: 'Clase X28+ (Récord Histórico)',
+        sourceRegion: 'AR 10486',
+        message: '¡La llamarada más potente jamás medida! ¡Búnker de regolito hermético!',
+        simulatedTimestamp: '2003-11-04 19:29 UTC',
+        triggerSec: 48.5,
+        impactSec: 51.5,
+        durationSec: 5.0,
+        requiredDefense: 'shelter',
+        radiationRate: 500,
+      },
+    ],
+  },
+  {
+    id: 'mar-2015-st-patricks',
+    name: 'Tormenta de San Patricio 2015 · AR 12297',
+    epochName: 'Marzo 2015',
+    startDate: '2015-03-15 00:00 UTC',
+    endDate: '2015-03-21 23:59 UTC',
+    description:
+      'Impacto frontal de CME rápido que comprimió intensamente la magnetofunda marciana y desató auroras globales.',
+    events: [
+      {
+        id: 'ev-1',
+        donkiCatalogId: '2015-03-15T01:15:00-FLR-001',
+        type: 'FLR',
+        intensity: 'Clase M1.2',
+        sourceRegion: 'AR 12297',
+        message: 'Llamarada moderada con eyección asociada en dirección a Marte.',
+        simulatedTimestamp: '2015-03-15 01:15 UTC',
+        triggerSec: 5.0,
+        impactSec: 8.0,
+        durationSec: 4.0,
+        requiredDefense: 'shelter',
+        radiationRate: 150,
+      },
+      {
+        id: 'ev-2',
+        donkiCatalogId: '2015-03-15T02:00:00-CME-001',
+        type: 'CME',
+        intensity: '1,060 km/s (CME Interplanetario)',
+        sourceRegion: 'AR 12297',
+        message: 'Nube magnetizada en ruta. ¡Activa el deflector magnético!',
+        simulatedTimestamp: '2015-03-16 12:00 UTC',
+        triggerSec: 16.0,
+        impactSec: 19.5,
+        durationSec: 5.0,
+        requiredDefense: 'shield',
+        radiationRate: 310,
+      },
+      {
+        id: 'ev-3',
+        donkiCatalogId: '2015-03-17T04:45:00-SEP-001',
+        type: 'SEP',
+        intensity: 'Partículas Energéticas S2',
+        sourceRegion: 'Onda de Choque',
+        message: 'Protones acelerados en el frente. ¡Pliega los paneles solares!',
+        simulatedTimestamp: '2015-03-17 08:30 UTC',
+        triggerSec: 27.0,
+        impactSec: 30.5,
+        durationSec: 4.5,
+        requiredDefense: 'panels',
+        radiationRate: 230,
+      },
+      {
+        id: 'ev-4',
+        donkiCatalogId: '2015-03-17T18:00:00-GST-001',
+        type: 'OVERLOAD',
+        intensity: 'Sobrecarga Kp 8',
+        sourceRegion: 'Receptores de Escudo',
+        message: 'Inducción de corriente en el chasis. ¡Purga la sobrecarga de iones!',
+        simulatedTimestamp: '2015-03-17 22:00 UTC',
+        triggerSec: 38.0,
+        impactSec: 41.5,
+        durationSec: 4.0,
+        requiredDefense: 'purge',
+        radiationRate: 260,
+      },
+      {
+        id: 'ev-5',
+        donkiCatalogId: '2015-03-18T10:20:00-FLR-002',
+        type: 'FLR',
+        intensity: 'Clase M4.8',
+        sourceRegion: 'AR 12297',
+        message: 'Fulguración tardía de alta energía. ¡Búnker de regolito preventivo!',
+        simulatedTimestamp: '2015-03-18 10:20 UTC',
+        triggerSec: 48.0,
+        impactSec: 51.5,
+        durationSec: 4.5,
+        requiredDefense: 'shelter',
+        radiationRate: 220,
+      },
+    ],
+  },
+];
+
+export function getRandomDonkiEpisode(seed?: number): DonkiEpisode {
+  if (seed !== undefined) {
+    const idx = Math.abs(seed) % DONKI_EPISODES.length;
+    return DONKI_EPISODES[idx];
+  }
+  const idx = Math.floor(Math.random() * DONKI_EPISODES.length);
+  return DONKI_EPISODES[idx];
+}
