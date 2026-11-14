@@ -16,7 +16,12 @@ export function useGame() {
     const state = (view: GameView) => { setGame(view); setOffset(view.serverNow - Date.now()); };
     const connect = () => { setGame(null); setConnected(true); setError(''); };
     const disconnect = () => setConnected(false);
-    const failure = (err: Error) => setError(err.message);
+    const failure = (err: Error) =>
+      setError(
+        err.message === 'xhr poll error' || err.message === 'websocket error'
+          ? 'No hay conexión con el servidor (puerto 3001). Arranca el servidor con «pnpm dev» o «pnpm dev:server».'
+          : err.message,
+      );
     socket.on('game:state', state); socket.on('connect', connect);
     socket.on('disconnect', disconnect); socket.on('connect_error', failure);
     socket.connect();

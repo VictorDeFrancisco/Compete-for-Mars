@@ -1,0 +1,262 @@
+.start-screen {
+  position: relative;
+  min-height: 100dvh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: #0b0d12;
+  background-image: url('/assets/compete-for-mars-bg.jpg');
+  background-size: cover;
+  background-position: 62% center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+  color: #f4f7fb;
+}
+
+.start-screen__scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(5, 7, 11, 0.72) 0%,
+      rgba(5, 7, 11, 0.12) 18%,
+      rgba(5, 7, 11, 0.1) 80%,
+      rgba(5, 7, 11, 0.8) 100%
+    ),
+    linear-gradient(
+      to right,
+      rgba(7, 9, 14, 0.84) 0%,
+      rgba(7, 9, 14, 0.54) 36%,
+      rgba(7, 9, 14, 0.1) 66%,
+      rgba(7, 9, 14, 0) 100%
+    );
+}
+
+.start-screen__content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: clamp(32px, 7vh, 72px) clamp(24px, 6vw, 84px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 36px;
+  flex-wrap: wrap;
+}
+
+.start-screen__left {
+  flex: 1 1 340px;
+}
+
+.start-screen__title {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.14em;
+  font-family: 'Michroma', 'Orbitron', system-ui, sans-serif;
+  font-weight: 400;
+  font-size: clamp(2.1rem, 4.6vw, 3.85rem);
+  line-height: 1.16;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #f5f8fc;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.65);
+}
+
+.start-screen .start-screen__menu {
+  margin: clamp(38px, 7vh, 68px) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.start-screen .start-screen__btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 4px 6px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: rgba(240, 245, 252, 0.92);
+  font-family: 'Michroma', 'Orbitron', system-ui, sans-serif;
+  font-weight: 400;
+  font-size: clamp(1rem, 1.7vw, 1.32rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.75);
+  transition: color 0.18s ease, transform 0.18s ease, text-shadow 0.18s ease;
+}
+
+.start-screen .start-screen__btn::before {
+  content: '';
+  width: 0;
+  height: 2px;
+  background: #f59c42;
+  box-shadow: 0 0 10px rgba(245, 156, 66, 0.8);
+  transition: width 0.2s ease;
+}
+
+.start-screen .start-screen__btn--primary {
+  color: #ffffff;
+}
+
+.start-screen .start-screen__btn--test {
+  margin-top: 8px;
+  font-size: clamp(0.85rem, 1.3vw, 1.02rem);
+  color: rgba(145, 237, 201, 0.82);
+}
+
+.start-screen .start-screen__btn:hover,
+.start-screen .start-screen__btn:focus-visible {
+  color: #ffd399;
+  transform: translateX(6px);
+  text-shadow: 0 0 18px rgba(245, 156, 66, 0.55);
+  outline: none;
+}
+
+.start-screen .start-screen__btn--test:hover,
+.start-screen .start-screen__btn--test:focus-visible {
+  color: #a6f2d7;
+  text-shadow: 0 0 16px rgba(115, 212, 194, 0.55);
+}
+
+.start-screen .start-screen__btn:hover::before,
+.start-screen .start-screen__btn:focus-visible::before {
+  width: 22px;
+}
+
+.start-screen .start-screen__panel {
+  width: min(390px, 100%);
+  margin: 0;
+  padding: 22px;
+  border-radius: 14px;
+  background: rgba(10, 15, 24, 0.82);
+  border: 1px solid rgba(245, 156, 66, 0.38);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.55);
+  display: grid;
+  gap: 12px;
+}
+
+.start-screen__panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.start-screen__panel-head h2 {
+  margin: 0;
+  font-family: 'Michroma', 'Orbitron', system-ui, sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffd8ad;
+}
+
+.start-screen__close {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+
+.start-screen__panel label {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.start-screen__error {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.start-screen__stats {
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(16, 23, 32, 0.78);
+  border: 1px solid rgba(68, 86, 107, 0.5);
+  display: grid;
+  gap: 8px;
+}
+
+.start-screen__stats-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: #bac7d6;
+}
+
+.start-screen__stats-head strong {
+  color: #91edc9;
+}
+
+.start-screen__slider {
+  display: grid;
+  gap: 4px;
+}
+
+.start-screen__slider input {
+  margin-top: 2px;
+}
+
+.start-screen__submit {
+  width: 100%;
+  padding: 12px 16px;
+}
+
+.start-screen__offline-note {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #ffd37c;
+}
+
+.start-screen__footer {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1280px;
+  margin: auto auto 0;
+  padding: 18px clamp(24px, 6vw, 84px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(212, 223, 235, 0.65);
+}
+
+.start-screen__conn {
+  color: #91edc9;
+}
+
+.start-screen__conn--offline {
+  color: #ffd37c;
+}
+
+@media (max-width: 640px) {
+  .start-screen {
+    background-position: 70% center;
+  }
+
+  .start-screen__scrim {
+    background:
+      linear-gradient(
+        to bottom,
+        rgba(7, 9, 14, 0.78) 0%,
+        rgba(7, 9, 14, 0.52) 55%,
+        rgba(7, 9, 14, 0.85) 100%
+      );
+  }
+}
