@@ -2,7 +2,7 @@ import { Fragment, useState } from 'react';
 import { Controls } from '../../../shared/minigames/Controls';
 import type { PresentationProps } from '../../../shared/types';
 import AstronautPortraitSvg, { suitColorByIndex, suitColorForPlayer } from '../components/AstronautPortraitSvg';
-import { NasaOrbitStampSvg, PaperclipSvg, TopoWatermarkSvg } from '../components/NasaMarks';
+import { PaperclipSvg, TopoWatermarkSvg } from '../components/NasaMarks';
 import { playUiClick, playUiConfirm } from '../utils/uiAudio';
 import './MinigamePresentation.css';
 
@@ -139,7 +139,6 @@ export default function MinigamePresentation({ game, onReady }: PresentationProp
             <span className="briefing-round-pill">ROUND {String(game.round).padStart(2, '0')}</span>
             <h2 className="briefing-title">{game.minigame.title}</h2>
           </div>
-          <NasaOrbitStampSvg label={`OPS // ${game.minigame.id.toUpperCase()}`} />
         </div>
 
         <div className="briefing-vs-row" aria-label="Participating astronauts">

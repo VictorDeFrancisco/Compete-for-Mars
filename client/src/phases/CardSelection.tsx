@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Card, CardSelectionProps } from '../../../shared/types';
-import { NasaOrbitStampSvg, TopoWatermarkSvg } from '../components/NasaMarks';
+import { TopoWatermarkSvg } from '../components/NasaMarks';
 import { playUiClick } from '../utils/uiAudio';
 import './CardSelection.css';
 
@@ -73,7 +73,6 @@ export default function CardSelection({ game, onChoose }: CardSelectionProps) {
           <p className="eyebrow">03 / Preparación de misión</p>
           <h2>Elige tu siguiente movimiento</h2>
         </div>
-        <NasaOrbitStampSvg label={`DIRECTIVE // RONDA ${String(game.round).padStart(2, '0')}`} />
       </header>
 
       <div className="cards-resources" aria-label="Tus recursos privados">

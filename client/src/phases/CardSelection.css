@@ -2,6 +2,7 @@
 .phase-cards {
   position: relative;
   color: var(--ink-black);
+  padding: 14px 16px !important;
 }
 
 .phase-cards > :not(.manila-topo) {
@@ -12,17 +13,17 @@
 .phase-cards .cards-heading {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   align-items: center;
   flex-wrap: wrap;
   border-bottom: 2.5px solid var(--ink-black);
-  padding-bottom: 12px;
+  padding-bottom: 8px;
 }
 
 .phase-cards .cards-heading h2 {
   font-family: 'Archivo', sans-serif;
   font-weight: 800;
-  font-size: clamp(1.3rem, 2.2vw, 1.75rem);
+  font-size: clamp(1.15rem, 2vw, 1.5rem);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   margin: 0;
@@ -32,9 +33,9 @@
 .phase-cards .cards-resources {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 18px;
-  padding: 12px 14px;
-  margin-top: 14px;
+  gap: 8px 16px;
+  padding: 8px 12px;
+  margin-top: 10px;
   background: var(--paper-cream);
   border: 2.5px solid var(--ink-black);
   border-radius: 3px;
@@ -59,18 +60,18 @@
 }
 
 .phase-cards .cards-intro {
-  font-size: 0.9rem;
+  font-size: 0.84rem;
   font-weight: 700;
   color: #363028;
-  margin: 14px 0 18px;
+  margin: 8px 0 10px;
 }
 
 .phase-cards .cards-options {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+  gap: 12px;
   align-items: stretch;
-  padding: 4px 2px 8px;
+  padding: 2px 2px 4px;
 }
 
 .phase-cards .action-card {
@@ -78,14 +79,14 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 16px 14px 14px;
+  padding: 11px 12px 10px;
   min-width: 0;
   background: var(--paper-cream);
   border: 3px solid var(--ink-black);
-  border-top: 7px solid var(--card-accent);
+  border-top: 6px solid var(--card-accent);
   border-radius: 3px;
   color: var(--ink-black);
-  box-shadow: 0 5px 0 var(--ink-black);
+  box-shadow: 0 4px 0 var(--ink-black);
   transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
 }
 
@@ -174,12 +175,12 @@
 .phase-cards .action-card__patch {
   display: flex;
   justify-content: center;
-  margin: 12px 0 8px;
+  margin: 6px 0 4px;
 }
 
 .phase-cards .action-card__svg {
-  width: 60px;
-  height: 60px;
+  width: 48px;
+  height: 48px;
   display: block;
 }
 
@@ -188,19 +189,19 @@
   font-weight: 800;
   text-transform: uppercase;
   text-align: center;
-  margin: 4px 0 10px;
-  padding-bottom: 8px;
+  margin: 2px 0 6px;
+  padding-bottom: 5px;
   border-bottom: 2px solid var(--ink-black);
   color: var(--ink-black);
-  font-size: 1.02rem;
+  font-size: 0.94rem;
   line-height: 1.2;
 }
 
 .phase-cards .action-card-description {
-  margin: 0 0 12px;
+  margin: 0 0 8px;
   color: #2f2a23;
-  font-size: 0.86rem;
-  line-height: 1.48;
+  font-size: 0.8rem;
+  line-height: 1.38;
 }
 
 .phase-cards .action-card-detail {
@@ -251,11 +252,11 @@
 }
 
 .phase-cards .action-card-warning {
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   font-weight: 700;
   color: #8c1c0f;
-  margin: 10px 0 6px;
-  min-height: 18px;
+  margin: 6px 0 4px;
+  min-height: 16px;
 }
 
 .phase-cards .action-card button {
@@ -267,11 +268,11 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 16px;
-  padding-top: 12px;
+  margin-top: 10px;
+  padding-top: 8px;
   border-top: 2px solid rgba(26, 24, 23, 0.25);
   color: #4a4136;
-  font-size: 0.84rem;
+  font-size: 0.8rem;
   font-weight: 700;
 }
 
@@ -280,13 +281,13 @@
 }
 
 .phase-cards .cards-protection {
-  padding: 10px 12px;
-  margin: 14px 0 0;
+  padding: 7px 10px;
+  margin: 8px 0 0;
   background: #d2eedd;
   border: 2px solid #1d6b41;
   border-radius: 3px;
   color: #144d2e;
-  font-size: 0.84rem;
+  font-size: 0.8rem;
   font-weight: 700;
 }
 

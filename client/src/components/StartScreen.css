@@ -1,6 +1,7 @@
 .start-screen {
   position: relative;
-  min-height: 100dvh;
+  height: 100dvh;
+  max-height: 100dvh;
   width: 100%;
   display: flex;
   flex-direction: column;

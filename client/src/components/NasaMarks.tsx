@@ -22,35 +22,6 @@ export function PaperclipSvg({ className = 'dossier-paperclip' }: { className?: 
 }
 
 /**
- * NASA Blue (#0B3D91) orbital ink stamp for folder headers & briefing sheets.
- */
-export function NasaOrbitStampSvg({ label = 'MARS OUTPOST // MISSION TRAINER' }: { label?: string }) {
-  return (
-    <div className="nasa-stamp" aria-hidden="true">
-      <svg className="nasa-stamp__orbit" viewBox="0 0 44 44">
-        <circle cx="22" cy="22" r="18" fill="none" stroke="currentColor" strokeWidth="2.4" />
-        <ellipse
-          cx="22"
-          cy="22"
-          rx="20"
-          ry="8"
-          transform="rotate(-24 22 22)"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.2"
-        />
-        <circle cx="22" cy="22" r="5.5" fill="currentColor" />
-        <circle cx="36" cy="15" r="2.6" fill="#FC3D21" />
-      </svg>
-      <div className="nasa-stamp__text">
-        <span className="nasa-stamp__agency">NASA · ARES SECTOR</span>
-        <span className="nasa-stamp__sub">{label}</span>
-      </div>
-    </div>
-  );
-}
-
-/**
  * Faint Martian topographic contour lines printed into cream manila sheets.
  */
 export function TopoWatermarkSvg() {
