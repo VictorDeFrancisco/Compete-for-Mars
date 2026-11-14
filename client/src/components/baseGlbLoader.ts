@@ -7,7 +7,7 @@ export interface BaseBatch {
   color: [number, number, number, number];
   metalness: number;
   roughness: number;
-  matMode: 0 | 1 | 2; // 0 = architecture/metal, 1 = Mars terrain, 2 = glass
+  matMode: 0 | 1 | 2 | 3; // 0 = architecture/metal, 1 = Mars terrain, 2 = glass, 3 = ceramic dome
 }
 
 export interface LoadedBaseModel {
@@ -65,41 +65,45 @@ interface MaterialStyle {
   color: [number, number, number, number];
   metalness: number;
   roughness: number;
-  matMode: 0 | 1 | 2;
+  matMode: 0 | 1 | 2 | 3;
 }
 
-function styleForMaterial(index: number, name: string): MaterialStyle {
+function styleForMaterial(_index: number, name: string): MaterialStyle {
   const lower = name.toLowerCase();
-  if (lower.includes('vidrio')) {
-    return { color: [0.58, 0.83, 0.96, 0.30], metalness: 0.15, roughness: 0.08, matMode: 2 };
+  if (lower.includes('vidrio (1)')) {
+    return { color: [0.78, 0.90, 0.98, 0.14], metalness: 0.20, roughness: 0.05, matMode: 2 };
   }
-  if (index === 0) {
-    return { color: [0.58, 0.25, 0.13, 1], metalness: 0.0, roughness: 0.95, matMode: 1 };
+  if (lower.includes('pintura (3)')) {
+    return { color: [0.22, 0.14, 0.12, 1], metalness: 0.0, roughness: 0.92, matMode: 1 };
+  }
+  if (lower.includes('pintura (4)') || lower.includes('vidrio')) {
+    // Back-dome interior floor slab
+    return { color: [0.20, 0.24, 0.30, 1], metalness: 0.35, roughness: 0.28, matMode: 0 };
   }
   if (lower.includes('gema')) {
-    // Geodesic dome matte ceramic panels (solid, matching sunset reference)
-    return { color: [0.89, 0.82, 0.70, 1], metalness: 0.06, roughness: 0.55, matMode: 0 };
+    // Geodesic dome warm backlit ceramic panels
+    return { color: [0.92, 0.84, 0.72, 1], metalness: 0.06, roughness: 0.42, matMode: 3 };
   }
   if (lower.includes('metal')) {
-    return { color: [0.27, 0.32, 0.38, 1], metalness: 0.72, roughness: 0.32, matMode: 0 };
+    return { color: [0.32, 0.37, 0.44, 1], metalness: 0.80, roughness: 0.26, matMode: 0 };
   }
   if (lower.includes('pintura (1)')) {
-    return { color: [0.83, 0.41, 0.19, 1], metalness: 0.14, roughness: 0.45, matMode: 0 };
+    return { color: [0.90, 0.45, 0.18, 1], metalness: 0.16, roughness: 0.38, matMode: 0 };
   }
   if (lower.includes('pintura (2)')) {
-    return { color: [0.20, 0.24, 0.29, 1], metalness: 0.25, roughness: 0.52, matMode: 0 };
+    return { color: [0.19, 0.23, 0.29, 1], metalness: 0.30, roughness: 0.46, matMode: 0 };
   }
   if (lower === 'pintura') {
-    // Structural frame around the geodesic dome
-    return { color: [0.26, 0.29, 0.34, 1], metalness: 0.38, roughness: 0.42, matMode: 0 };
+    // Structural struts around the geodesic domes
+    return { color: [0.24, 0.28, 0.34, 1], metalness: 0.50, roughness: 0.34, matMode: 0 };
   }
   if (lower.includes('pintura')) {
-    return { color: [0.92, 0.89, 0.82, 1], metalness: 0.08, roughness: 0.42, matMode: 0 };
+    return { color: [0.94, 0.91, 0.85, 1], metalness: 0.10, roughness: 0.36, matMode: 0 };
   }
   if (lower.includes('plástico (1)')) {
-    return { color: [0.91, 0.87, 0.79, 1], metalness: 0.10, roughness: 0.46, matMode: 0 };
+    return { color: [0.92, 0.88, 0.80, 1], metalness: 0.12, roughness: 0.40, matMode: 0 };
   }
-  return { color: [0.76, 0.71, 0.63, 1], metalness: 0.15, roughness: 0.5, matMode: 0 };
+  return { color: [0.78, 0.73, 0.66, 1], metalness: 0.16, roughness: 0.44, matMode: 0 };
 }
 
 function componentByteSize(componentType: number): number {
