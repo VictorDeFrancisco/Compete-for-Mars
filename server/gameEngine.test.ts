@@ -10,7 +10,9 @@ import {
   makePlayer,
   makeRoom,
   minigameRewardResource,
+  restartMatch,
   RESULT_GRACE_MS,
+  ROUND_RESOURCE_UPKEEP,
   roundLoserDamage,
   roundWinBonus,
   startRound,
@@ -93,7 +95,9 @@ test('ciclo completo, coste -5, topes dinámicos de profesión, cartas simultán
   const roundResource = minigameRewardResource(room.minigame);
   const otherResource = roundResource === 'energy' ? 'food' : 'energy';
   assert.equal(room.cards.length, 3);
-  assert.ok(room.cards.some(card => card.id === 'rest' || card.id === 'eat'));
+  assert.equal(room.cards[0].category, 'supply');
+  assert.equal(room.cards[1].category, 'risk');
+  assert.ok(room.cards[2].category === 'defense' || room.cards[2].category === 'interaction');
   room.cards = ['rest', 'eat', 'emergency-landing'].map(id => CARDS.find(card => card.id === id)!);
   chooseCard(room, a, 'emergency-landing');
   chooseCard(room, b, 'rest');
@@ -130,13 +134,14 @@ test('ciclo completo, coste -5, topes dinámicos de profesión, cartas simultán
   // a (Medic) started at 130 HP -> 1 radiation (-10 HP) -> 120 HP.
   assert.equal(a.health, 120);
   assert.equal(a.maxHealth, 130);
-  assert.equal(a.resources[otherResource], 100 - 18);
-  // Winner gained 25 - 18 = +7? No, BASE_WIN_RESOURCE_BONUS 24, R2 decay -2 => +22; net +22 - 18 = +4, capped at 100 for Medic!
-  assert.equal(a.resources[roundResource], 100);
+  assert.equal(a.resources[otherResource], 100 - ROUND_RESOURCE_UPKEEP);
+  const expectedWinnerBase = room.minigame.rewards.winner.resources?.[roundResource] ?? 24;
+  const expectedWinnerGain = Math.max(0, expectedWinnerBase - Math.max(0, room.round - 1) * 2);
+  assert.equal(a.resources[roundResource], 100 - ROUND_RESOURCE_UPKEEP + expectedWinnerGain);
   // b (Pilot) started at 110 HP -> lost round 2 with 0 deaths (-16 HP) -> 94 HP.
   assert.equal(b.health, 94);
   assert.equal(b.maxHealth, 110);
-  const expectedBResource = (roundResource === 'energy' ? 120 : 100) - 18;
+  const expectedBResource = (roundResource === 'energy' ? 120 : 100) - ROUND_RESOURCE_UPKEEP;
   assert.equal(b.resources[roundResource], expectedBResource);
   assert.equal(room.lastResults.find(r => r.playerId === a.id)?.outcome, 'winner');
   assert.equal(a.ready, false);
@@ -174,7 +179,8 @@ test('orden aleatorio controlado: mínimo 2 minijuegos distintos entre repeticio
     }
     seenOrder.push(id);
     if (room.phase === 'cards') {
-      chooseCard(room, a, room.cards.find(card => card.id === 'rest' || card.id === 'eat')!.id);
+      const pick = room.cards.find(card => !card.targetRequired && !card.cost) ?? room.cards[0];
+      chooseCard(room, a, pick.id);
       advanceIfComplete(room, i * 10 + 1);
     }
     assert.equal(room.phase, 'presentation');
@@ -242,7 +248,7 @@ test('los tiempos límite completan elecciones y resultados ausentes', () => {
   assert.equal(room.phase, 'cards');
   advanceIfComplete(room, room.deadline!);
   assert.equal(room.phase, 'presentation');
-  assert.ok(a.selectedCardId === 'rest' || a.selectedCardId === 'eat');
+  assert.ok(a.selectedCardId && !room.cards.find(c => c.id === a.selectedCardId)?.targetRequired);
   // Presentation/instructions phase has no timer; advances when alive players confirm.
   assert.equal(room.deadline, null);
   a.ready = true;
@@ -255,4 +261,35 @@ test('los tiempos límite completan elecciones y resultados ausentes', () => {
   assert.equal(room.lastResults[0].score, 0);
   advanceIfComplete(room, room.deadline!);
   assert.equal(room.phase, 'lobby');
+});
+
+test('restartMatch reinicia la sala tras finalizar una partida y permite volver a jugar', () => {
+  const host = player('Ana', { energy: 30, food: 0, health: 0 });
+  const guest = player('Luis', { energy: 0, food: 30, health: 0 });
+  const room = makeRoom('RES123', host, 0);
+  room.players.push(guest);
+  host.health = 25;
+  host.resources = { energy: 10, food: 15, radiation: 3 };
+  guest.health = 0;
+  room.round = 4;
+  room.matchFinished = true;
+  room.winnerId = host.id;
+  room.phase = 'lobby';
+
+  assert.throws(() => restartMatch(room, guest, 10));
+  restartMatch(room, host, 10);
+
+  assert.equal(room.matchFinished, false);
+  assert.equal(room.winnerId, null);
+  assert.equal(room.round, 0);
+  assert.equal(room.phase, 'lobby');
+  assert.equal(host.health, 100);
+  assert.deepEqual(host.resources, { energy: 130, food: 100, radiation: 0 });
+  assert.equal(guest.health, 100);
+  assert.deepEqual(guest.resources, { energy: 100, food: 130, radiation: 0 });
+
+  // El color de traje es público sin filtrar estadísticas
+  const viewForGuest = viewFor(room, guest);
+  assert.equal(viewForGuest.players.find(p => p.id === host.id)?.suitColor, '#D97706');
+  assert.equal(viewForGuest.players.find(p => p.id === guest.id)?.suitColor, '#2F6F4E');
 });

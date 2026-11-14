@@ -1,13 +1,14 @@
 import { Fragment, useState } from 'react';
+import { DISTRIBUTED_RESOURCE_PER_ALIVE } from '../../../shared/constants';
 import type { Card, CardSelectionProps } from '../../../shared/types';
 import { playUiClick } from '../utils/uiAudio';
 import './CardSelection.css';
 
 const categoryLabels = {
-  supply: 'Suministros',
-  risk: 'Expedición / riesgo',
-  defense: 'Protección',
-  interaction: 'Tripulación',
+  supply: 'Recursos',
+  risk: 'Expedición',
+  defense: 'Especial · Protección',
+  interaction: 'Especial · Trastada',
 } as const;
 
 interface CardHighlight {
@@ -18,11 +19,15 @@ interface CardHighlight {
 function getCardHighlights(card: Card, aliveCount: number): CardHighlight[] {
   const tags: CardHighlight[] = [];
   const kind = card.rules?.kind ?? card.id;
+  const sharedPool =
+    card.rules?.perAlive !== undefined
+      ? Math.max(1, aliveCount) * card.rules.perAlive
+      : card.rules?.amount ?? Math.max(1, aliveCount) * DISTRIBUTED_RESOURCE_PER_ALIVE;
 
   if (kind === 'rest') {
-    tags.push({ label: `+${card.rules?.amount ?? 40} ENERGÍA (A REPARTIR)`, tone: 'gain' });
+    tags.push({ label: `+${sharedPool} ENERGÍA (A REPARTIR)`, tone: 'gain' });
   } else if (kind === 'eat') {
-    tags.push({ label: `+${card.rules?.amount ?? 40} COMIDA (A REPARTIR)`, tone: 'gain' });
+    tags.push({ label: `+${sharedPool} COMIDA (A REPARTIR)`, tone: 'gain' });
   } else if (kind === 'decontamination') {
     tags.push({ label: 'CURA TODA RADIACIÓN (SOLO SI VAS TÚ)', tone: 'gain' });
     tags.push({ label: '+1 RADIACIÓN SI ESTÁS LIMPIO', tone: 'rad' });

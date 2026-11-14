@@ -1,5 +1,7 @@
 import {
   DEFAULT_MINIGAME_CONTEXT,
+  deriveRoundSeed,
+  seededPrng,
   type MinigameContext,
 } from '../../../../../shared/minigames/context';
 import { signalModulatorDefinition } from '../../../../../shared/minigames/signalModulator';
@@ -7,6 +9,7 @@ import type { MinigameDefinition } from '../../../../../shared/minigames/types';
 import { BaseMinigame, type ActionState } from '../../core/BaseMinigame';
 import {
   TELEMETRY_PACKETS,
+  generateTelemetryWave,
   type TelemetryPacket,
 } from './packetsConfig';
 
@@ -65,6 +68,10 @@ export class SignalModulatorEngine extends BaseMinigame<SignalModulatorData> {
   private ratingTimerMs = 0;
   private noisePhase = 0;
   private filterBatteryExact = 100;
+  private exactFreq = 1.6;
+  private exactAmp = 0.30;
+  private exactLockProgress = 0;
+  private readonly waveRand: () => number;
 
   constructor(
     definition: MinigameDefinition = signalModulatorDefinition,
@@ -125,19 +132,26 @@ export class SignalModulatorEngine extends BaseMinigame<SignalModulatorData> {
     );
 
     this.packets = packets;
+    this.exactFreq = initialFreq;
+    this.exactAmp = initialAmp;
+    this.waveRand = typeof context.seed === 'number'
+      ? seededPrng(deriveRoundSeed(context.seed, 19))
+      : Math.random;
   }
 
   // Permite sintonización en tests deterministas
   setPlayerFrequency(freq: number): void {
     if (this.getSnapshot().status !== 'running') return;
-    const clamped = Math.max(1.0, Math.min(5.5, Number(freq.toFixed(2))));
-    this.setData({ ...this.getSnapshot().data, playerFreq: clamped });
+    const clamped = Math.max(1.0, Math.min(5.5, freq));
+    this.exactFreq = clamped;
+    this.setData({ ...this.getSnapshot().data, playerFreq: Number(clamped.toFixed(2)) });
   }
 
   setPlayerAmplitude(amp: number): void {
     if (this.getSnapshot().status !== 'running') return;
-    const clamped = Math.max(0.15, Math.min(1.0, Number(amp.toFixed(2))));
-    this.setData({ ...this.getSnapshot().data, playerAmp: clamped });
+    const clamped = Math.max(0.15, Math.min(1.0, amp));
+    this.exactAmp = clamped;
+    this.setData({ ...this.getSnapshot().data, playerAmp: Number(clamped.toFixed(2)) });
   }
 
   protected onAction(actionId: string, state: ActionState): void {
@@ -186,22 +200,24 @@ export class SignalModulatorEngine extends BaseMinigame<SignalModulatorData> {
       }
     }
 
-    // 2. Modulación continua precisa por teclas mantenidas (pasos suaves, sin saltos)
-    let newFreq = data.playerFreq;
+    // 2. Modulación continua precisa por teclas mantenidas (acumuladores float independientes del FPS)
+    let newFreq = this.exactFreq;
     if (this.inputState.freqDown) {
-      newFreq = Math.max(1.0, newFreq - (0.85 * speedMod * deltaMs) / 1000);
+      newFreq = Math.max(1.0, newFreq - (0.95 * speedMod * deltaMs) / 1000);
     }
     if (this.inputState.freqUp) {
-      newFreq = Math.min(5.5, newFreq + (0.85 * speedMod * deltaMs) / 1000);
+      newFreq = Math.min(5.5, newFreq + (0.95 * speedMod * deltaMs) / 1000);
     }
+    this.exactFreq = newFreq;
 
-    let newAmp = data.playerAmp;
+    let newAmp = this.exactAmp;
     if (this.inputState.ampDown) {
-      newAmp = Math.max(0.15, newAmp - (0.32 * deltaMs) / 1000);
+      newAmp = Math.max(0.15, newAmp - (0.45 * deltaMs) / 1000);
     }
     if (this.inputState.ampUp) {
-      newAmp = Math.min(1.0, newAmp + (0.32 * deltaMs) / 1000);
+      newAmp = Math.min(1.0, newAmp + (0.45 * deltaMs) / 1000);
     }
+    this.exactAmp = newAmp;
 
     // 3. Gestión del Filtro Solar y Batería de Blindaje (con precisión float independiente del FPS)
     let isFiltering = this.inputState.filterNoise && this.filterBatteryExact > 0;
@@ -252,12 +268,13 @@ export class SignalModulatorEngine extends BaseMinigame<SignalModulatorData> {
     // Para alinearse: frecuencia, amplitud Y filtro activo si hay tormenta
     const isAligned = freqMatched && ampMatched && !isJammed;
     let lockQuality = 0;
-    let lockProgress = data.lockProgress;
+    let lockProgress = this.exactLockProgress;
 
     if (isAligned) {
       lockQuality = Math.max(0.4, 1 - (freqDiff / (2 * freqTol)) - (ampDiff / (2 * ampTol)));
       // Llenar lockProgress (tarda aprox 1.7s a alineación sostenida)
       lockProgress = Math.min(1, lockProgress + (deltaMs / 1700) * lockQuality);
+      this.exactLockProgress = lockProgress;
 
       if (lockProgress >= 1) {
         this.advancePacket();
@@ -266,6 +283,7 @@ export class SignalModulatorEngine extends BaseMinigame<SignalModulatorData> {
     } else {
       // Descarga gradual si se sale de la sintonía
       lockProgress = Math.max(0, lockProgress - deltaMs / 2200);
+      this.exactLockProgress = lockProgress;
     }
 
     // 6. Temperatura de la etapa de potencia RF
@@ -319,13 +337,13 @@ export class SignalModulatorEngine extends BaseMinigame<SignalModulatorData> {
   }
 
   private nudgeFreq(delta: number): void {
-    const cur = this.getSnapshot().data.playerFreq;
+    const cur = this.exactFreq;
     const speedMod = this.modifiers.speedMultiplier;
     this.setPlayerFrequency(cur + delta * speedMod);
   }
 
   private nudgeAmp(delta: number): void {
-    const cur = this.getSnapshot().data.playerAmp;
+    const cur = this.exactAmp;
     this.setPlayerAmplitude(cur + delta);
   }
 
@@ -336,35 +354,26 @@ export class SignalModulatorEngine extends BaseMinigame<SignalModulatorData> {
 
     const completedPacketIds = [...data.completedPacketIds, data.currentPacket.id];
     const nextIndex = data.currentPacketIndex + 1;
-    const progress = nextIndex / this.packets.length;
+    const progress = Math.min(1, nextIndex / Math.max(1, this.packets.length));
     this.setProgress(progress);
 
     this.ratingTimerMs = 2500;
 
-    // ¿Carrera completada?
-    if (nextIndex >= this.packets.length) {
-      this.setData({
-        ...data,
-        currentPacketIndex: nextIndex,
-        completedPacketIds,
-        lockProgress: 1,
-        isAligned: true,
-        isJammed: false,
-        lastRating: 'SENT',
-        lastRatingMessage: 'ENLACE COMPLETADO · 4/4 PAQUETES RECIBIDOS EN LA TIERRA CON ÉXITO.',
-        warningMessage: null,
-      });
-      this.complete();
-      return;
-    }
-
-    const nextPacket = this.packets[nextIndex];
+    // Modo puntuación continuo: tras los paquetes iniciales, generamos nuevas ondas sin parar hasta agotar el tiempo
+    const nextPacket =
+      nextIndex < this.packets.length
+        ? this.packets[nextIndex]
+        : generateTelemetryWave(nextIndex, this.waveRand, data.targetFreq);
     const nextStartFreq = nextPacket.targetFreq >= 3.0 ? 1.5 : 4.5;
-    const nextStartAmp = 0.30;
+    const nextStartAmp = nextPacket.targetAmp >= 0.6 ? 0.25 : 0.78;
+    this.exactFreq = nextStartFreq;
+    this.exactAmp = nextStartAmp;
+    this.exactLockProgress = 0;
 
     this.setData({
       ...data,
       currentPacketIndex: nextIndex,
+      totalPackets: Math.max(data.totalPackets, nextIndex + 1),
       currentPacket: nextPacket,
       completedPacketIds,
       playerFreq: nextStartFreq,

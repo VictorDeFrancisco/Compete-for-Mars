@@ -15,31 +15,47 @@ function fixture(count = 4, ids = ['rest', 'eat', 'expedition']) {
   return { room, players };
 }
 
-test('draws exactly three unique eligible cards with at least one independent food/energy pool', () => {
+test('draws exactly three unique eligible cards: one supply, one risk and one special/interaction', () => {
   const { players } = fixture();
   let state = 1;
   const rng = () => ((state = (Math.imul(state, 1664525) + 1013904223) >>> 0) / 4294967296);
-  let sawBoth = false, sawContamination = false;
+  let sawRest = false, sawEat = false, sawContamination = false;
   for (let i = 0; i < 1000; i++) {
     const cards = drawCards(players, rng), ids = cards.map(c => c.id);
     assert.equal(cards.length, 3); assert.equal(new Set(ids).size, 3);
-    assert.ok(ids.includes('rest') || ids.includes('eat'));
+    assert.equal(cards[0].category, 'supply');
+    assert.equal(cards[1].category, 'risk');
+    assert.ok(cards[2].category === 'defense' || cards[2].category === 'interaction');
     assert.ok(!ids.some(id => ['decontamination', 'contagion', 'reinforced-suit'].includes(id)));
-    sawBoth ||= ids.includes('rest') && ids.includes('eat');
+    sawRest ||= ids.includes('rest');
+    sawEat ||= ids.includes('eat');
   }
   players[0].resources.radiation = 1;
-  for (let i = 0; i < 100; i++) sawContamination ||= drawCards(players, rng).some(c => c.id === 'decontamination');
-  assert.ok(sawBoth); assert.ok(sawContamination);
+  for (let i = 0; i < 200; i++) sawContamination ||= drawCards(players, rng).some(c => c.id === 'decontamination');
+  assert.ok(sawRest && sawEat); assert.ok(sawContamination);
   players[0].health = 0;
   assert.ok(!drawCards(players).some(c => ['decontamination', 'contagion', 'reinforced-suit'].includes(c.id)));
 });
 
-test('each resource pool is split independently and cannot be claimed twice', () => {
-  const { room, players: p } = fixture();
+test('each resource pool scales by living players, splits independently and cannot be claimed twice', () => {
+  const { room, players: p } = fixture(); // 4 alive => pool = 60, 2 choosers each => +30
   p.forEach((q, i) => chooseCard(room, q, i < 2 ? 'rest' : 'eat'));
   assert.equal(p[0].resources.energy, 40);
-  resolveCards(room); assert.equal(p[0].resources.energy, 60); assert.equal(p[2].resources.food, 60);
-  resolveCards(room); assert.equal(p[0].resources.energy, 60);
+  resolveCards(room); assert.equal(p[0].resources.energy, 70); assert.equal(p[2].resources.food, 70);
+  resolveCards(room); assert.equal(p[0].resources.energy, 70);
+
+  // 2 alive => pool = 30 (not 40); 1 chooser gets +30
+  const duo = fixture(2);
+  chooseCard(duo.room, duo.players[0], 'rest'); chooseCard(duo.room, duo.players[1], 'eat');
+  resolveCards(duo.room);
+  assert.equal(duo.players[0].resources.energy, 70);
+  assert.equal(duo.players[1].resources.food, 70);
+
+  // 1 alive => pool = 15
+  const solo = fixture(1);
+  chooseCard(solo.room, solo.players[0], 'rest');
+  resolveCards(solo.room);
+  assert.equal(solo.players[0].resources.energy, 55);
 });
 
 test('rejects unoffered cards, duplicate decisions, dead/self/missing targets and unaffordable costs', () => {
@@ -253,5 +269,5 @@ test('reinforced suit preserves the upkeep, empty-resource damage and last-place
   assert.equal(p[0].health, 30); // -40 last place (round 5 * 8), -15 empty food, -15 empty energy; radiation blocked.
   assert.equal(p[0].protection.reinforcedSuit, false);
   assert.equal(p[0].resources.radiation, 2);
-  assert.equal(p[1].resources.food, 22); // 40 - 18 upkeep.
+  assert.equal(p[1].resources.food, 10); // 40 - 30 upkeep.
 });

@@ -70,7 +70,7 @@ test('dos clientes reales: sala, autorizaciones, ronda, reconexión y segunda ro
   const resumed = await connect('token-astronauta-a-123456');
   const restored = await state(resumed, view => view.phase === 'lobby');
   assert.equal(restored.self.id, id);
-  assert.ok(restored.self.resources.food >= 80);
+  assert.ok(restored.self.resources.food >= 70);
 
   // Round 2 starts with cards BEFORE presentation.
   for (const client of [resumed, b]) assert.equal((await action(client, 'player:ready', true)).ok, true);

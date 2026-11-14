@@ -69,3 +69,44 @@ export const TELEMETRY_PACKETS: readonly TelemetryPacket[] = Object.freeze([
     successMessage: '¡MAPA DE HIELO TRANSMITIDO CON ÉXITO! Combustible de retorno asegurado.',
   },
 ]);
+
+const ENDLESS_STATIONS = [
+  { station: 'Goldstone DSS-14 (California, EE.UU.)', network: 'NASA DSN', dataset: 'NASA ECLSS' },
+  { station: 'Madrid DSS-63 (Robledo, España)', network: 'NASA DSN', dataset: 'NASA DONKI' },
+  { station: 'Canberra DSS-43 (Australia)', network: 'NASA DSN', dataset: 'NASA OSDR' },
+  { station: 'Palomar Observatory (DSOC)', network: 'NASA DSOC', dataset: 'NASA MOLA' },
+] as const;
+
+export function generateTelemetryWave(
+  waveIndex: number,
+  rand: () => number,
+  prevTargetFreq?: number,
+): TelemetryPacket {
+  const stationInfo = ENDLESS_STATIONS[waveIndex % ENDLESS_STATIONS.length];
+  let targetFreq = Number((1.3 + rand() * 3.8).toFixed(1));
+  if (prevTargetFreq !== undefined && Math.abs(targetFreq - prevTargetFreq) < 0.7) {
+    targetFreq = prevTargetFreq >= 3.2
+      ? Number((targetFreq - 1.4).toFixed(1))
+      : Number((targetFreq + 1.4).toFixed(1));
+  }
+  targetFreq = Math.max(1.2, Math.min(5.2, targetFreq));
+  const targetAmp = Number((0.25 + rand() * 0.65).toFixed(2));
+  const hasSolarFlare = rand() < 0.42;
+
+  return {
+    id: `wave-${waveIndex + 1}`,
+    name: `Telemetría Orbital #${waveIndex + 1}`,
+    station: stationInfo.station,
+    network: stationInfo.network,
+    band: `Banda DSN · ${targetFreq.toFixed(1)} GHz`,
+    targetFreq,
+    targetAmp,
+    hasSolarFlare,
+    flareMessage: hasSolarFlare
+      ? '¡TORMENTA SOLAR DONKI! Mantén [ESPACIO] para filtrar interferencias.'
+      : undefined,
+    nasaDataset: stationInfo.dataset,
+    description: `Sintoniza ${targetFreq.toFixed(1)} GHz y ${Math.round(targetAmp * 100)}% de potencia para transmitir el paquete #${waveIndex + 1}.`,
+    successMessage: `¡PAQUETE #${waveIndex + 1} CONFIRMADO EN ${stationInfo.station.split(' ')[0].toUpperCase()}!`,
+  };
+}

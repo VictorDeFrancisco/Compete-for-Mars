@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { MAX_PLAYERS } from '../../../shared/constants';
 import type { GameView } from '../../../shared/types';
-import AstronautPortraitSvg, { suitColorByIndex, suitColorForPlayer } from './AstronautPortraitSvg';
+import AstronautPortraitSvg, { resolvePlayerSuitColor } from './AstronautPortraitSvg';
 import MarsBase3D from './MarsBase3D';
 import { RadiationIcon } from './RadiationIcon';
 import { playUiClick, playUiConfirm } from '../utils/uiAudio';
@@ -235,9 +235,7 @@ export default function Lobby({
               const dead = player.health <= 0;
               const offline = !player.connected && !player.isBot;
               const canKick = isHost && !disabled && !isSelf && (player.isBot || !player.connected);
-              const suitColor = isSelf
-                ? suitColorForPlayer(game.self.stats, slotIndex)
-                : suitColorByIndex(slotIndex);
+              const suitColor = resolvePlayerSuitColor(player, game.self.stats, isSelf, slotIndex);
 
               const healthPct = percentOf(player.health, player.maxHealth);
               const stampText = dead

@@ -15,7 +15,7 @@ function SignalModulatorView({ snapshot }: MinigameViewProps<SignalModulatorData
       <div className="signal-mod__header">
         <span className="signal-mod__badge">ENLACE DSN</span>
         <span className="signal-mod__counter">
-          PAQUETE {data.currentPacketIndex + 1} / {data.totalPackets}
+          ONDA #{data.currentPacketIndex + 1} · {data.completedPacketIds.length} ENV.
         </span>
         <span className="signal-mod__station">{currentPacket.station.split(' ')[0]}</span>
       </div>

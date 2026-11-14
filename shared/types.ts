@@ -7,6 +7,7 @@ export type CardKind = 'rest' | 'eat' | 'expedition' | 'decontamination' | 'radi
 export interface CardRules {
   kind: CardKind;
   amount?: number;
+  perAlive?: number;
   chance?: number | 'alive/5';
   failure?: Partial<Resources>;
   failureHealth?: number;
@@ -32,6 +33,7 @@ export type { MinigameDefinition, MinigameResult } from './minigames/types';
 export interface PublicPlayer {
   id: string;
   name: string;
+  suitColor?: string;
   health: number;
   maxHealth: number;
   isBot: boolean;
@@ -82,6 +84,7 @@ export interface ClientToServerEvents {
   'room:add-bots': (reply: Reply) => void;
   'room:remove-player': (id: string, reply: Reply) => void;
   'game:start': (reply: Reply) => void;
+  'game:restart': (reply: Reply) => void;
   'player:ready': (ready: boolean, reply: Reply) => void;
   'phase:ready': (action: PhaseAction, reply: Reply) => void;
   'card:choose': (action: PhaseAction & { cardId: string; targetId?: string }, reply: Reply) => void;

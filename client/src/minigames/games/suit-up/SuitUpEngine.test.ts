@@ -7,7 +7,7 @@ import { DEFAULT_SUIT_STEPS, type SuitStep } from './suitStepsConfig';
 import { SuitUpEngine } from './SuitUpEngine';
 
 test('SuitUpEngine inicializa en paso 0 con telemetría en cero', () => {
-  const game = new SuitUpEngine(suitUpDefinition, () => 0, DEFAULT_MINIGAME_CONTEXT);
+  const game = new SuitUpEngine(suitUpDefinition, () => 0, DEFAULT_MINIGAME_CONTEXT, DEFAULT_SUIT_STEPS);
   const snap = game.getSnapshot();
 
   assert.equal(snap.status, 'idle');
@@ -21,7 +21,7 @@ test('SuitUpEngine inicializa en paso 0 con telemetría en cero', () => {
 
 test('Timing QTE: acierto perfecto, acierto normal y fallo fuera de zona', () => {
   let now = 0;
-  const game = new SuitUpEngine(suitUpDefinition, () => now, DEFAULT_MINIGAME_CONTEXT);
+  const game = new SuitUpEngine(suitUpDefinition, () => now, DEFAULT_MINIGAME_CONTEXT, DEFAULT_SUIT_STEPS);
   game.start();
 
   // Paso 1 es 'lcvg-cooling', tipo timing con sweetSpot [0.62, 0.88] y periodo 1400ms
@@ -44,7 +44,7 @@ test('Timing QTE: acierto perfecto, acierto normal y fallo fuera de zona', () =>
 
 test('Timing QTE: fallo por pulsar demasiado pronto no avanza el paso', () => {
   let now = 0;
-  const game = new SuitUpEngine(suitUpDefinition, () => now, DEFAULT_MINIGAME_CONTEXT);
+  const game = new SuitUpEngine(suitUpDefinition, () => now, DEFAULT_MINIGAME_CONTEXT, DEFAULT_SUIT_STEPS);
   game.start();
 
   // Progreso en 100ms (0.07), muy antes del sweetSpot (0.62)
@@ -287,4 +287,14 @@ test('Semilla compartida genera pasos aleatorios idénticos para la misma ronda 
 
   assert.deepEqual(engineA.steps, engineB.steps);
   assert.notDeepEqual(engineA.steps, engineC.steps);
+});
+
+test('Sin semilla explícita genera pasos aleatorios distintos entre partidas', () => {
+  const signatures = new Set<string>();
+  for (let i = 0; i < 6; i++) {
+    const engine = new SuitUpEngine(suitUpDefinition, () => 0, DEFAULT_MINIGAME_CONTEXT);
+    assert.ok(engine.steps.length >= 6);
+    signatures.add(engine.steps.map(s => `${s.id}:${s.qte.type}`).join('|'));
+  }
+  assert.ok(signatures.size >= 2, 'Sin seed los pasos deben variar aleatoriamente');
 });

@@ -8,7 +8,6 @@ import { suitUpDefinition } from '../../../../../shared/minigames/suitUp';
 import type { MinigameDefinition } from '../../../../../shared/minigames/types';
 import { BaseMinigame, type ActionState } from '../../core/BaseMinigame';
 import {
-  DEFAULT_SUIT_STEPS,
   generateRandomSuitSteps,
   type SuitPartKey,
   type SuitStep,
@@ -76,9 +75,9 @@ export class SuitUpEngine extends BaseMinigame<SuitUpData> {
   ) {
     const resolvedSteps =
       steps ??
-      (typeof context.seed === 'number'
-        ? generateRandomSuitSteps(seededPrng(context.seed))
-        : DEFAULT_SUIT_STEPS);
+      generateRandomSuitSteps(
+        typeof context.seed === 'number' ? seededPrng(context.seed) : Math.random,
+      );
     if (!resolvedSteps.length) throw new Error('SuitUpEngine requiere al menos un paso.');
     const firstStep = resolvedSteps[0];
 

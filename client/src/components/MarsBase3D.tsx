@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { GameView, PublicPlayer } from '../../../shared/types';
+import { resolvePlayerSuitColor } from './AstronautPortraitSvg';
 
 interface Vec3 {
   x: number;
@@ -424,15 +425,16 @@ export default function MarsBase3D({ game, autoOrbit = true }: { game: GameView;
           const slot = CREW_SLOTS[index % CREW_SLOTS.length];
           const base = project(slot, width, height);
           const head = project({ x: slot.x, y: 0.65, z: slot.z }, width, height);
-          return { player, base, head };
+          return { player, index, base, head };
         })
-        .filter((entry): entry is { player: PublicPlayer; base: Projected; head: Projected } =>
+        .filter((entry): entry is { player: PublicPlayer; index: number; base: Projected; head: Projected } =>
           Boolean(entry.base && entry.head),
         )
         .sort((a, b) => b.base.depth - a.base.depth);
 
-      for (const { player, base, head } of crewEntries) {
+      for (const { player, index, base, head } of crewEntries) {
         const isSelf = player.id === currentGame.self.id;
+        const suitColor = resolvePlayerSuitColor(player, currentGame.self.stats, isSelf, index);
         const accent = !player.connected
           ? '#7f8c9b'
           : player.ready
@@ -448,15 +450,18 @@ export default function MarsBase3D({ game, autoOrbit = true }: { game: GameView;
 
         const bodyH = Math.max(16, base.y - head.y);
         const bodyW = Math.max(7, bodyH * 0.34);
-        ctx.fillStyle = '#dce6f2';
+        ctx.fillStyle = suitColor;
+        ctx.strokeStyle = '#1a1817';
+        ctx.lineWidth = Math.max(1, 1.4 * dpr);
         ctx.fillRect(base.x - bodyW / 2, head.y + bodyH * 0.26, bodyW, bodyH * 0.62);
+        ctx.strokeRect(base.x - bodyW / 2, head.y + bodyH * 0.26, bodyW, bodyH * 0.62);
 
         const helmR = Math.max(5, bodyH * 0.22);
         ctx.fillStyle = '#eef4fc';
         ctx.beginPath();
         ctx.arc(head.x, head.y + helmR * 0.85, helmR, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = accent;
+        ctx.fillStyle = suitColor;
         ctx.beginPath();
         ctx.arc(head.x, head.y + helmR * 0.85, helmR * 0.58, 0, Math.PI * 2);
         ctx.fill();

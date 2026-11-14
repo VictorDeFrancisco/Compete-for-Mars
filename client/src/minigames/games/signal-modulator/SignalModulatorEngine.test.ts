@@ -80,42 +80,78 @@ test('Acciones de teclado o botones modifican la frecuencia y amplitud', () => {
   assert.equal(engine.getSnapshot().data.isFiltering, true);
 });
 
-test('Completar los 4 paquetes finaliza la carrera con validateResult válido', () => {
+test('Mantener W y S mueve la potencia continuamente incluso a 120 FPS', () => {
   let now = 0;
   const engine = new SignalModulatorEngine(signalModulatorDefinition, () => now, DEFAULT_MINIGAME_CONTEXT);
   engine.start();
 
-  for (let p = 0; p < TELEMETRY_PACKETS.length; p++) {
+  const startAmp = engine.getSnapshot().data.playerAmp;
+  engine.dispatch('amp-up', 'press');
+  // 60 frames de 8ms (~125 FPS, 480ms totales)
+  for (let i = 1; i <= 60; i++) {
+    now = i * 8;
+    engine.tick();
+  }
+  engine.dispatch('amp-up', 'release');
+  const raisedAmp = engine.getSnapshot().data.playerAmp;
+  assert.ok(raisedAmp > startAmp + 0.15, `Amplitud esperada > ${startAmp + 0.15}, fue ${raisedAmp}`);
+
+  engine.dispatch('amp-down', 'press');
+  for (let i = 61; i <= 120; i++) {
+    now = i * 8;
+    engine.tick();
+  }
+  engine.dispatch('amp-down', 'release');
+  const loweredAmp = engine.getSnapshot().data.playerAmp;
+  assert.ok(loweredAmp < raisedAmp - 0.15, `Amplitud esperada < ${raisedAmp - 0.15}, fue ${loweredAmp}`);
+});
+
+test('Las ondas son ilimitadas: tras 4 paquetes siguen generándose ondas hasta agotar el tiempo', () => {
+  let now = 0;
+  const engine = new SignalModulatorEngine(
+    signalModulatorDefinition,
+    () => now,
+    { ...DEFAULT_MINIGAME_CONTEXT, seed: 4242 },
+  );
+  engine.start();
+
+  // Transmitimos 6 ondas seguidas (más que las 4 iniciales)
+  for (let p = 0; p < 6; p++) {
     const curPacket = engine.getSnapshot().data.currentPacket;
     engine.setPlayerFrequency(curPacket.targetFreq);
     engine.setPlayerAmplitude(curPacket.targetAmp);
 
-    // Si tiene llamarada solar, activamos el filtro para limpiar el ruido; sin llamarada lo soltamos para recargar
     if (curPacket.hasSolarFlare) {
       engine.dispatch('filter-noise', 'press');
     } else {
       engine.dispatch('filter-noise', 'release');
     }
 
-    // Avanzamos hasta que pase de paquete
     for (let step = 0; step < 30; step++) {
       now += 100;
       engine.tick();
-      if (engine.getSnapshot().data.currentPacketIndex > p || engine.getSnapshot().status === 'finished') {
+      if (engine.getSnapshot().data.currentPacketIndex > p) {
         break;
       }
     }
   }
 
+  const snap = engine.getSnapshot();
+  assert.equal(snap.status, 'running');
+  assert.equal(snap.data.currentPacketIndex, 6);
+  assert.equal(snap.data.completedPacketIds.length, 6);
+  assert.ok(snap.score >= 1500);
+
+  // Solo termina al expirar el tiempo
+  now = signalModulatorDefinition.durationMs;
+  engine.tick();
   const finalSnap = engine.getSnapshot();
   assert.equal(finalSnap.status, 'finished');
-  assert.equal(finalSnap.progress, 1);
-  assert.equal(finalSnap.result?.completed, true);
-  assert.equal(finalSnap.result?.reason, 'completed');
-  assert.ok(finalSnap.score > 0);
+  assert.equal(finalSnap.result?.reason, 'timeout');
+  assert.ok((finalSnap.result?.score ?? 0) >= 1500);
 
   const validated = validateResult(signalModulatorDefinition, finalSnap.result);
-  assert.equal(validated.completed, true);
+  assert.equal(validated.score, finalSnap.result?.score);
 });
 
 test('Timeout al alcanzar durationMs preserva puntuación y razón timeout', () => {

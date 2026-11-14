@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { ROUND_RESOURCE_UPKEEP } from '../../../shared/constants';
 import type { PresentationProps } from '../../../shared/types';
-import AstronautPortraitSvg, { suitColorByIndex, suitColorForPlayer } from '../components/AstronautPortraitSvg';
+import AstronautPortraitSvg, { resolvePlayerSuitColor } from '../components/AstronautPortraitSvg';
 import { playUiClick, playUiConfirm } from '../utils/uiAudio';
 import './MinigamePresentation.css';
 
@@ -39,6 +40,35 @@ function MinigamePreviewSvg({ id }: { id: string }) {
           <circle cx="100" cy="65" r="26" fill="#F5EFE0" stroke="#1A1817" strokeWidth="3" />
           <rect x="82" y="54" width="36" height="20" rx="9" fill="#334155" stroke="#1A1817" strokeWidth="2" />
           <rect x="148" y="92" width="36" height="20" rx="3" fill="#FC3D21" stroke="#1A1817" strokeWidth="2.5" />
+        </svg>
+      );
+    case 'signal-modulator':
+      return (
+        <svg className="briefing-card__svg" viewBox="0 0 200 130" aria-hidden="true">
+          <rect width="200" height="130" fill="#0B1320" />
+          <path d="M10 65 Q35 20 60 65 T110 65 T160 65 T195 65" fill="none" stroke="#F59E0B" strokeWidth="4" />
+          <path d="M10 65 Q35 24 60 65 T110 65 T160 65 T195 65" fill="none" stroke="#38BDF8" strokeWidth="3" strokeDasharray="6 4" />
+          <rect x="14" y="14" width="64" height="16" rx="4" fill="#17253B" stroke="#38BDF8" strokeWidth="1.8" />
+        </svg>
+      );
+    case 'anomalies':
+      return (
+        <svg className="briefing-card__svg" viewBox="0 0 200 130" aria-hidden="true">
+          <rect width="200" height="130" fill="#EAE0CA" />
+          <rect x="16" y="18" width="76" height="94" rx="6" fill="#1A2622" stroke="#1A1817" strokeWidth="2.5" />
+          <rect x="108" y="18" width="76" height="94" rx="6" fill="#1A2622" stroke="#1A1817" strokeWidth="2.5" />
+          <path d="M28 52 H80 M28 78 H80" stroke="#4D6659" strokeWidth="4" />
+          <path d="M120 52 H172 M120 78 H172" stroke="#4D6659" strokeWidth="4" />
+          <circle cx="146" cy="52" r="14" fill="none" stroke="#FC3D21" strokeWidth="3" />
+        </svg>
+      );
+    case 'solar-storm':
+      return (
+        <svg className="briefing-card__svg" viewBox="0 0 200 130" aria-hidden="true">
+          <rect width="200" height="130" fill="#2A1118" />
+          <circle cx="38" cy="36" r="24" fill="#F97316" stroke="#FDE047" strokeWidth="3" />
+          <path d="M84 110 L108 66 L132 110 Z" fill="#F5EFE0" stroke="#1A1817" strokeWidth="3" />
+          <path d="M138 30 L176 46 M146 58 L184 72" stroke="#FACC15" strokeWidth="4" strokeLinecap="round" />
         </svg>
       );
     case 'trivia':
@@ -125,7 +155,7 @@ export default function MinigamePresentation({ game, onReady }: PresentationProp
               <p className="briefing-card__objective">{game.minigame.objective}</p>
 
               <div className="briefing-stakes-strip" aria-label="Round rewards and penalties">
-                <span className="briefing-stake briefing-stake--cost">-18 Energy · -18 Food</span>
+                <span className="briefing-stake briefing-stake--cost">-{ROUND_RESOURCE_UPKEEP} Energy · -{ROUND_RESOURCE_UPKEEP} Food</span>
                 <span className="briefing-stake briefing-stake--win">+{roundBonus} {resourceLabel} Winner</span>
                 <span className="briefing-stake briefing-stake--loss">-{loserPenalty} HP Last</span>
               </div>
@@ -175,7 +205,7 @@ export default function MinigamePresentation({ game, onReady }: PresentationProp
                 title={`${player.name}: ${player.ready ? 'Ready' : 'Waiting'}`}
               >
                 <AstronautPortraitSvg
-                  suitColor={player.id === game.self.id ? suitColorForPlayer(game.self.stats, idx) : suitColorByIndex(idx)}
+                  suitColor={resolvePlayerSuitColor(player, game.self.stats, player.id === game.self.id, idx)}
                   variant={idx}
                   className="briefing-crew__avatar"
                 />

@@ -1,5 +1,5 @@
 import type { GameView, PublicPlayer } from '../../../shared/types';
-import AstronautPortraitSvg, { suitColorByIndex, suitColorForPlayer } from './AstronautPortraitSvg';
+import AstronautPortraitSvg, { resolvePlayerSuitColor } from './AstronautPortraitSvg';
 import { RadiationIcon } from './RadiationIcon';
 import './Hud.css';
 
@@ -90,9 +90,7 @@ export function BottomCrewDock({ game }: { game: GameView }) {
     <footer className="bottom-crew-dock" aria-label="Crew Telemetry Dock">
       {game.players.map((player, index) => {
         const isSelf = player.id === game.self.id;
-        const suitColor = isSelf
-          ? suitColorForPlayer(game.self.stats, index)
-          : suitColorByIndex(index);
+        const suitColor = resolvePlayerSuitColor(player, game.self.stats, isSelf, index);
         const badge = playerStatusTag(player, game.phase);
         const hpPercent = pct(player.health, player.maxHealth);
 

@@ -1,9 +1,15 @@
 import { cardUnavailable } from './cards';
-import { CARDS_MS, DEFAULT_STATS, MAX_PLAYERS, PRESENTATION_MS } from '../shared/constants';
+import { CARDS_MS, DEFAULT_STATS, MAX_PLAYERS, PRESENTATION_MS, SUIT_COLOR_PALETTE } from '../shared/constants';
 import { chooseCard, makePlayer, submitResult, type Room } from './gameEngine';
 export function fillBots(room: Room) {
   while (room.players.length < MAX_PLAYERS) {
-    room.players.push(makePlayer({ name: `Bot ${room.players.length}`, stats: { ...DEFAULT_STATS } }, '', null, true));
+    const usedColors = new Set(room.players.map(p => p.suitColor));
+    const botColor =
+      SUIT_COLOR_PALETTE.find(color => !usedColors.has(color)) ??
+      SUIT_COLOR_PALETTE[room.players.length % SUIT_COLOR_PALETTE.length];
+    room.players.push(
+      makePlayer({ name: `Bot ${room.players.length}`, stats: { ...DEFAULT_STATS } }, '', null, true, botColor, room.players.length),
+    );
   }
 }
 export function playBots(room: Room, now: number): boolean {

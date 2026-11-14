@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { Server } from 'socket.io';
 import { MAX_PLAYERS, ROOM_IDLE_MS } from '../shared/constants';
 import type { ClientToServerEvents, Reply, ServerToClientEvents } from '../shared/types';
-import { advanceIfComplete, chooseCard, currentPhase, makePlayer, makeRoom, requireRule, startRound, submitResult, updateLiveProgress, validateEntry, viewFor, type Player, type Room } from './gameEngine';
+import { advanceIfComplete, chooseCard, currentPhase, makePlayer, makeRoom, requireRule, restartMatch, startRound, submitResult, updateLiveProgress, validateEntry, viewFor, type Player, type Room } from './gameEngine';
 import { fillBots, playBots } from './bots';
 
 interface SocketData { code?: string; playerId?: string }
@@ -73,7 +73,7 @@ export function createGameServer() {
       const entry = validateEntry(input);
       let code: string;
       do { code = randomBytes(3).toString('hex').toUpperCase(); } while (rooms.has(code));
-      const player = makePlayer(entry, token, socket.id);
+      const player = makePlayer(entry, token, socket.id, false, undefined, 0);
       const room = makeRoom(code, player); rooms.set(code, room);
       socket.data = { code, playerId: player.id }; broadcast(room);
     }));
@@ -85,7 +85,7 @@ export function createGameServer() {
       requireRule(room, 'No existe esa sala.');
       requireRule(room.phase === 'lobby' && room.round === 0 && !room.matchFinished, 'La partida ya ha comenzado.');
       requireRule(room.players.length < MAX_PLAYERS, 'La sala está llena.');
-      const player = makePlayer(entry, token, socket.id);
+      const player = makePlayer(entry, token, socket.id, false, undefined, room.players.length);
       room.players.push(player); room.lastActive = Date.now();
       socket.data = { code: room.code, playerId: player.id }; broadcast(room);
     }));
@@ -110,6 +110,9 @@ export function createGameServer() {
     }));
     socket.on('game:start', reply => handle(reply, () => {
       const [room, player] = membership(); startRound(room, player); broadcast(room);
+    }));
+    socket.on('game:restart', reply => handle(reply, () => {
+      const [room, player] = membership(); restartMatch(room, player); broadcast(room);
     }));
     socket.on('phase:ready', (action, reply) => handle(reply, () => {
       const [room, player] = membership();

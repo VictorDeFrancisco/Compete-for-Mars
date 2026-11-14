@@ -1,5 +1,6 @@
 import definitions from './data/boardSlots.json';
 import { clamp, clampPlayerResource, maxHealthFor } from './playerLimits';
+import { DISTRIBUTED_RESOURCE_PER_ALIVE } from '../shared/constants';
 import type { Card, Resources } from '../shared/types';
 import type { Player, Room } from './gameEngine';
 
@@ -13,14 +14,21 @@ function shuffled<T>(items: readonly T[], random: () => number): T[] {
   }
   return result;
 }
+export function distributedResourcePool(card: Card, aliveCount: number): number {
+  const perAlive = card.rules?.perAlive ?? DISTRIBUTED_RESOURCE_PER_ALIVE;
+  return Math.max(1, aliveCount) * perAlive;
+}
 export function drawCards(players: readonly Player[], random = Math.random): Card[] {
   const alive = players.filter(p => p.health > 0), contaminated = alive.some(p => p.resources.radiation > 0);
-  const supply = CARD_CATALOG.filter(c => c.id === 'rest' || c.id === 'eat');
-  const guaranteed = supply[Math.floor(random() * supply.length)];
-  const pool = CARD_CATALOG.filter(c => c.id !== guaranteed.id
-    && (contaminated || !['decontamination', 'reinforced-suit', 'contagion'].includes(c.id))
-    && (alive.length > 1 || !['sabotage', 'supply-theft', 'exchange', 'contagion'].includes(c.id)));
-  return [guaranteed, ...shuffled(pool, random).slice(0, 2)];
+  const eligible = (c: Card) =>
+    (contaminated || !['decontamination', 'reinforced-suit', 'contagion'].includes(c.id))
+    && (alive.length > 1 || !['sabotage', 'supply-theft', 'exchange', 'contagion'].includes(c.id))
+    && (!c.cost || alive.some(p => !cardUnavailable(p, c)));
+  const supply = CARD_CATALOG.filter(c => c.category === 'supply' && eligible(c));
+  const risk = CARD_CATALOG.filter(c => c.category === 'risk' && eligible(c));
+  const special = CARD_CATALOG.filter(c => (c.category === 'defense' || c.category === 'interaction') && eligible(c));
+  const pick = (pool: readonly Card[]) => pool[Math.floor(random() * pool.length)];
+  return [pick(supply), pick(risk), pick(special)];
 }
 export function cardUnavailable(player: Player, card: Card): string | null {
   if (player.health <= 0) return 'Los jugadores eliminados no pueden elegir cartas.';
@@ -85,9 +93,10 @@ export function resolveCards(room: Room, random = Math.random): void {
   for (const p of players) {
     const card = room.cards.find(c => c.id === p.selectedCardId)!, kind = card.rules?.kind ?? card.id;
     if (kind === 'rest' || kind === 'eat') {
-      const share = Math.floor((card.rules?.amount ?? 40) / selected(card.id).length);
+      const poolAmount = distributedResourcePool(card, players.length);
+      const share = Math.floor(poolAmount / selected(card.id).length);
       affect(p, { [kind === 'rest' ? 'energy' : 'food']: share });
-      note(p, `Fondo compartido: ${share} de ${kind === 'rest' ? 'energía' : 'comida'} por persona.`);
+      note(p, `Fondo compartido (${poolAmount} para ${players.length} vivos): ${share} de ${kind === 'rest' ? 'energía' : 'comida'} por persona.`);
     } else if (kind === 'decontamination') {
       if (before.get(p.id)!.resources.radiation === 0) { affect(p, { radiation: 1 }); note(p, 'Entraste sin contaminación: recibes 1 de radiación salvo que te proteja un escudo.'); }
       else if (selected(card.id).length === 1) { p.resources.radiation = 0; note(p, 'Descontaminación completada.'); }

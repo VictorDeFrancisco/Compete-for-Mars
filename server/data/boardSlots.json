@@ -2,23 +2,23 @@
   {
     "id": "rest",
     "title": "Descansar",
-    "description": "Reparte 40 de energía entre todos los que elijan esta carta.",
+    "description": "Reparte 15 de energía por cada jugador vivo entre quienes elijan esta carta.",
     "category": "supply",
     "effect": {},
     "rules": {
       "kind": "rest",
-      "amount": 40
+      "perAlive": 15
     }
   },
   {
     "id": "eat",
     "title": "Comer",
-    "description": "Reparte 40 de comida entre todos los que elijan esta carta.",
+    "description": "Reparte 15 de comida por cada jugador vivo entre quienes elijan esta carta.",
     "category": "supply",
     "effect": {},
     "rules": {
       "kind": "eat",
-      "amount": 40
+      "perAlive": 15
     }
   },
   {

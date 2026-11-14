@@ -5,13 +5,12 @@ export { BASE_STAT_CAP, clamp, clampResource, clampPlayerResource, maxHealthFor,
 import { MINIGAMES } from '../shared/minigames/catalog';
 import { rankResults, timeoutResult, validateResult } from '../shared/minigames/ranking';
 import type { MinigameResult } from '../shared/minigames/types';
-import { CARDS_MS, MAX_PLAYERS, RESULTS_MS, STAT_BUDGET } from '../shared/constants';
+import { CARDS_MS, MAX_PLAYERS, RESULTS_MS, ROUND_RESOURCE_UPKEEP, STAT_BUDGET, suitColorForStats } from '../shared/constants';
 import type { Card, Entry, GameView, MinigameDefinition, PublicPlayer, Resources, RoundResult, Stats, CardOutcome, PlayerProtection } from '../shared/types';
 
 export const CARDS: Card[] = CARD_CATALOG;
-export { MINIGAMES };
+export { MINIGAMES, ROUND_RESOURCE_UPKEEP };
 export const RESULT_GRACE_MS = 1500;
-export const ROUND_RESOURCE_UPKEEP = 18;
 export const BASE_WIN_RESOURCE_BONUS = 24;
 export const WIN_BONUS_ROUND_DECAY = 2;
 export const RADIATION_HEALTH_DAMAGE = 10;
@@ -20,6 +19,7 @@ export const EMPTY_RESOURCE_HEALTH_DAMAGE = 15;
 export interface Player extends PublicPlayer {
   token: string;
   socketId: string | null;
+  suitColor: string;
   stats: Stats;
   resources: Resources;
   selectedCardId: string | null;
@@ -82,11 +82,19 @@ export function validateEntry(input: unknown): Entry {
   return { name, stats: { energy: stats.energy, food: stats.food, health: stats.health } };
 }
 
-export function makePlayer(entry: Entry, token: string, socketId: string | null, isBot = false): Player {
+export function makePlayer(
+  entry: Entry,
+  token: string,
+  socketId: string | null,
+  isBot = false,
+  suitColor?: string,
+  slotIndex = 0,
+): Player {
   const maxHealth = maxHealthFor(entry);
   return {
     id: randomUUID(),
     ...entry,
+    suitColor: suitColor ?? suitColorForStats(entry.stats, slotIndex),
     token,
     socketId,
     health: maxHealth,
@@ -130,8 +138,8 @@ export function makeRoom(code: string, player: Player, now = Date.now()): Room {
 }
 
 export function publicPlayer(player: Player): PublicPlayer {
-  const { id, name, health, isBot, connected, ready, hasChosenCard, hasSubmitted, liveScore } = player;
-  return { id, name, health, maxHealth: maxHealthFor(player), isBot, connected, ready, hasChosenCard, hasSubmitted, liveScore };
+  const { id, name, suitColor, health, isBot, connected, ready, hasChosenCard, hasSubmitted, liveScore } = player;
+  return { id, name, suitColor, health, maxHealth: maxHealthFor(player), isBot, connected, ready, hasChosenCard, hasSubmitted, liveScore };
 }
 
 export function viewFor(room: Room, player: Player, now = Date.now()): GameView {
@@ -230,9 +238,23 @@ export function advanceIfComplete(room: Room, now = Date.now()): boolean {
   const alivePlayers = room.players.filter(p => p.health > 0);
 
   if (room.phase === 'cards' && (timedOut || alivePlayers.every(p => p.hasChosenCard))) {
-    const fallback = room.cards.find(c => c.id === 'rest' || c.id === 'eat')!;
     for (const player of alivePlayers) {
-      if (!player.hasChosenCard) chooseCard(room, player, fallback.id);
+      if (!player.hasChosenCard) {
+        const freeSupply = room.cards.find(c => (c.id === 'rest' || c.id === 'eat') && !cardUnavailable(player, c));
+        const safeNoTarget = freeSupply ?? room.cards.find(c => !c.targetRequired && !cardUnavailable(player, c));
+        if (safeNoTarget) {
+          chooseCard(room, player, safeNoTarget.id);
+        } else {
+          const target = alivePlayers.find(q => q.id !== player.id);
+          const anyCard = room.cards.find(c => !cardUnavailable(player, c) && (!c.targetRequired || Boolean(target)));
+          if (anyCard) chooseCard(room, player, anyCard.id, anyCard.targetRequired ? target?.id : undefined);
+          else {
+            player.selectedCardId = room.cards[0]?.id ?? 'rest';
+            player.selectedTargetId = null;
+            player.hasChosenCard = true;
+          }
+        }
+      }
     }
     resolveCards(room);
     if (finishMatchIfNeeded(room)) { transition(room, 'lobby', null, now); return true; }
@@ -326,4 +348,38 @@ function finishMatchIfNeeded(room: Room, fallbackWinner: string | null = null): 
     return true;
   }
   return false;
+}
+
+export function restartMatch(room: Room, actor: Player, now = Date.now()): void {
+  requireRule(room.hostId === actor.id, 'Solo el anfitrión puede reiniciar la partida.');
+  requireRule(room.matchFinished || room.winnerId !== null, 'La partida todavía está en curso.');
+  room.players = room.players.filter(p => p.isBot || p.connected);
+  room.round = 0;
+  room.matchFinished = false;
+  room.winnerId = null;
+  room.competitive = false;
+  room.cards = [];
+  room.cardsResolved = false;
+  room.lastResults = [];
+  room.minigame = MINIGAMES[0];
+  for (const player of room.players) {
+    player.maxHealth = maxHealthFor(player);
+    player.health = player.maxHealth;
+    player.resources = {
+      energy: BASE_STAT_CAP + player.stats.energy,
+      food: BASE_STAT_CAP + player.stats.food,
+      radiation: 0,
+    };
+    player.protection = { radiationShield: false, reinforcedSuit: false };
+    player.ready = player.isBot;
+    player.hasChosenCard = false;
+    player.hasSubmitted = false;
+    player.selectedCardId = null;
+    player.selectedTargetId = null;
+    player.cardOutcome = null;
+    player.score = null;
+    player.liveScore = null;
+    player.result = null;
+  }
+  transition(room, 'lobby', null, now);
 }

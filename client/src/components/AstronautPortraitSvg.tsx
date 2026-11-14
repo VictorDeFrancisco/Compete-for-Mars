@@ -1,4 +1,5 @@
-import type { Stats } from '../../../shared/types';
+import { SUIT_COLOR_PALETTE, suitColorForStats } from '../../../shared/constants';
+import type { PublicPlayer, Stats } from '../../../shared/types';
 import { PROFESSIONS, sameStats } from './professions';
 
 export const CLASS_SUIT_COLORS: Record<'engineer' | 'pilot' | 'biologist' | 'medic', string> = {
@@ -8,7 +9,7 @@ export const CLASS_SUIT_COLORS: Record<'engineer' | 'pilot' | 'biologist' | 'med
   medic: '#C83E37',
 };
 
-const FALLBACK_SUIT_COLORS = ['#D97706', '#1D6E8C', '#2F6F4E', '#C83E37'] as const;
+const FALLBACK_SUIT_COLORS = SUIT_COLOR_PALETTE;
 
 export function suitColorByIndex(index: number): string {
   return FALLBACK_SUIT_COLORS[Math.abs(index) % FALLBACK_SUIT_COLORS.length];
@@ -17,7 +18,17 @@ export function suitColorByIndex(index: number): string {
 export function suitColorForPlayer(stats: Stats, fallbackIndex = 0): string {
   const matched = PROFESSIONS.find(profession => sameStats(profession.stats, stats));
   if (matched) return CLASS_SUIT_COLORS[matched.id];
-  return suitColorByIndex(fallbackIndex);
+  return suitColorForStats(stats, fallbackIndex);
+}
+
+export function resolvePlayerSuitColor(
+  player: Pick<PublicPlayer, 'suitColor'>,
+  selfStats: Stats,
+  isSelf: boolean,
+  fallbackIndex = 0,
+): string {
+  if (player.suitColor) return player.suitColor;
+  return isSelf ? suitColorForPlayer(selfStats, fallbackIndex) : suitColorByIndex(fallbackIndex);
 }
 
 export interface AstronautPortraitSvgProps {

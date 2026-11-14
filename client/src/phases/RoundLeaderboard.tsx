@@ -1,5 +1,5 @@
 import type { GameView } from '../../../shared/types';
-import AstronautPortraitSvg, { suitColorByIndex, suitColorForPlayer } from '../components/AstronautPortraitSvg';
+import AstronautPortraitSvg, { resolvePlayerSuitColor } from '../components/AstronautPortraitSvg';
 import { playUiConfirm } from '../utils/uiAudio';
 import './RoundLeaderboard.css';
 
@@ -52,9 +52,7 @@ export default function RoundLeaderboard({ game, onContinue }: RoundLeaderboardP
           const playerIndex = Math.max(0, game.players.findIndex(p => p.id === entry.playerId));
           const player = game.players[playerIndex];
           const isSelf = entry.playerId === game.self.id;
-          const suitColor = isSelf
-            ? suitColorForPlayer(game.self.stats, playerIndex)
-            : suitColorByIndex(playerIndex);
+          const suitColor = resolvePlayerSuitColor(player, game.self.stats, isSelf, playerIndex);
           const badge = outcomeBadge(entry.outcome);
           const currentHp = player?.health ?? 0;
           const maxHp = player?.maxHealth ?? 100;
@@ -133,7 +131,7 @@ export default function RoundLeaderboard({ game, onContinue }: RoundLeaderboardP
           {selfConfirmed
             ? 'ESPERANDO TRIPULACIÓN ✓'
             : matchOver
-              ? 'IR AL LOBBY FINAL →'
+              ? 'VER PANTALLA FINAL →'
               : 'SIGUIENTE RONDA →'}
         </button>
       </footer>

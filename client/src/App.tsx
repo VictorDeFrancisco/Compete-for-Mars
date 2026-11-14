@@ -5,6 +5,7 @@ import { socket, useGame } from './hooks/useGame';
 import { useCountdown } from './hooks/useCountdown';
 import RoleSelect from './components/RoleSelect';
 import Lobby from './components/Lobby';
+import MatchVictoryScreen from './components/MatchVictoryScreen';
 import Hud, { BottomCrewDock } from './components/Hud';
 import StartScreen from './components/StartScreen';
 import RoomEntryScreen from './components/RoomEntryScreen';
@@ -47,6 +48,18 @@ export default function App() {
   };
 
   if (game) {
+    if (phase === 'lobby' && (game.matchFinished || game.winnerId != null)) {
+      return (
+        <MatchVictoryScreen
+          game={game}
+          error={error}
+          disabled={!connected}
+          onRestart={() => act(reply => socket.emit('game:restart', reply))}
+          onLeave={leave}
+        />
+      );
+    }
+
     if (phase === 'lobby') {
       return (
         <Lobby

@@ -1,5 +1,5 @@
 import type { GameView } from '../../../shared/types';
-import AstronautPortraitSvg, { suitColorByIndex, suitColorForPlayer } from './AstronautPortraitSvg';
+import AstronautPortraitSvg, { resolvePlayerSuitColor } from './AstronautPortraitSvg';
 import './CrewSidebar.css';
 
 export interface CrewSidebarProps {
@@ -19,7 +19,7 @@ export default function CrewSidebar({ game }: CrewSidebarProps) {
         {game.players.map((player, index) => {
           const isSelf = player.id === game.self.id;
           const dead = player.health <= 0;
-          const suitColor = isSelf ? suitColorForPlayer(game.self.stats, index) : suitColorByIndex(index);
+          const suitColor = resolvePlayerSuitColor(player, game.self.stats, isSelf, index);
           const hpPct = pct(player.health, player.maxHealth);
 
           let statusLabel = 'STANDBY';

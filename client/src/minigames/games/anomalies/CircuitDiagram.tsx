@@ -6,8 +6,18 @@ export function CircuitPart({ kind, state }: { kind: ComponentKind; state: Compo
   switch (kind) {
     case 'resistor': return <>
       <path d="M-51 0H-34M34 0H51" stroke="#b7bbaf" strokeWidth="5" />
-      <path d="M-34-13-26-18H26L34-13V13L26 18H-26L-34 13Z" fill={state ? '#504437' : '#d6bd85'} stroke="#30291f" strokeWidth="3" />
-      {state ? <><path d="M-20-9-9 8 0-5 9 10 21-9" stroke="#1b211d" strokeWidth="6" fill="none" /><path d="m-5-18 8 11-7 9 9 16" stroke="#cfa36e" strokeWidth="3" fill="none" /></> : <><path d="M-22-16V16M-8-17V17" stroke="#793e25" strokeWidth="6" /><path d="M6-17V17" stroke="#d27c32" strokeWidth="6" /><path d="M23-16V16" stroke="#aa924f" strokeWidth="4" /></>}
+      <path d="M-34-13-26-18H26L34-13V13L26 18H-26L-34 13Z" fill={state ? '#3e2d24' : '#d6bd85'} stroke={state ? '#191412' : '#30291f'} strokeWidth="3" />
+      {state
+        ? <>
+            <ellipse cx="0" cy="0" rx="22" ry="12" fill="#231915" />
+            <path d="M-21-10-9 8 0-6 9 10 21-10" stroke="#fc3d21" strokeWidth="5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="m-6-17 9 11-7 9 9 14" stroke="#facc15" strokeWidth="3" fill="none" strokeLinecap="round" />
+          </>
+        : <>
+            <path d="M-22-16V16M-8-17V17" stroke="#793e25" strokeWidth="6" />
+            <path d="M6-17V17" stroke="#d27c32" strokeWidth="6" />
+            <path d="M23-16V16" stroke="#aa924f" strokeWidth="4" />
+          </>}
     </>;
     case 'lamp': return <>
       <path d="M-51 0H-32V27H-10V10M51 0H32V27H10V10" fill="none" stroke="#b7bbaf" strokeWidth="4" />
