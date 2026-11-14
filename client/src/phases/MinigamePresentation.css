@@ -1,11 +1,185 @@
-/* Estilos de fase 2: usar selectores que empiecen por .phase-presentation. */
+/* Fase 2: Briefing estilo Mario Party adaptado a Manual de Campo Retro-NASA */
 .phase-presentation {
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   color: var(--ink-black);
-  padding-top: 26px;
 }
 
-.phase-presentation > :not(.manila-topo):not(.briefing-paperclip) {
+/* Header Banner + VS Matchup Strip */
+.briefing-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.briefing-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 12px 18px;
+  background: var(--manila-folder);
+  border: 3px solid var(--ink-black);
+  border-radius: 4px;
+  box-shadow: 0 5px 0 var(--ink-black);
+}
+
+.briefing-banner__meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.briefing-round-pill {
+  padding: 4px 10px;
+  background: var(--nasa-blue);
+  color: var(--paper-cream);
+  border: 2px solid var(--ink-black);
+  border-radius: 2px;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
+}
+
+.briefing-title {
+  margin: 0;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: clamp(1.35rem, 2.5vw, 1.9rem);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-black);
+}
+
+.briefing-vs-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 10px;
+}
+
+.briefing-astronaut {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px 5px;
+  background: var(--paper-cream);
+  border: 2.5px solid var(--ink-black);
+  border-radius: 4px;
+  box-shadow: 0 4px 0 var(--ink-black);
+  min-width: 78px;
+}
+
+.briefing-astronaut--ready {
+  box-shadow: 0 4px 0 var(--ink-black), 0 0 0 2px #1d6b41 inset;
+}
+
+.briefing-astronaut__portrait {
+  width: 56px;
+  height: 56px;
+  border: 2px solid var(--ink-black);
+  border-radius: 3px;
+  display: block;
+}
+
+.briefing-astronaut__name {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-black);
+  max-width: 76px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.briefing-astronaut__ready {
+  position: absolute;
+  top: -7px;
+  right: -6px;
+  padding: 2px 5px;
+  background: #d2eedd;
+  color: #144d2e;
+  border: 2px solid var(--ink-black);
+  border-radius: 2px;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+}
+
+.briefing-vs-badge {
+  padding: 3px 7px;
+  background: var(--nasa-orange);
+  color: var(--paper-cream);
+  border: 2.5px solid var(--ink-black);
+  border-radius: 3px;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  transform: rotate(-6deg);
+  box-shadow: 0 3px 0 var(--ink-black);
+}
+
+/* Tabbed Folder Card */
+.briefing-folder-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.briefing-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 0 12px;
+  position: relative;
+  z-index: 2;
+}
+
+.briefing-tab {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 0.82rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: #d5c8b0 !important;
+  color: #3a342c !important;
+  border: 3px solid var(--ink-black) !important;
+  border-bottom: none !important;
+  border-radius: 6px 6px 0 0 !important;
+  padding: 10px 22px 9px !important;
+  box-shadow: none !important;
+  transform: translateY(3px) !important;
+}
+
+.briefing-tab:hover:not(.briefing-tab--active) {
+  background: #e5dac3 !important;
+  color: var(--ink-black) !important;
+}
+
+.briefing-tab--active {
+  background: var(--manila-folder) !important;
+  color: var(--nasa-blue) !important;
+  box-shadow: inset 0 4px 0 var(--nasa-blue) !important;
+  padding: 12px 24px 11px !important;
+}
+
+.briefing-sheet {
+  position: relative;
+  padding: 24px 22px 20px;
+}
+
+.briefing-sheet > :not(.manila-topo):not(.briefing-paperclip) {
   position: relative;
   z-index: 1;
 }
@@ -13,7 +187,8 @@
 .briefing-paperclip {
   position: absolute;
   top: -16px;
-  left: 26px;
+  right: 26px;
+  left: auto;
   width: 24px;
   height: 46px;
   pointer-events: none;
@@ -21,75 +196,205 @@
   filter: drop-shadow(1px 2px 1px rgba(0, 0, 0, 0.35));
 }
 
-.phase-presentation__head {
+/* Description View: Preview + Input Chip on Left, Text on Right */
+.briefing-challenge-grid {
+  display: grid;
+  grid-template-columns: 185px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.briefing-preview-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.briefing-preview-frame {
+  padding: 6px;
+  background: #2b2d2a;
+  border: 3px solid var(--ink-black);
+  border-radius: 4px;
+  box-shadow: 0 4px 0 var(--ink-black);
+}
+
+.briefing-preview__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 2px solid var(--ink-black);
+  border-radius: 2px;
+}
+
+.briefing-input-badge {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  flex-wrap: wrap;
-  border-bottom: 2.5px solid var(--ink-black);
-  padding-bottom: 10px;
-  margin-bottom: 14px;
-}
-
-.phase-presentation h2 {
-  font-family: 'Archivo', sans-serif;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--ink-black);
-  margin: 0 0 8px;
-}
-
-.phase-presentation ul {
-  list-style: none;
-  padding: 0;
-  display: grid;
   gap: 8px;
-}
-
-.phase-presentation li {
-  padding: 9px 14px;
+  padding: 6px 10px;
   background: var(--paper-cream);
   border: 2.5px solid var(--ink-black);
-  border-left: 6px solid var(--nasa-blue);
   border-radius: 3px;
+  box-shadow: 0 3px 0 var(--ink-black);
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--nasa-blue);
+}
+
+.briefing-input-badge__svg {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+}
+
+.briefing-copy-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.briefing-instructions {
+  margin: 0;
+  font-size: 0.96rem;
+  line-height: 1.55;
   color: var(--ink-black);
-  font-family: 'Courier Prime', monospace;
-  font-size: 0.9rem;
+}
+
+.briefing-objective {
+  margin: 0;
+  padding: 9px 12px;
+  background: var(--paper-cream);
+  border: 2px solid var(--ink-black);
+  border-left: 6px solid var(--nasa-orange);
+  border-radius: 2px;
+  font-weight: 700;
+  color: var(--ink-black);
+}
+
+.briefing-stakes {
+  margin: 0;
+  padding: 8px 11px;
+  background: rgba(245, 239, 224, 0.75);
+  border: 1.5px dashed rgba(26, 24, 23, 0.45);
+  border-radius: 2px;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: #3a332b;
+}
+
+/* Controls Tab View */
+.briefing-controls-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.briefing-control-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  background: var(--paper-cream);
+  border: 2.5px solid var(--ink-black);
+  border-radius: 3px;
   box-shadow: 0 3px 0 var(--ink-black);
 }
 
-.phase-presentation__rules {
-  margin: 14px 0 18px;
-  padding: 12px 14px;
-  background: var(--paper-cream);
-  border: 2px dashed rgba(26, 24, 23, 0.45);
+.briefing-keycap {
+  flex-shrink: 0;
+  min-width: 112px;
+  text-align: center;
+  padding: 6px 10px;
+  background: #fffaf0;
+  border: 2.5px solid var(--ink-black);
   border-radius: 3px;
+  box-shadow: 0 3px 0 var(--ink-black);
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
+  color: var(--nasa-blue);
+  text-transform: uppercase;
 }
 
-.phase-presentation__rules p {
-  margin: 0 0 6px;
-  line-height: 1.45;
+.briefing-control-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.phase-presentation__rules p:last-child {
-  margin-bottom: 0;
+.briefing-control-text strong {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 0.88rem;
+  text-transform: uppercase;
+  color: var(--ink-black);
 }
 
-.phase-presentation__actions {
+.briefing-control-text span {
+  font-size: 0.86rem;
+  color: #3f3830;
+}
+
+/* Bottom Action Row: Controls Switcher + Contextual Start Button */
+.briefing-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
   flex-wrap: wrap;
-  padding-top: 12px;
-  border-top: 2px solid rgba(26, 24, 23, 0.22);
 }
 
-.phase-presentation__status {
-  margin: 0;
-  font-size: 0.84rem;
+.briefing-start-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.briefing-ready-count {
+  padding: 6px 10px;
+  background: var(--paper-cream);
+  border: 2px solid var(--ink-black);
+  border-radius: 3px;
+  font-family: 'Courier Prime', monospace;
   font-weight: 700;
-  color: #463f36;
+  font-size: 0.8rem;
+  color: var(--ink-black);
+  box-shadow: 0 3px 0 var(--ink-black);
+}
+
+.briefing-start-btn {
+  font-size: 1rem !important;
+  padding: 13px 28px !important;
+}
+
+@media (max-width: 680px) {
+  .briefing-challenge-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .briefing-preview-col {
+    max-width: 240px;
+  }
+
+  .briefing-control-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .briefing-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .briefing-start-group {
+    margin-left: 0;
+    justify-content: space-between;
+  }
 }

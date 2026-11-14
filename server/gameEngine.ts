@@ -5,7 +5,7 @@ export { BASE_STAT_CAP, clamp, clampResource, clampPlayerResource, maxHealthFor,
 import { MINIGAMES } from '../shared/minigames/catalog';
 import { rankResults, timeoutResult, validateResult } from '../shared/minigames/ranking';
 import type { MinigameResult } from '../shared/minigames/types';
-import { CARDS_MS, MAX_PLAYERS, PRESENTATION_MS, STAT_BUDGET } from '../shared/constants';
+import { CARDS_MS, MAX_PLAYERS, STAT_BUDGET } from '../shared/constants';
 import type { Card, Entry, GameView, MinigameDefinition, PublicPlayer, Resources, RoundResult, Stats, CardOutcome, PlayerProtection } from '../shared/types';
 
 export const CARDS: Card[] = CARD_CATALOG;
@@ -184,7 +184,7 @@ export function startRound(room: Room, actor: Player, now = Date.now(), random: 
     player.score = null;
     player.result = null;
   }
-  transition(room, 'presentation', PRESENTATION_MS, now);
+  transition(room, 'presentation', null, now);
 }
 
 export function currentPhase(room: Room, expected: Room['phase'], phaseId: unknown) {

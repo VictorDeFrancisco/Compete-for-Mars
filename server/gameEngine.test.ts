@@ -212,7 +212,10 @@ test('los tiempos límite completan elecciones y resultados ausentes', () => {
   const room = makeRoom('ABC123', a, 0);
   a.ready = true;
   startRound(room, a, 0, () => 0);
-  advanceIfComplete(room, room.deadline!);
+  // Presentation/instructions phase has no timer; advances when alive players confirm.
+  assert.equal(room.deadline, null);
+  a.ready = true;
+  advanceIfComplete(room, 1);
   assert.equal(room.phase, 'cards');
   advanceIfComplete(room, room.deadline!);
   assert.equal(room.phase, 'playing');

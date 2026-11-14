@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from 'react';
 import type { Stats } from '../../../shared/types';
 import { playUiClick, playUiConfirm } from '../utils/uiAudio';
+import AstronautPortraitSvg, { CLASS_SUIT_COLORS } from './AstronautPortraitSvg';
 import MarsBackdrop from './MarsBackdrop';
 import { PROFESSIONS, sameStats, type Profession } from './professions';
 import './RoomEntryScreen.css';
@@ -21,25 +22,6 @@ export interface RoomEntryScreenProps {
 const STAT_STEPS = 3;
 const STAT_STEP_VALUE = 10;
 const CARD_TILTS = ['-1.6deg', '1.1deg', '-0.9deg', '1.4deg'] as const;
-
-const SUIT_COLORS: Record<Profession['id'], string> = {
-  engineer: '#D97706',
-  pilot: '#1D6E8C',
-  biologist: '#2F6F4E',
-  medic: '#C83E37',
-};
-
-function HelmetSilhouetteSvg({ suitColor }: { suitColor: string }) {
-  return (
-    <svg className="id-card__portrait-svg" viewBox="0 0 64 64" aria-hidden="true">
-      <rect width="64" height="64" fill="#E4D8C0" />
-      <path d="M12 64 C12 48 20 44 32 44 C44 44 52 48 52 64 Z" fill={suitColor} style={{ transition: 'fill 0.2s ease' }} />
-      <circle cx="32" cy="27" r="16" fill="#F5EFE0" stroke="#1A1817" strokeWidth="2.5" />
-      <rect x="20" y="18" width="24" height="16" rx="7" fill="#1A1817" />
-      <path d="M24 22 H34" stroke={suitColor} strokeWidth="2.5" strokeLinecap="round" style={{ transition: 'stroke 0.2s ease' }} />
-    </svg>
-  );
-}
 
 function MissionPatchSvg({ id }: { id: Profession['id'] }) {
   switch (id) {
@@ -116,8 +98,9 @@ export default function RoomEntryScreen({
 }: RoomEntryScreenProps) {
   const [code, setCode] = useState('');
 
-  const selectedProfession = PROFESSIONS.find(p => sameStats(p.stats, stats)) ?? PROFESSIONS[0];
-  const suitColor = SUIT_COLORS[selectedProfession.id];
+  const selectedIndex = Math.max(0, PROFESSIONS.findIndex(p => sameStats(p.stats, stats)));
+  const selectedProfession = PROFESSIONS[selectedIndex] ?? PROFESSIONS[0];
+  const suitColor = CLASS_SUIT_COLORS[selectedProfession.id];
   const canSubmit = connected && name.trim().length > 0 && (mode === 'create' || code.trim().length === 6);
 
   const handleSelectProfession = (profession: Profession) => {
@@ -181,7 +164,11 @@ export default function RoomEntryScreen({
 
             <div className="entry-inputs">
               <div className="id-card">
-                <HelmetSilhouetteSvg suitColor={suitColor} />
+                <AstronautPortraitSvg
+                  suitColor={suitColor}
+                  variant={selectedIndex}
+                  className="id-card__portrait-svg"
+                />
                 <div className="id-card__body">
                   <label htmlFor="entry-callsign" className="id-card__label">
                     ASTRONAUT NAME
