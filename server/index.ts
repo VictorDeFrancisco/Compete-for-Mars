@@ -83,7 +83,7 @@ export function createGameServer() {
       requireRule(typeof input.code === 'string', 'Introduce un código de sala.');
       const room = rooms.get(input.code.trim().toUpperCase());
       requireRule(room, 'No existe esa sala.');
-      requireRule(room.phase === 'lobby' && !room.matchFinished, 'La ronda está en curso o la partida ha terminado.');
+      requireRule(room.phase === 'lobby' && room.round === 0 && !room.matchFinished, 'La partida ya ha comenzado.');
       requireRule(room.players.length < MAX_PLAYERS, 'La sala está llena.');
       const player = makePlayer(entry, token, socket.id);
       room.players.push(player); room.lastActive = Date.now();
@@ -94,7 +94,7 @@ export function createGameServer() {
     }));
     socket.on('room:add-bots', reply => handle(reply, () => {
       const [room, player] = membership();
-      requireRule(room.phase === 'lobby' && !room.matchFinished && room.hostId === player.id, 'Solo el anfitrión puede añadir bots en el lobby.');
+      requireRule(room.phase === 'lobby' && room.round === 0 && !room.matchFinished && room.hostId === player.id, 'Solo el anfitrión puede añadir bots antes de iniciar la partida.');
       fillBots(room); broadcast(room);
     }));
     socket.on('room:remove-player', (id, reply) => handle(reply, () => {

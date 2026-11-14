@@ -25,7 +25,7 @@ export default function App() {
   const [prepared, setPrepared] = useState(false);
 
   const [previewPhase, setPreviewPhase] = useState<Exclude<Phase, 'stats'>>('lobby');
-  const [previewMinigameId, setPreviewMinigameId] = useState('pulse');
+  const [previewMinigameId, setPreviewMinigameId] = useState('pipes');
   const [previewReady, setPreviewReady] = useState(false);
 
   const seconds = useCountdown(game?.deadline ?? null, serverOffset);
@@ -69,25 +69,11 @@ export default function App() {
       <div className="mars-stage">
         <MarsBackdrop />
         <main className="mars-stage__main">
-          <header>
-            <div>
-              <p className="eyebrow">NASA · Ares Sector · Mission</p>
-              <h1>Compete For Mars</h1>
-            </div>
-          </header>
-          <nav aria-label="Phases">
-            {(Object.keys(PHASE_LABELS) as Phase[]).map(p => (
-              <span key={p} aria-current={p === phase ? 'step' : undefined}>
-                {PHASE_LABELS[p]}
-              </span>
-            ))}
-          </nav>
-          {error && <p className="error" role="alert">{error}</p>}
-          <div className="room-bar">
-            <span>Room <strong>{game.code}</strong> · Round {game.round}</span>
-            {seconds !== null && <strong role="timer">{seconds} s</strong>}
+          <div className="stage-topbar">
+            {seconds !== null && <strong className="stage-timer" role="timer">{seconds} s</strong>}
             <button className="secondary" onClick={leave} disabled={!connected}>Leave room</button>
           </div>
+          {error && <p className="error" role="alert">{error}</p>}
           <div className="layout">
             <div>
               <fieldset disabled={!connected}>
@@ -158,15 +144,11 @@ export default function App() {
       <div className="mars-stage">
         <MarsBackdrop />
         <main className="mars-stage__main">
-          <header>
-            <div>
-              <p className="eyebrow">NASA · Ares Sector · TEST Preview</p>
-              <h1>Compete For Mars</h1>
-            </div>
+          <div className="stage-topbar">
             <button type="button" className="secondary" onClick={() => setView('test-panel')}>
               Back to panel
             </button>
-          </header>
+          </div>
           <div className="layout">
             <div>
               {previewPhase === 'presentation' && (
@@ -291,7 +273,7 @@ export default function App() {
         )}
       </fieldset>
       <footer>
-        Prototype · <a href="/?minigame=pulse">Local minigame lab</a>
+        Prototype · <a href="/?minigame=pipes">Local minigame lab</a>
       </footer>
     </main>
   );

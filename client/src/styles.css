@@ -65,6 +65,25 @@ body {
   z-index: 2;
 }
 
+.stage-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.stage-timer {
+  padding: 6px 12px;
+  background: var(--nasa-blue);
+  color: var(--paper-cream);
+  border: 2.5px solid var(--ink-black);
+  border-radius: 3px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.95rem;
+  box-shadow: 0 3px 0 var(--ink-black);
+}
+
 /* Shared SVG Watermark, Metallic Paperclip & NASA Blue Orbital Stamp */
 .manila-topo {
   position: absolute;

@@ -10,8 +10,6 @@ const START_BUTTON_LABELS: Record<string, string> = {
   pipes: 'START REPAIR',
   'suit-up': 'START SUIT-UP',
   'mars-rover': 'LAUNCH ROVER',
-  pulse: 'START CALIBRATION',
-  'sequence-race': 'START SEQUENCE',
   trivia: 'START QUIZ',
 };
 
@@ -65,16 +63,6 @@ function MinigamePreviewSvg({ id }: { id: string }) {
           <rect x="84" y="46" width="60" height="18" rx="3" fill="#24344D" stroke="#64748B" strokeWidth="1.5" />
           <rect x="16" y="70" width="60" height="18" rx="3" fill="#24344D" stroke="#64748B" strokeWidth="1.5" />
           <rect x="84" y="70" width="60" height="18" rx="3" fill="#24344D" stroke="#64748B" strokeWidth="1.5" />
-        </svg>
-      );
-    case 'sequence-race':
-      return (
-        <svg className="briefing-preview__svg" viewBox="0 0 160 100" aria-hidden="true">
-          <rect width="160" height="100" fill="#121923" />
-          <rect x="20" y="34" width="26" height="32" rx="3" fill="#4ADE80" stroke="#1A1817" strokeWidth="2.5" />
-          <rect x="52" y="34" width="26" height="32" rx="3" fill="#FC3D21" stroke="#1A1817" strokeWidth="2.5" />
-          <rect x="84" y="34" width="26" height="32" rx="3" fill="#F5EFE0" stroke="#1A1817" strokeWidth="2.5" />
-          <rect x="116" y="34" width="26" height="32" rx="3" fill="#D5C8B0" stroke="#1A1817" strokeWidth="2.5" />
         </svg>
       );
     default:

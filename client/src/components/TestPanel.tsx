@@ -27,7 +27,7 @@ export function buildPreviewGame(
     phase,
     phaseId: `preview-${phase}-${minigame.id}`,
     round: 1,
-    deadline: phase === 'lobby' ? null : now + (phase === 'playing' ? minigame.durationMs : 25_000),
+    deadline: phase === 'lobby' || phase === 'presentation' ? null : now + (phase === 'playing' ? minigame.durationMs : 25_000),
     serverNow: now,
     players: [
       {

@@ -78,9 +78,11 @@ export default function Lobby({
       <div className="lobby-hud">
         <header className="lobby-hud__top">
           <div className="lobby-hud__brand">
-            <span className="lobby-hud__eyebrow">COMPETE FOR MARS · LEVEL {nextLevel}</span>
+            <span className="lobby-hud__eyebrow">
+              {game.round === 0 ? 'COMPETE FOR MARS · CREW ASSEMBLY' : `COMPETE FOR MARS · LEVEL ${nextLevel}`}
+            </span>
             <div className="lobby-hud__title-row">
-              <strong>Room {game.code}</strong>
+              <strong>{game.round === 0 ? `Room ${game.code}` : `Mars Outpost · Round ${game.round}`}</strong>
               <span className={`lobby-hud__pill ${allReady ? 'lobby-hud__pill--all' : ''}`.trim()}>
                 {gameOver ? (matchWinner ? `Winner: ${matchWinner.name}` : 'Mission ended') : `${readyCount}/${alivePlayers.length} ready`}
               </span>
@@ -243,20 +245,22 @@ export default function Lobby({
 
                   {host ? (
                     <div className="lobby-actions__host">
-                      <button
-                        type="button"
-                        className="secondary"
-                        disabled={disabled || gameOver || game.players.length >= 4}
-                        onClick={onBots}
-                      >
-                        + Bots
-                      </button>
+                      {game.round === 0 && (
+                        <button
+                          type="button"
+                          className="secondary"
+                          disabled={disabled || gameOver || game.players.length >= 4}
+                          onClick={onBots}
+                        >
+                          + Bots
+                        </button>
+                      )}
                       <button
                         type="button"
                         disabled={disabled || !allReady}
                         onClick={onStart}
                       >
-                        Start Level {nextLevel}
+                        {game.round === 0 ? 'Start Match' : `Start Level ${nextLevel}`}
                       </button>
                     </div>
                   ) : (
