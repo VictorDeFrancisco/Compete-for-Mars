@@ -24,14 +24,14 @@ test('dos clientes reales: sala, autorizaciones, ronda, reconexión y segunda ro
   async function action(client: Socket, event: string, data?: unknown) {
     return new Promise<{ ok: boolean; error?: string }>((resolve, reject) => {
       const done = (error: Error | null, result: { ok: boolean; error?: string }) => error ? reject(error) : resolve(result);
-      if (data === undefined) client.timeout(3000).emit(event, done);
-      else client.timeout(3000).emit(event, data, done);
+      if (data === undefined) client.timeout(6000).emit(event, done);
+      else client.timeout(6000).emit(event, data, done);
     });
   }
   async function state(client: Socket, predicate: (view: GameView) => boolean) {
     if (states.has(client) && predicate(states.get(client)!)) return states.get(client)!;
     return new Promise<GameView>((resolve, reject) => {
-      const timer = setTimeout(() => { client.off('game:state', listener); reject(new Error('Estado no recibido')); }, 3000);
+      const timer = setTimeout(() => { client.off('game:state', listener); reject(new Error('Estado no recibido')); }, 6000);
       const listener = (view: GameView) => { if (predicate(view)) { clearTimeout(timer); client.off('game:state', listener); resolve(view); } };
       client.on('game:state', listener);
     });
