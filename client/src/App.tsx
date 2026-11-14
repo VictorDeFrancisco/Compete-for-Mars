@@ -7,7 +7,6 @@ import RoleSelect from './components/RoleSelect';
 import Lobby from './components/Lobby';
 import Hud, { BottomCrewDock } from './components/Hud';
 import StartScreen from './components/StartScreen';
-import GameIntro from './components/GameIntro';
 import RoomEntryScreen from './components/RoomEntryScreen';
 import MarsBackdrop from './components/MarsBackdrop';
 import { PROFESSIONS } from './components/professions';
@@ -33,7 +32,6 @@ export default function App() {
   const seconds = useCountdown(game?.deadline ?? null, serverOffset);
   const phase: Phase = game?.phase ?? (prepared ? 'lobby' : 'stats');
   const entry = { name, stats };
-  const [showIntro, setShowIntro] = useState(true);
 
   const quickLiveLobby = () => {
     const quickName = name.trim() || 'Tester';
@@ -239,14 +237,11 @@ export default function App() {
 
   if (view === 'start') {
     return (
-      <>
-        <StartScreen
-          onCreateScreen={() => setView('create')}
-          onJoinScreen={() => setView('join')}
-          onOpenTest={() => setView('test-panel')}
-        />
-        {showIntro && <GameIntro onComplete={() => setShowIntro(false)} />}
-      </>
+      <StartScreen
+        onCreateScreen={() => setView('create')}
+        onJoinScreen={() => setView('join')}
+        onOpenTest={() => setView('test-panel')}
+      />
     );
   }
 
