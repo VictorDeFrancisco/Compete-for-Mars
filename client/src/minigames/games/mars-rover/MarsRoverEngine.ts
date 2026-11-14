@@ -50,7 +50,8 @@ export class MarsRoverGame extends BaseMinigame<MarsRoverData> {
     context?: MinigameContext,
     seed?: number
   ) {
-    const sector = generateMarsSector(seed);
+    const resolvedSeed = seed ?? (typeof context?.seed === 'number' ? context.seed : undefined);
+    const sector = generateMarsSector(resolvedSeed);
     const initialElevation = Math.round(sector.elevationAt(sector.startPos.x, sector.startPos.y) * 10) / 10;
     const initialData: MarsRoverData = {
       posX: sector.startPos.x,

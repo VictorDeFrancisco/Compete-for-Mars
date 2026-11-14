@@ -161,3 +161,11 @@ test('applies energy and food penalties from MinigameContext', () => {
   game.dispatch('answer-1');
   assert.equal(game.getSnapshot().score, 15);
 });
+
+test('shared context seed delivers identical questions and option order across players', () => {
+  const ctxA = { resources: { energy: 10, food: 10, radiation: 0 }, seed: 987654321 };
+  const ctxB = { resources: { energy: 5, food: 5, radiation: 1 }, seed: 987654321 };
+  const playerA = new TriviaGame(triviaDefinition, () => 0, ctxA);
+  const playerB = new TriviaGame(triviaDefinition, () => 0, ctxB);
+  assert.deepEqual(playerA.getSnapshot().data.questions, playerB.getSnapshot().data.questions);
+});

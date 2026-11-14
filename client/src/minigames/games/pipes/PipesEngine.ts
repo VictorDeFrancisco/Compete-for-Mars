@@ -1,5 +1,5 @@
 import { pipesDefinition } from '../../../../../shared/minigames/pipes';
-import type { MinigameContext } from '../../../../../shared/minigames/context';
+import { seededPrng, type MinigameContext } from '../../../../../shared/minigames/context';
 import { BaseMinigame, type ActionState } from '../../core/BaseMinigame';
 import { generateBoard, waterFlow, type PipeBoard } from './board';
 
@@ -9,10 +9,20 @@ export interface PipesData {
 export const NEXT_BOARD_DELAY_MS = 650;
 export class PipesEngine extends BaseMinigame<PipesData> {
   private targetIndex = -1;
+  private readonly randomSeed: () => number;
   constructor(definition = pipesDefinition, clock?: () => number, context?: MinigameContext,
-    private readonly randomSeed: () => number = () => Math.floor(Math.random() * 0x100000000)) {
-    const board = generateBoard(randomSeed()).board;
+    randomSeed?: () => number) {
+    const resolvedRandomSeed =
+      randomSeed ??
+      (typeof context?.seed === 'number'
+        ? (() => {
+            const next = seededPrng(context.seed);
+            return () => Math.floor(next() * 0x100000000);
+          })()
+        : () => Math.floor(Math.random() * 0x100000000));
+    const board = generateBoard(resolvedRandomSeed()).board;
     super(definition, { board, wet: waterFlow(board).wet, solved: 0, turns: 0, nextBoardAt: null }, clock, context);
+    this.randomSeed = resolvedRandomSeed;
   }
   rotateAt(index: number): void {
     this.targetIndex = index;

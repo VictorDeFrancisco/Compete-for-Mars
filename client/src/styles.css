@@ -181,7 +181,7 @@ header {
   flex-wrap: wrap;
 }
 
-main header {
+main > header:not(.top-hud) {
   background: var(--manila-folder);
   border: 3px solid var(--ink-black);
   border-radius: 4px;
@@ -190,7 +190,7 @@ main header {
   margin-bottom: 12px;
 }
 
-main header h1 {
+main > header:not(.top-hud) h1 {
   margin: 2px 0 0;
   font-family: 'Archivo', sans-serif;
   font-weight: 800;

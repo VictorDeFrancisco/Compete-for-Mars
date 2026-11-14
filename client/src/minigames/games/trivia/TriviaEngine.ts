@@ -1,6 +1,7 @@
 import {
   DEFAULT_MINIGAME_CONTEXT,
   resourceModifiers,
+  seededPrng,
   type MinigameContext,
 } from '../../../../../shared/minigames/context';
 import { triviaDefinition } from '../../../../../shared/minigames/trivia';
@@ -61,10 +62,13 @@ export class TriviaGame extends BaseMinigame<TriviaData> {
     definition: MinigameDefinition = triviaDefinition,
     clock?: () => number,
     context: MinigameContext = DEFAULT_MINIGAME_CONTEXT,
-    rng: () => number = Math.random,
+    rng?: () => number,
     questions?: readonly TriviaQuestion[],
   ) {
-    const roundQuestions = questions ?? prepareTriviaQuestions(NASA_TRIVIA_QUESTIONS, QUESTIONS_PER_ROUND, rng);
+    const resolvedRng =
+      rng ??
+      (typeof context.seed === 'number' ? seededPrng(context.seed) : Math.random);
+    const roundQuestions = questions ?? prepareTriviaQuestions(NASA_TRIVIA_QUESTIONS, QUESTIONS_PER_ROUND, resolvedRng);
     const modifiers = resourceModifiers(context);
     const questionDurationMs = Math.round(QUESTION_TIME_MS * modifiers.speedMultiplier);
     const pointsPerCorrect = Math.round(POINTS_PER_CORRECT * modifiers.scoreMultiplier);
