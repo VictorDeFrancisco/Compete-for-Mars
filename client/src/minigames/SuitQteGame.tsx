@@ -1,2 +1,1 @@
-// Pendiente: minijuego de secuencia rápida para ponerse el traje.
-export {};
+export { default } from './games/suit-up/SuitUpGame';

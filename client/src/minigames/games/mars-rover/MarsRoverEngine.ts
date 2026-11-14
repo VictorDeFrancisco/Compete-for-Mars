@@ -215,6 +215,59 @@ export class MarsRoverGame extends BaseMinigame<MarsRoverData> {
       posX += vx * dt;
       posY += vy * dt;
 
+      // 7. Colisiones físicas mejoradas con rocas y peñascos marcianos
+      // Radio ajustado al tamaño visual real de las rocas y el rover para evitar muros invisibles
+      const roverEffectiveRadius = 1.15;
+      for (const rock of this.sector.rocks) {
+        const dx = posX - rock.x;
+        const dy = posY - rock.y;
+        const distSq = dx * dx + dy * dy;
+        const minSafeDist = rock.radius * 0.85 + roverEffectiveRadius;
+        if (distSq < minSafeDist * minSafeDist && distSq > 0.0001) {
+          const dist = Math.sqrt(distSq);
+          const overlap = minSafeDist - dist;
+          const nx = dx / dist;
+          const ny = dy / dist;
+
+          // Resolver penetración para evitar atravesar la roca
+          posX += nx * overlap;
+          posY += ny * overlap;
+
+          // Descomponer velocidad en componente normal (hacia la roca) y tangencial (a lo largo de la roca)
+          const vNormal = vx * nx + vy * ny;
+          const tx = -ny;
+          const ty = nx;
+          const vTangent = vx * tx + vy * ty;
+
+          if (vNormal < 0) {
+            // Rebote elástico muy suave en la componente normal
+            const restitution = Math.abs(vNormal) > 1.2 ? 0.15 : 0.05;
+            const newVNormal = -vNormal * restitution;
+
+            // Conservar el deslizamiento tangencial (84%) para permitir rodear la roca fluidamente
+            const newVTangent = vTangent * 0.84;
+
+            vx = nx * newVNormal + tx * newVTangent;
+            vy = ny * newVNormal + ty * newVTangent;
+
+            // Sacudida física suave de la suspensión
+            const impactSpeed = Math.abs(vNormal);
+            this.suspensionVelocity += impactSpeed * 0.7;
+
+            // Amortiguación de giro angular para evitar que el rover trompique o gire descontrolado
+            const crossImpact = ufX * ny - ufY * nx;
+            angularVelocity = angularVelocity * 0.65 + crossImpact * 5.0;
+
+            // Drenaje de energía si el choque fue a velocidad significativa
+            if (impactSpeed > 0.75) {
+              const energyLost = Math.min(2.0, impactSpeed * 0.5);
+              energy = Math.max(0, energy - energyLost);
+              lastEventMessage = `¡Roce con roca marciana! Velocidad absorbida (-${energyLost.toFixed(1)}% energía).`;
+            }
+          }
+        }
+      }
+
       // Límites del mapa
       if (posX <= 3 || posX >= MAP_SIZE - 3) {
         vx = -vx * 0.2;
