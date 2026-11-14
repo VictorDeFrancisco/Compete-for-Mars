@@ -2,54 +2,44 @@ import { defineMinigame } from './types';
 
 export const solarStormDefinition = defineMinigame({
   id: 'solar-storm',
-  title: 'Alerta DONKI: Tormentas de Radiación Solar',
+  title: 'Alerta DONKI: Deflector de Tormentas Solares',
   mode: 'score',
   durationMs: 60_000,
   maxScore: 1000,
   instructions:
-    'Monitorea el clima espacial con la base de datos DONKI de la NASA (Space Weather Database of Notifications, Knowledge, Information). El tiempo de observación avanza a gran velocidad durante un ciclo de tormentas solares reales. Cuando DONKI alerte de una Llamarada Solar (rayos X), refugia al personal en el Búnker de Regolito (S o ↓). Cuando la onda de plasma de una Eyección de Masa Coronal (CME) impacte Marte, activa el Deflector Magnético (W o ↑) y repliega los Paneles Solares (A o ←). Tras el impacto, purga la Sobrecarga Iónica (D, → o Espacio) antes de que sature los condensadores.',
+    'El Sol emite llamaradas solares y eyecciones de masa coronal (CME) reales de la base de datos NASA DONKI mientras el tiempo avanza rápidamente. Controla el Escudo Magnético móvil en la órbita de Marte: gira el escudo con A/D o ←/→ para interceptar las ondas de plasma antes de que impacten la colonia marciana. Pulsa Espacio o W para activar el Super-Escudo ampliado durante erupciones extremas.',
   objective:
-    'Mitiga las erupciones solares reales de la NASA DONKI coordinando escudos magnéticos y búnkers para minimizar la dosis de radiación recibida.',
+    'Gira el escudo magnético e intercepta todas las ondas de radiación solar de la NASA para proteger la colonia de Marte.',
   controls: [
     {
-      id: 'shield',
-      label: 'Deflector Magnético',
-      description: 'Genera una burbuja magnética toroidal que desvía la onda de plasma de la CME.',
-      bindings: [
-        { device: 'keyboard', code: 'KeyW', label: 'W' },
-        { device: 'keyboard', code: 'ArrowUp', label: '↑' },
-        { device: 'touch', label: '▲ Escudo Magnético' },
-      ],
-    },
-    {
-      id: 'shelter',
-      label: 'Búnker de Regolito',
-      description: 'Envía a la tripulación al refugio bajo tierra contra el destello de rayos X de la llamarada.',
-      bindings: [
-        { device: 'keyboard', code: 'KeyS', label: 'S' },
-        { device: 'keyboard', code: 'ArrowDown', label: '↓' },
-        { device: 'touch', label: '▼ Búnker Subterráneo' },
-      ],
-    },
-    {
-      id: 'panels',
-      label: 'Proteger Paneles',
-      description: 'Pliega los paneles fotovoltaicos para evitar que las partículas de alta energía fundan las celdas.',
+      id: 'turn-left',
+      label: 'Girar Escudo Izquierda',
+      description: 'Rota el escudo magnético en sentido antihorario alrededor de Marte.',
       bindings: [
         { device: 'keyboard', code: 'KeyA', label: 'A' },
         { device: 'keyboard', code: 'ArrowLeft', label: '←' },
-        { device: 'touch', label: '◀ Proteger Paneles' },
+        { device: 'touch', label: '◀ Girar Izquierda' },
       ],
     },
     {
-      id: 'purge',
-      label: 'Disipar Sobrecarga Iónica',
-      description: 'Purga la carga electrostática residual acumulada en los caloductos del escudo.',
+      id: 'turn-right',
+      label: 'Girar Escudo Derecha',
+      description: 'Rota el escudo magnético en sentido horario alrededor de Marte.',
       bindings: [
         { device: 'keyboard', code: 'KeyD', label: 'D' },
         { device: 'keyboard', code: 'ArrowRight', label: '→' },
+        { device: 'touch', label: 'Girar Derecha ▶' },
+      ],
+    },
+    {
+      id: 'boost',
+      label: 'Super-Escudo Ampliado',
+      description: 'Expande el deflector magnético a 160° para bloquear ondas masivas.',
+      bindings: [
         { device: 'keyboard', code: 'Space', label: 'Espacio' },
-        { device: 'touch', label: '▶ Disipar Sobrecarga' },
+        { device: 'keyboard', code: 'KeyW', label: 'W' },
+        { device: 'keyboard', code: 'ArrowUp', label: '↑' },
+        { device: 'touch', label: '⚡ Super-Escudo' },
       ],
     },
   ],
