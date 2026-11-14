@@ -667,6 +667,7 @@
 }
 
 .lobby-hud button.lobby-ready-toggle {
+  width: 150px;
   background: var(--paper-cream, #F5EFE0);
   color: var(--ink-black, #1A1817);
   box-shadow: 0 5px 0 var(--ink-black, #1A1817);
