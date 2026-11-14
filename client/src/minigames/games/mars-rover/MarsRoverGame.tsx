@@ -715,9 +715,10 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
   const targetAngleRad = Math.atan2(targetDx, -targetDy);
   const targetBearingDeg = Math.round(((targetAngleRad * 180) / Math.PI + 360) % 360);
   const relBearing = ((targetBearingDeg - data.heading + 540) % 360) - 180;
+  const isAligned = Math.abs(relBearing) <= 15;
   let targetNavHint = 'Al frente';
-  if (relBearing > 18) targetNavHint = `▶ Der (+${Math.round(relBearing)}°)`;
-  else if (relBearing < -18) targetNavHint = `◀ Izq (${Math.round(relBearing)}°)`;
+  if (relBearing > 18) targetNavHint = `Der (+${Math.round(relBearing)}°)`;
+  else if (relBearing < -18) targetNavHint = `Izq (${Math.round(relBearing)}°)`;
 
   const bindTouch = (action: string) => ({
     onPointerDown: () => isRunning && engine.dispatch(action, 'press'),
@@ -729,12 +730,39 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
     <div className="mars-rover-container">
       <div className="rover-cockpit">
         <div className="canvas-map-wrapper">
-          <canvas ref={canvasRef} width={600} height={390} className="mars-canvas" />
+          <canvas ref={canvasRef} width={720} height={520} className="mars-canvas" />
 
           <div className="rover-hud-overlay">
             <span className={`rover-hud-pill ${energyClass}`}>BAT {data.energy.toFixed(0)}%</span>
+
+            {/* Brújula rotatoria grande hacia la Baliza B */}
+            <div
+              className={`rover-compass-dial${isAligned ? ' is-aligned' : ''}`}
+              aria-label={`Dirección hacia la baliza: ${targetNavHint}, ${targetDist} metros`}
+            >
+              <div className="rover-compass-ring">
+                <svg
+                  className="rover-compass-arrow"
+                  viewBox="0 0 40 40"
+                  style={{ transform: `rotate(${relBearing}deg)` }}
+                  aria-hidden="true"
+                >
+                  <polygon
+                    points="20,4 32,32 20,25 8,32"
+                    fill={isAligned ? '#2E8B57' : '#FC3D21'}
+                    stroke="#1A1817"
+                    strokeWidth="2.5"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+              <div className="rover-compass-text">
+                <span className="rover-compass-label">{isAligned ? 'ALINEADO' : 'OBJETIVO'}</span>
+                <strong className="rover-compass-dist">{targetDist} M</strong>
+              </div>
+            </div>
+
             <span className="rover-hud-pill">{speedKmh} KM/H</span>
-            <span className="rover-hud-pill rover-hud-pill--target">BALIZA {targetDist} M</span>
           </div>
 
           {isGameOver && (
@@ -775,7 +803,17 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
             </div>
             <div className="telemetry-card">
               <span className="telemetry-label">GUÍA BALIZA</span>
-              <span className="telemetry-value">{targetNavHint}</span>
+              <span className="telemetry-value rover-nav-inline">
+                <svg
+                  className="rover-nav-inline__arrow"
+                  viewBox="0 0 20 20"
+                  style={{ transform: `rotate(${relBearing}deg)` }}
+                  aria-hidden="true"
+                >
+                  <polygon points="10,2 17,17 10,13.5 3,17" fill={isAligned ? '#2E8B57' : '#FC3D21'} />
+                </svg>
+                {targetNavHint}
+              </span>
             </div>
             <div className="telemetry-card">
               <span className="telemetry-label">INCLINACIÓN</span>

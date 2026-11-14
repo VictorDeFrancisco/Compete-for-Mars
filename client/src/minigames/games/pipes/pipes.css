@@ -5,7 +5,7 @@ body:has(.pipes-game) {
 .pipes-game {
   --water: #5ed4f3;
   --gold: #f5c242;
-  --board-edge: min(50dvh, 430px, calc(100vw - 380px));
+  --board-edge: min(60dvh, 520px, calc(100vw - 420px));
   position: fixed;
   inset: 0;
   z-index: 50;
@@ -44,9 +44,9 @@ body:has(.pipes-game) {
 .pipes-screen {
   position: relative;
   height: 100dvh;
-  max-width: 1320px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 16px 24px 18px;
+  padding: 16px 28px 18px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;

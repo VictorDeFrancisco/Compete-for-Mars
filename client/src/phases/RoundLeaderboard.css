@@ -1,5 +1,5 @@
 .leaderboard-sheet {
-  width: min(1040px, 100%);
+  width: min(1160px, 100%);
   margin: 0 auto;
   background: var(--paper-cream, #F5EFE0);
   color: var(--ink-black, #1A1817);
