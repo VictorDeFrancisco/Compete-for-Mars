@@ -130,9 +130,9 @@
 
 .crew-side-card__bar {
   flex: 1;
-  height: 7px;
+  height: 11px;
   background: #D9CEB8;
-  border: 1.5px solid var(--ink-black, #1A1817);
+  border: 2px solid var(--ink-black, #1A1817);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -149,14 +149,14 @@
 
 .crew-side-card__hp-num {
   font-family: 'Courier Prime', monospace;
-  font-size: 0.7rem;
-  font-weight: 800;
-  color: #2E2924;
-  min-width: 24px;
+  font-size: 0.84rem;
+  font-weight: 900;
+  color: #1A1817;
+  min-width: 30px;
   text-align: right;
 }
 
-@media (max-width: 1060px) {
+@media (max-width: 720px) {
   .crew-sidebar {
     width: 100%;
     order: 2;

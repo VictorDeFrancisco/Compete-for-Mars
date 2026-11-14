@@ -514,8 +514,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.72rem;
-  font-weight: 800;
+  font-size: 0.82rem;
+  font-weight: 900;
 }
 
 .crew-health__label {
@@ -528,20 +528,20 @@
 
 .crew-health__val {
   font-family: 'Space Mono', ui-monospace, monospace;
-  font-size: 0.74rem;
-  font-weight: 800;
+  font-size: 0.88rem;
+  font-weight: 900;
   color: var(--ink-black, #1A1817);
 }
 
 .crew-icon {
-  width: 13px;
-  height: 13px;
+  width: 15px;
+  height: 15px;
   flex-shrink: 0;
 }
 
 .crew-bar {
   width: 100%;
-  height: 11px;
+  height: 13px;
   border-radius: 999px;
   background: #E2D8C3;
   border: 2px solid var(--ink-black, #1A1817);
@@ -554,7 +554,7 @@
 }
 
 .crew-bar--hp {
-  height: 13px;
+  height: 15px;
 }
 
 .crew-bar--hp .crew-bar__fill {
@@ -565,11 +565,12 @@
   background: #B91C1C;
 }
 
-/* ── Self Private Resource Gauges (Energy, Food, Radiation) ─────────────── */
+/* ── Self Private Resource Gauges (Energy, Food, numeric Radiation) ─────── */
 .crew-private-meters {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 7px;
+  grid-template-columns: 1fr 1fr auto;
+  align-items: center;
+  gap: 8px;
   padding-top: 8px;
   border-top: 2px dashed rgba(26, 24, 23, 0.28);
 }
@@ -585,8 +586,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 3px;
-  font-size: 0.65rem;
-  font-weight: 800;
+  font-size: 0.74rem;
+  font-weight: 900;
 }
 
 .crew-meter__label {
@@ -598,8 +599,8 @@
 
 .crew-meter__val {
   font-family: 'Space Mono', ui-monospace, monospace;
-  font-size: 0.72rem;
-  font-weight: 800;
+  font-size: 0.86rem;
+  font-weight: 900;
   color: var(--ink-black, #1A1817);
 }
 
@@ -619,12 +620,30 @@
   background: #22C55E;
 }
 
-.crew-meter--rad .crew-meter__label {
-  color: #7E22CE;
+.crew-meter--rad-counter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: #EFE4F7;
+  border: 2px solid var(--ink-black, #1A1817);
 }
 
-.crew-bar--rad .crew-bar__fill {
-  background: #9333EA;
+.crew-meter--rad-counter .crew-meter__label {
+  font-size: 0.68rem;
+  font-weight: 900;
+  color: #6B21A8;
+}
+
+.crew-meter__rad-val {
+  font-family: 'Space Mono', ui-monospace, monospace;
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1.05;
+  color: var(--ink-black, #1A1817);
 }
 
 .crew-rad-icon {

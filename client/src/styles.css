@@ -71,10 +71,11 @@ body {
   flex-direction: column;
 }
 
-.mars-stage__main {
+main.mars-stage__main {
   position: relative;
   z-index: 2;
   width: 100%;
+  max-width: none;
   margin: 0 auto;
   height: 100%;
   min-height: 0;

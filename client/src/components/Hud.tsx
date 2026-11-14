@@ -27,7 +27,7 @@ export default function Hud({
   const suitColor = suitColorForPlayer(game.self.stats, selfIndex);
   const maxEnergy = 100 + game.self.stats.energy;
   const maxFood = 100 + game.self.stats.food;
-  const radPct = pct(game.self.resources.radiation, Math.max(100, game.self.resources.radiation));
+  const radiation = game.self.resources.radiation;
 
   return (
     <header className="top-hud" aria-label="Mission Status Bar">
@@ -105,19 +105,15 @@ export default function Hud({
             </div>
           </div>
 
-          <div className="top-hud__meter" title={`Radiation: ${game.self.resources.radiation}`}>
-            <div className="top-hud__meter-head">
-              <span className="top-hud__meter-label">
-                <span className="top-hud__icon top-hud__icon--rad" aria-hidden="true">
-                  <RadiationIcon />
-                </span>
-                RAD
-              </span>
-              <span className="top-hud__meter-val">{game.self.resources.radiation}</span>
-            </div>
-            <div className="top-hud__track">
-              <div className="top-hud__fill top-hud__fill--rad" style={{ width: `${radPct}%` }} />
-            </div>
+          <div
+            className={`top-hud__rad-badge${radiation > 0 ? ' is-active' : ''}`}
+            title={`Radiation: ${radiation} (cumulative)`}
+          >
+            <span className="top-hud__icon top-hud__icon--rad" aria-hidden="true">
+              <RadiationIcon />
+            </span>
+            <span className="top-hud__rad-label">RAD</span>
+            <strong className="top-hud__rad-val">{radiation}</strong>
           </div>
         </div>
       </div>

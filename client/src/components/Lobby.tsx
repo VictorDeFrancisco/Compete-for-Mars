@@ -371,22 +371,14 @@ export default function Lobby({
                         </div>
                       </div>
 
-                      <div className="crew-meter crew-meter--rad" title={`Radiation: ${game.self.resources.radiation}`}>
-                        <div className="crew-meter__top">
-                          <span className="crew-meter__label">
-                            <span className="crew-rad-icon" aria-hidden="true">
-                              <RadiationIcon />
-                            </span>
-                            RAD
+                      <div className="crew-meter crew-meter--rad-counter" title={`Radiation: ${game.self.resources.radiation} (cumulative)`}>
+                        <span className="crew-meter__label">
+                          <span className="crew-rad-icon" aria-hidden="true">
+                            <RadiationIcon />
                           </span>
-                          <strong className="crew-meter__val">{game.self.resources.radiation}</strong>
-                        </div>
-                        <div className="crew-bar crew-bar--rad">
-                          <div
-                            className="crew-bar__fill"
-                            style={{ width: `${percentOf(game.self.resources.radiation, Math.max(100, game.self.resources.radiation))}%` }}
-                          />
-                        </div>
+                          RAD
+                        </span>
+                        <strong className="crew-meter__rad-val">{game.self.resources.radiation}</strong>
                       </div>
                     </div>
                   )}
