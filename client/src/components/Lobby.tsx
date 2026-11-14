@@ -407,10 +407,12 @@ export default function Lobby({
                 onReady();
               }}
             >
-              <span className="lobby-ready-toggle__check" aria-hidden="true">
-                {game.self.ready ? '✓' : '☐'}
-              </span>
-              <span>READY</span>
+              {game.self.ready && (
+                <span className="lobby-ready-toggle__check" aria-hidden="true">
+                  ✓
+                </span>
+              )}
+              <span>{game.self.ready ? 'READY' : 'READY?'}</span>
             </button>
 
             <button
