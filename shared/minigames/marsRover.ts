@@ -23,8 +23,8 @@ export const marsRoverDefinition = defineMinigame({
     },
     {
       id: 'reverse',
-      label: 'Marcha atrás / Freno',
-      description: 'Aplica tracción inversa o frena el avance.',
+      label: 'Marcha atrás',
+      description: 'Aplica tracción inversa hacia atrás en las orugas.',
       bindings: [
         { device: 'keyboard', code: 'KeyS', label: 'S' },
         { device: 'keyboard', code: 'ArrowDown', label: '↓' },
@@ -49,16 +49,6 @@ export const marsRoverDefinition = defineMinigame({
         { device: 'keyboard', code: 'KeyD', label: 'D' },
         { device: 'keyboard', code: 'ArrowRight', label: '→' },
         { device: 'touch', label: '▶ Derecha' },
-      ],
-    },
-    {
-      id: 'brake',
-      label: 'Freno de orugas',
-      description: 'Bloquea las orugas para detener el avance en pendientes.',
-      bindings: [
-        { device: 'keyboard', code: 'Space', label: 'Espacio' },
-        { device: 'pointer', button: 0, label: 'Clic freno' },
-        { device: 'touch', label: 'Freno' },
       ],
     },
   ],

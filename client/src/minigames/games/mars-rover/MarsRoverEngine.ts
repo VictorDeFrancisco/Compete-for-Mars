@@ -39,7 +39,6 @@ export class MarsRoverGame extends BaseMinigame<MarsRoverData> {
     reverse: false,
     turnLeft: false,
     turnRight: false,
-    brake: false,
   };
 
   private suspensionVelocity = 0;
@@ -92,7 +91,6 @@ export class MarsRoverGame extends BaseMinigame<MarsRoverData> {
     else if (actionId === 'reverse') this.inputState.reverse = isPressed;
     else if (actionId === 'turn-left') this.inputState.turnLeft = isPressed;
     else if (actionId === 'turn-right') this.inputState.turnRight = isPressed;
-    else if (actionId === 'brake') this.inputState.brake = isPressed;
   }
 
   protected onUpdate(deltaMs: number): void {
@@ -190,13 +188,8 @@ export class MarsRoverGame extends BaseMinigame<MarsRoverData> {
       const fRollLong = -Math.sign(vLong) * Math.min(Math.abs(vLong) * 420, fRoll);
       const fGripLat = -vLat * roverMass * 9.5;
 
-      let fBrakeLong = 0;
-      if (this.inputState.brake) {
-        fBrakeLong = -Math.sign(vLong) * roverMass * 8.5;
-      }
-
-      const totalFx = fGravX + fMotorX + (fRollLong + fBrakeLong) * ufX + fGripLat * urX;
-      const totalFy = fGravY + fMotorY + (fRollLong + fBrakeLong) * ufY + fGripLat * urY;
+      const totalFx = fGravX + fMotorX + fRollLong * ufX + fGripLat * urX;
+      const totalFy = fGravY + fMotorY + fRollLong * ufY + fGripLat * urY;
 
       // 6. Integración
       const ax = totalFx / roverMass;
@@ -286,10 +279,6 @@ export class MarsRoverGame extends BaseMinigame<MarsRoverData> {
           energyDrain += (slopeDeg / 20) * 1.35 * dt;
         }
       }
-      if (this.inputState.brake && vLong > 0.5) {
-        energyDrain -= 0.15 * dt;
-      }
-
       energy = Math.max(0, energy - energyDrain);
     }
 
@@ -345,8 +334,6 @@ export class MarsRoverGame extends BaseMinigame<MarsRoverData> {
       lastEventMessage = '¡Alerta! Pared vertical (>30°): busca un paso más llano en el valle.';
     } else if (energy < 20) {
       lastEventMessage = '¡Batería crítica! Desciende por laderas para frenado regenerativo.';
-    } else if (this.inputState.brake) {
-      lastEventMessage = 'Freno de orugas accionado.';
     } else if (currentSlopeDeg > 18) {
       lastEventMessage = `Pendiente pronunciada (${currentSlopeDeg.toFixed(1)}°): chasis inclinado, alto consumo.`;
     }

@@ -51,7 +51,7 @@ test('mars-rover: giro angular con inercia y orientación orbital', () => {
   assert.notEqual(headingAfterTurn, initHeading, 'El rumbo debe haber rotado');
 });
 
-test('mars-rover: freno de orugas reduce velocidad activamente', () => {
+test('mars-rover: marcha atrás reduce velocidad tras acelerar', () => {
   let now = 0;
   const game = new MarsRoverGame(marsRoverDefinition, () => now, undefined, 999);
   game.start();
@@ -61,16 +61,16 @@ test('mars-rover: freno de orugas reduce velocidad activamente', () => {
   now = 800;
   game.tick();
   game.dispatch('forward', 'release');
-  const speedBeforeBrake = game.getSnapshot().data.speed;
-  assert.ok(speedBeforeBrake > 0.3, 'Debe haber ganado velocidad');
+  const speedBeforeReverse = game.getSnapshot().data.speed;
+  assert.ok(speedBeforeReverse > 0.3, 'Debe haber ganado velocidad');
 
-  // Aplicar freno
-  game.dispatch('brake', 'press');
+  // Aplicar marcha atrás
+  game.dispatch('reverse', 'press');
   now = 1400;
   game.tick();
-  const speedAfterBrake = game.getSnapshot().data.speed;
+  const speedAfterReverse = game.getSnapshot().data.speed;
 
-  assert.ok(speedAfterBrake < speedBeforeBrake, 'El freno debe reducir la velocidad con fricción');
+  assert.ok(speedAfterReverse < speedBeforeReverse, 'La marcha atrás debe reducir la velocidad hacia adelante');
 });
 
 test('mars-rover: generación procedural de escenarios satelitales y orografía', () => {

@@ -854,15 +854,6 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
           </button>
           <button
             type="button"
-            className="tank-btn brake"
-            disabled={!isRunning}
-            {...bindTouch('brake')}
-            aria-label="Freno de orugas"
-          >
-            🛑 Freno (Espacio)
-          </button>
-          <button
-            type="button"
             className="tank-btn"
             disabled={!isRunning}
             {...bindTouch('turn-right')}

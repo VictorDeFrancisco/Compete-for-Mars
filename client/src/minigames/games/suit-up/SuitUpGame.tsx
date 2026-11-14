@@ -286,36 +286,36 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
                     className="suit-dpad-btn suit-dpad-btn--up"
                     disabled={!isRunning}
                     onClick={() => handleDirectionPress('action-up')}
-                    aria-label="Válvula superior (W / Arriba)"
+                    aria-label="Válvula superior (Flecha Arriba)"
                   >
-                    ▲ W
+                    ▲ ↑
                   </button>
                   <button
                     type="button"
                     className="suit-dpad-btn suit-dpad-btn--left"
                     disabled={!isRunning}
                     onClick={() => handleDirectionPress('action-left')}
-                    aria-label="Acople izquierdo (A / Izquierda)"
+                    aria-label="Acople izquierdo (Flecha Izquierda)"
                   >
-                    ◀ A
+                    ◀ ←
                   </button>
                   <button
                     type="button"
                     className="suit-dpad-btn suit-dpad-btn--down"
                     disabled={!isRunning}
                     onClick={() => handleDirectionPress('action-down')}
-                    aria-label="Pestillo inferior (S / Abajo)"
+                    aria-label="Pestillo inferior (Flecha Abajo)"
                   >
-                    ▼ S
+                    ▼ ↓
                   </button>
                   <button
                     type="button"
                     className="suit-dpad-btn suit-dpad-btn--right"
                     disabled={!isRunning}
                     onClick={() => handleDirectionPress('action-right')}
-                    aria-label="Acople derecho (D / Derecha)"
+                    aria-label="Acople derecho (Flecha Derecha)"
                   >
-                    ▶ D
+                    ▶ →
                   </button>
                 </div>
               </div>

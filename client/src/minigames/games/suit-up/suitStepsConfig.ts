@@ -13,11 +13,11 @@
  *     * 'sequence' : Introducir una combinación de direcciones/teclas en orden.
  *     * 'hold'     : Mantener pulsado y soltar en la zona óptima.
  * - Para CAMBIAR TECLAS: cambia `actionId` o `sequence` usando las acciones:
- *     * 'action-primary' : Espacio, Enter o Clic/Toque principal.
- *     * 'action-up'      : W / Flecha Arriba / Botón Arriba.
- *     * 'action-down'    : S / Flecha Abajo / Botón Abajo.
- *     * 'action-left'    : A / Flecha Izquierda / Botón Izquierda.
- *     * 'action-right'   : D / Flecha Derecha / Botón Derecha.
+ *     * 'action-primary' : Espacio o Clic/Toque principal.
+ *     * 'action-up'      : Flecha Arriba (↑) / Botón Arriba.
+ *     * 'action-down'    : Flecha Abajo (↓) / Botón Abajo.
+ *     * 'action-left'    : Flecha Izquierda (←) / Botón Izquierda.
+ *     * 'action-right'   : Flecha Derecha (→) / Botón Derecha.
  * - Para AJUSTAR PUNTOS o TIEMPOS: ajusta `basePoints`, `perfectBonus`, `durationMs`.
  * ============================================================================
  */
@@ -146,8 +146,8 @@ export const DEFAULT_SUIT_STEPS: readonly SuitStep[] = [
     partKey: 'boots',
     name: 'Pantalones y Botas Presurizadas (LTA)',
     code: 'LTA-BOOTS',
-    prompt: '¡BLOQUEA LOS ANCLAJES INFERIORES [S → A → D → S]!',
-    description: 'Introduce la secuencia direccional (WASD o flechas) para asegurar las rodillas y botas de regolito.',
+    prompt: '¡BLOQUEA LOS ANCLAJES INFERIORES [↓ · ← · → · ↓]!',
+    description: 'Introduce la secuencia con las flechas (↑ ↓ ← →) para asegurar las rodillas y botas de regolito.',
     lore: 'Las botas de EVA tienen suelas multicapa de silicona y titanio para aislar el calor y resistir el cortante regolito marciano o lunar.',
     qte: {
       type: 'sequence',
@@ -184,12 +184,12 @@ export const DEFAULT_SUIT_STEPS: readonly SuitStep[] = [
     partKey: 'gloves',
     name: 'Guantes Presurizados y Aros Giratorios',
     code: 'EVA-GLOVES',
-    prompt: '¡GIRA EL ARO DE BLOQUEO DE MUÑECA A LA DERECHA [D / →]!',
-    description: 'Pulsa D o Flecha Derecha cuando la aguja entre en la marca dorada de acople estanco.',
+    prompt: '¡BLOQUEA EL ARO DE MUÑECA [ESPACIO]!',
+    description: 'Pulsa ESPACIO cuando la aguja entre en la marca dorada de acople estanco.',
     lore: 'Los guantes son la pieza más compleja del traje: integran calefactores en las yemas y aros de rodamientos axiales para manipular herramientas en el vacío.',
     qte: {
       type: 'timing',
-      actionId: 'action-right',
+      actionId: 'action-primary',
       sweepPeriodMs: 1300,
       sweetSpotStart: 0.60,
       sweetSpotEnd: 0.86,
@@ -229,8 +229,8 @@ export const DEFAULT_SUIT_STEPS: readonly SuitStep[] = [
     partKey: 'backpack',
     name: 'Soporte Vital y Presurización a 4.3 PSI (PLSS)',
     code: 'PLSS-O2',
-    prompt: '¡SECUENCIA DE ACTIVACIÓN DE OXÍGENO [W → ESPACIO → S → ESPACIO]!',
-    description: 'Abre válvula de O₂ (W), presuriza cámara (Espacio), purga filtro CO₂ (S) y asegura regulador a 4.3 PSI (Espacio).',
+    prompt: '¡SECUENCIA DE ACTIVACIÓN DE OXÍGENO [↑ · ESPACIO · ↓ · ESPACIO]!',
+    description: 'Abre válvula de O₂ (↑), presuriza cámara (Espacio), purga filtro CO₂ (↓) y asegura regulador a 4.3 PSI (Espacio).',
     lore: 'El sistema PLSS genera oxígeno puro al 100% regulado a una presión interna constante de 4.3 PSI (29.6 kPa) con autonomía de hasta 8 horas.',
     qte: {
       type: 'sequence',
@@ -246,9 +246,9 @@ export const DEFAULT_SUIT_STEPS: readonly SuitStep[] = [
  * Mapeo descriptivo de iconos/etiquetas para cada acción disponible.
  */
 export const ACTION_LABELS: Record<string, { key: string; label: string; icon: string }> = {
-  'action-primary': { key: 'ESPACIO / ENTER', label: 'Sellar / Acción', icon: '⎵' },
-  'action-up': { key: 'W / ↑', label: 'Válvula Sup.', icon: '▲' },
-  'action-down': { key: 'S / ↓', label: 'Pestillo Inf.', icon: '▼' },
-  'action-left': { key: 'A / ←', label: 'Acople Izq.', icon: '◀' },
-  'action-right': { key: 'D / →', label: 'Acople Der.', icon: '▶' },
+  'action-primary': { key: 'ESPACIO', label: 'Sellar / Acción', icon: '⎵' },
+  'action-up': { key: '↑', label: 'Válvula Sup.', icon: '▲' },
+  'action-down': { key: '↓', label: 'Pestillo Inf.', icon: '▼' },
+  'action-left': { key: '←', label: 'Acople Izq.', icon: '◀' },
+  'action-right': { key: '→', label: 'Acople Der.', icon: '▶' },
 };
