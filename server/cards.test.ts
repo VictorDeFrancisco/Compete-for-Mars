@@ -9,8 +9,8 @@ function fixture(count = 4, ids = ['rest', 'eat', 'expedition']) {
   const players = Array.from({ length: count }, (_, i) => makePlayer({ name: `P${i}`, stats: DEFAULT_STATS }, `token-${i}`, `socket-${i}`));
   players.forEach((p, i) => { p.id = `p${i}`; p.resources.food = 40; p.resources.energy = 40; });
   const room = makeRoom('CARDS1', players[0], 0);
+  room.round = 1; // Cards phase starts from round 2 onward.
   room.players = players; players.forEach(p => { p.ready = true; }); startRound(room, players[0], 0);
-  players.forEach(p => { p.ready = true; }); advanceIfComplete(room, 1);
   room.cards = ids.map(id => CARD_CATALOG.find(c => c.id === id)!);
   return { room, players };
 }
@@ -159,6 +159,7 @@ test('elimination excludes dead players and ends a competitive match without rev
   const { room, players: p } = fixture(2);
   p[0].health = 5; p[0].resources.radiation = 1;
   p.forEach(q => chooseCard(room, q, 'rest')); advanceIfComplete(room, 2);
+  p.forEach(q => { q.ready = true; }); advanceIfComplete(room, 2);
   p.forEach(q => submitResult(room, q, timeoutResult(room.minigame))); advanceIfComplete(room, 3);
   assert.equal(p[0].health, 0); assert.equal(room.matchFinished, true); assert.equal(room.winnerId, p[1].id);
   assert.throws(() => startRound(room, p[0], 4));
@@ -179,6 +180,7 @@ test('resolution is independent of seating order and the suit is consumed only b
     if (reverse) room.players = [...room.players].reverse();
     advanceIfComplete(room, 2);
     assert.equal(p[0].protection.reinforcedSuit, true); assert.equal(p[0].health, 100);
+    p.forEach(q => { q.ready = true; }); advanceIfComplete(room, 2);
     p.forEach(q => submitResult(room, q, timeoutResult(room.minigame))); advanceIfComplete(room, 3);
     assert.equal(p[0].health, 100); assert.equal(p[0].protection.reinforcedSuit, false); assert.equal(p[2].health, 95);
     const state = p.map(q => ({ health: q.health, resources: { ...q.resources }, protection: { ...q.protection } }));
@@ -196,13 +198,19 @@ test('a death from a card ends a duel immediately and eliminated observers never
   assert.equal(duel.room.phase, 'lobby'); assert.equal(duel.room.winnerId, duel.players[1].id);
   const { room, players: p } = fixture(3);
   p.forEach(q => chooseCard(room, q, 'rest')); p[0].health = 5; p[0].resources.radiation = 1;
-  advanceIfComplete(room, 2); p.forEach(q => submitResult(room, q, timeoutResult(room.minigame))); advanceIfComplete(room, 3);
+  advanceIfComplete(room, 2);
+  assert.equal(room.phase, 'presentation');
+  p.forEach(q => { q.ready = true; }); advanceIfComplete(room, 2);
+  assert.equal(room.phase, 'playing');
+  p.forEach(q => submitResult(room, q, timeoutResult(room.minigame))); advanceIfComplete(room, 3);
   assert.equal(p[0].health, 0); assert.equal(room.matchFinished, false);
   p.slice(1).forEach(q => { q.ready = true; }); startRound(room, p[0], 4);
+  assert.equal(room.phase, 'cards');
   assert.equal(p[0].hasChosenCard, true); assert.equal(p[0].hasSubmitted, true);
-  p.slice(1).forEach(q => { q.ready = true; }); advanceIfComplete(room, 5); assert.equal(room.phase, 'cards');
   const fallback = room.cards.find(c => c.id === 'rest' || c.id === 'eat')!;
-  p.slice(1).forEach(q => chooseCard(room, q, fallback.id)); advanceIfComplete(room, 6);
+  p.slice(1).forEach(q => chooseCard(room, q, fallback.id)); advanceIfComplete(room, 5);
+  assert.equal(room.phase, 'presentation');
+  p.slice(1).forEach(q => { q.ready = true; }); advanceIfComplete(room, 6);
   assert.equal(room.phase, 'playing'); assert.throws(() => submitResult(room, p[0], timeoutResult(room.minigame)));
 });
 
@@ -236,6 +244,7 @@ test('reinforced suit preserves the upkeep, empty-resource damage and last-place
   room.round = 5;
   p[0].health = 100; p[0].resources = { energy: 0, food: 0, radiation: 2 };
   chooseCard(room, p[0], 'reinforced-suit'); chooseCard(room, p[1], 'rest'); advanceIfComplete(room, 2);
+  p.forEach(q => { q.ready = true; }); advanceIfComplete(room, 2);
   const result = timeoutResult(room.minigame);
   submitResult(room, p[0], { ...result, score: 0 }); submitResult(room, p[1], { ...result, score: room.minigame.maxScore }); advanceIfComplete(room, 3);
   assert.equal(p[0].health, 75); // -5 last place, -10 empty food, -10 empty energy; radiation blocked.

@@ -60,33 +60,28 @@ export default function CardSelection({ game, onChoose }: CardSelectionProps) {
   const [targets, setTargets] = useState<Record<string, string>>({});
   const alive = game.players.filter(p => p.health > 0);
   const opponents = alive.filter(p => p.id !== game.self.id);
-  const maxEnergy = 100 + game.self.stats.energy;
-  const maxFood = 100 + game.self.stats.food;
   const dead = game.self.health <= 0;
 
   return (
-    <section className="panel phase-cards">
-      <TopoWatermarkSvg />
-
+    <section className="phase-cards" aria-label="Card selection">
       <header className="cards-heading">
         <div>
-          <p className="eyebrow">03 / Preparación de misión</p>
-          <h2>Elige tu siguiente movimiento</h2>
+          <p className="eyebrow">TACTICAL DIRECTIVE</p>
+          <h2>{dead ? 'Spectating tactical phase' : 'Choose your card'}</h2>
         </div>
+
+        {(game.self.protection?.radiationShield || game.self.protection?.reinforcedSuit) && (
+          <p className="cards-protection">
+            Active:{' '}
+            {[
+              game.self.protection.radiationShield && 'Radiation shield',
+              game.self.protection.reinforcedSuit && 'Reinforced suit',
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </p>
+        )}
       </header>
-
-      <div className="cards-resources" aria-label="Tus recursos privados">
-        <span>Vida <b>{game.self.health}/{game.self.maxHealth}</b></span>
-        <span>Comida <b>{game.self.resources.food}/{maxFood}</b></span>
-        <span>Energía <b>{game.self.resources.energy}/{maxEnergy}</b></span>
-        <span>Radiación <b>{game.self.resources.radiation}</b></span>
-      </div>
-
-      <p className="cards-intro">
-        {dead
-          ? 'Has sido eliminado. Puedes observar la partida.'
-          : 'Una carta por persona. Las elecciones son privadas y se resuelven cuando todos hayan elegido.'}
-      </p>
 
       <div className="cards-options">
         {game.cards.map((card, index) => {
@@ -176,25 +171,13 @@ export default function CardSelection({ game, onChoose }: CardSelectionProps) {
       </div>
 
       <div className="cards-status" role="status">
-        <span>{alive.filter(p => p.hasChosenCard).length} / {alive.length} decisiones recibidas</span>
+        <span>{alive.filter(p => p.hasChosenCard).length} / {alive.length} crew ready</span>
         <span>
           {game.self.hasChosenCard && !dead
-            ? 'Elección guardada. Esperando a la tripulación…'
-            : 'Si no eliges a tiempo, recibirás Comer o Descansar.'}
+            ? 'Selection locked. Waiting for crew…'
+            : 'Cards resolve privately before the mission briefing.'}
         </span>
       </div>
-
-      {(game.self.protection?.radiationShield || game.self.protection?.reinforcedSuit) && (
-        <p className="cards-protection">
-          Protecciones activas:{' '}
-          {[
-            game.self.protection.radiationShield && 'escudo antirradiación',
-            game.self.protection.reinforcedSuit && 'traje reforzado',
-          ]
-            .filter(Boolean)
-            .join(' · ')}
-        </p>
-      )}
     </section>
   );
 }

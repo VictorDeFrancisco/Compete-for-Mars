@@ -1,160 +1,151 @@
 /* Estilos de fase 4: usar selectores que empiecen por .phase-playing. */
 .phase-playing {
-  position: relative;
-  padding: 14px 16px !important;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.phase-playing > :not(.manila-topo) {
+.nasa-console {
   position: relative;
-  z-index: 1;
+  width: min(860px, 100%);
+  background: var(--paper-cream, #f5efe0);
+  border: 4px solid var(--ink-black, #1a1817);
+  border-radius: 10px;
+  padding: 14px 22px 20px;
+  box-shadow: 0 6px 0 var(--ink-black, #1a1817);
 }
 
-.phase-playing__head {
+.nasa-console__screw {
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.nasa-console__screw--tl {
+  top: 7px;
+  left: 7px;
+}
+
+.nasa-console__screw--tr {
+  top: 7px;
+  right: 7px;
+}
+
+.nasa-console__screw--bl {
+  bottom: 7px;
+  left: 7px;
+}
+
+.nasa-console__screw--br {
+  bottom: 7px;
+  right: 7px;
+}
+
+.nasa-console__top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 8px;
+  gap: 10px;
+  padding: 0 18px;
+  margin-bottom: 10px;
+  min-height: 22px;
 }
 
-.phase-playing__head h2 {
-  margin: 0;
-}
-
-.oscilloscope-leds {
-  display: flex;
-  gap: 6px;
-}
-
-.osc-led {
-  padding: 3px 8px;
-  border: 2px solid var(--ink-black);
-  border-radius: 2px;
-  font-family: 'Courier Prime', monospace;
-  font-weight: 700;
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-}
-
-.osc-led--ok {
-  background: #d2eedd;
-  color: #144d2e;
-}
-
-.osc-led--warn {
-  background: #f9d8d2;
-  color: #8c1c0f;
-}
-
-.osc-led--idle {
-  background: #e3d7bf;
-  color: #4b4338;
-}
-
-.phase-playing__debuff {
-  margin: 0 0 12px;
-  padding: 8px 14px;
-  border-radius: 3px;
-  background: #f9d8d2;
-  border: 2px solid #b42818;
-  color: #8c1c0f;
-  font-family: 'Courier Prime', monospace;
-  font-weight: 700;
-  font-size: 0.86rem;
-  box-shadow: 0 3px 0 #8c1c0f;
-}
-
-.phase-playing__outcome {
-  margin: 0 0 12px;
-  padding: 8px 14px;
-  border-radius: 3px;
-  background: #e4ebf8;
-  border: 2px solid var(--nasa-blue);
-  color: var(--nasa-blue);
-  font-family: 'Courier Prime', monospace;
-  font-weight: 700;
-  font-size: 0.86rem;
-}
-
-/* Chunky Retro-NASA CRT / Oscilloscope Monitor Frame */
-.oscilloscope-bezel {
-  background: #2b2d2a;
-  border: 3px solid var(--ink-black);
-  border-radius: 6px;
-  padding: 10px 12px 12px;
-  box-shadow:
-    inset 0 2px 0 #474a44,
-    0 5px 0 var(--ink-black);
-}
-
-.oscilloscope-bezel__bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 7px;
-}
-
-.oscilloscope-bezel__plate {
-  display: inline-block;
-  padding: 2px 9px;
-  background: var(--nasa-blue);
-  color: var(--paper-cream);
-  border: 2px solid var(--ink-black);
-  border-radius: 2px;
+.nasa-console__label {
   font-family: 'Archivo', sans-serif;
-  font-weight: 800;
-  font-size: 0.68rem;
+  font-weight: 900;
+  font-size: 0.78rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: var(--ink-black, #1a1817);
 }
 
-.oscilloscope-bezel__screws {
+.nasa-console__alerts {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
-.oscilloscope-bezel__screws span {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #5c6058;
-  border: 2px solid var(--ink-black);
-  display: inline-block;
+.nasa-console__alert {
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-family: 'Courier Prime', monospace;
+  font-weight: 700;
+  font-size: 0.74rem;
+  border: 2px solid var(--ink-black, #1a1817);
 }
 
-/* Keep the inner minigame CRT screen dark so minigame UI text remains legible */
+.nasa-console__alert--card {
+  background: #e4ebf8;
+  color: var(--nasa-blue, #0b3d91);
+}
+
+.nasa-console__alert--warn {
+  background: #f9d8d2;
+  color: #8c1c0f;
+}
+
+/* Inner space-blue beveled screen */
+.nasa-console__screen {
+  background: #0d1b2a;
+  color: #f5efe0;
+  border: 3px solid var(--ink-black, #1a1817);
+  border-radius: 6px;
+  padding: 18px 20px;
+  max-height: calc(100dvh - 140px);
+  overflow-y: auto;
+  box-shadow:
+    inset 0 4px 0 #183049,
+    inset 0 -3px 0 #071019;
+}
+
+/* Strip duplicate wrapper borders/bg inside the NASA console */
 .phase-playing .minigame-area {
-  background: #101614;
-  color: #f4f1ea;
-  border: 3px solid var(--ink-black);
-  border-radius: 4px;
-  padding: 12px;
-  min-height: 180px;
-  box-shadow: inset 0 0 0 2px #262e29;
+  background: transparent;
+  color: #f5efe0;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  box-shadow: none;
+  outline: none;
 }
 
 .phase-playing__state {
-  display: grid;
-  place-items: center;
-  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
   text-align: center;
-  font-weight: 700;
+  gap: 6px;
 }
 
-.phase-playing__status {
-  margin: 12px 0 0;
+.phase-playing__state-title {
+  margin: 0;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 900;
+  font-size: 1.25rem;
+  letter-spacing: 0.08em;
+  color: #f5efe0;
+}
+
+.phase-playing__state-sub {
+  margin: 0;
   font-family: 'Courier Prime', monospace;
-  font-weight: 700;
-  color: #3f3830;
+  font-size: 0.9rem;
+  color: #9cb3c9;
 }
 
-.phase-playing--low-energy .minigame-area {
+.phase-playing--low-energy .nasa-console__screen {
   filter: brightness(0.84) contrast(0.92);
 }
 
-.phase-playing--low-food .minigame-area {
+.phase-playing--low-food .nasa-console__screen {
   box-shadow:
-    inset 0 0 46px rgba(170, 26, 16, 0.55),
-    inset 0 0 0 2px #262e29;
+    inset 0 0 44px rgba(252, 61, 33, 0.45),
+    inset 0 4px 0 #183049,
+    inset 0 -3px 0 #071019;
 }

@@ -58,13 +58,34 @@ test('ciclo completo, coste -5, topes dinámicos de profesión, cartas simultán
   a.ready = b.ready = true;
   assert.throws(() => startRound(room, b, 0));
 
+  // Round 1: no cards phase — goes straight from lobby -> presentation -> playing -> lobby.
   startRound(room, a, 0, () => 0);
   const oldPhaseId = room.phaseId;
+  assert.equal(room.round, 1);
   assert.equal(room.phase, 'presentation');
+  assert.equal(room.cards.length, 0);
   a.ready = b.ready = true;
   advanceIfComplete(room, 1);
+  assert.equal(room.phase, 'playing');
+  assert.throws(() => currentPhase(room, 'playing', oldPhaseId));
+
+  const r1Result = timeoutResult(room.minigame);
+  submitResult(room, a, { ...r1Result, score: room.minigame.maxScore });
+  submitResult(room, b, { ...r1Result, score: 0 });
+  advanceIfComplete(room, 2);
+  assert.equal(room.phase, 'lobby');
+
+  // Round 2: cards phase happens BEFORE presentation.
+  a.resources.energy = 100 + a.stats.energy;
+  a.resources.food = 100 + a.stats.food;
+  a.health = a.maxHealth;
+  b.resources.energy = 100 + b.stats.energy;
+  b.resources.food = 100 + b.stats.food;
+  b.health = b.maxHealth;
+  a.ready = b.ready = true;
+  startRound(room, a, 4, () => 0);
+  assert.equal(room.round, 2);
   assert.equal(room.phase, 'cards');
-  assert.throws(() => currentPhase(room, 'cards', oldPhaseId));
 
   const roundResource = minigameRewardResource(room.minigame);
   const otherResource = roundResource === 'energy' ? 'food' : 'energy';
@@ -84,10 +105,13 @@ test('ciclo completo, coste -5, topes dinámicos de profesión, cartas simultán
     assert.equal('token' in remote, false);
   }
 
-  advanceIfComplete(room, 2);
-  assert.equal(room.phase, 'playing');
+  advanceIfComplete(room, 5);
+  assert.equal(room.phase, 'presentation');
   assert.equal(a.resources[roundResource], 100);
   assert.equal(a.resources.radiation, 1);
+  a.ready = b.ready = true;
+  advanceIfComplete(room, 6);
+  assert.equal(room.phase, 'playing');
 
   const result = timeoutResult(room.minigame);
   assert.throws(() => submitResult(room, a, { ...result, score: Infinity }));
@@ -98,15 +122,15 @@ test('ciclo completo, coste -5, topes dinámicos de profesión, cartas simultán
   submitResult(room, b, { ...result, score: 0 });
   assert.throws(() => submitResult(room, a, result));
 
-  advanceIfComplete(room, 3);
+  advanceIfComplete(room, 7);
   assert.equal(room.phase, 'lobby');
   // a (Medic) started at 130 HP -> 1 radiation (-5 HP) -> 125 HP.
   assert.equal(a.health, 125);
   assert.equal(a.maxHealth, 130);
   assert.equal(a.resources[otherResource], 95);
   assert.equal(a.resources[roundResource], 100);
-  // b (Pilot) started at 110 HP -> lost round 1 with 0 deaths (-1 HP) -> 109 HP.
-  assert.equal(b.health, 109);
+  // b (Pilot) started at 110 HP -> lost round 2 with 0 deaths (-2 HP) -> 108 HP.
+  assert.equal(b.health, 108);
   assert.equal(b.maxHealth, 110);
   const expectedBResource = (roundResource === 'energy' ? 120 : 100) - 5;
   assert.equal(b.resources[roundResource], expectedBResource);
@@ -115,8 +139,8 @@ test('ciclo completo, coste -5, topes dinámicos de profesión, cartas simultán
   assert.equal(room.lastResults.length, 2);
 
   a.ready = b.ready = true;
-  startRound(room, a, 4, () => 0);
-  assert.equal(room.round, 2);
+  startRound(room, a, 8, () => 0);
+  assert.equal(room.round, 3);
 });
 
 test('orden aleatorio controlado: mínimo 2 minijuegos distintos entre repeticiones', () => {
@@ -141,10 +165,14 @@ test('orden aleatorio controlado: mínimo 2 minijuegos distintos entre repeticio
       assert.ok(i - prevIdx >= 3, `Minigame ${id} repeated too soon at step ${i} after ${prevIdx}`);
     }
     seenOrder.push(id);
+    if (room.phase === 'cards') {
+      chooseCard(room, a, room.cards.find(card => card.id === 'rest' || card.id === 'eat')!.id);
+      advanceIfComplete(room, i * 10 + 1);
+    }
+    assert.equal(room.phase, 'presentation');
     a.ready = true;
-    advanceIfComplete(room, i * 10 + 1);
-    chooseCard(room, a, room.cards.find(card => card.id === 'rest' || card.id === 'eat')!.id);
     advanceIfComplete(room, i * 10 + 2);
+    assert.equal(room.phase, 'playing');
     submitResult(room, a, timeoutResult(room.minigame));
     advanceIfComplete(room, i * 10 + 3);
   }
@@ -173,11 +201,13 @@ test('radiación sin límite superior, daño por 0 comida/energía, decaimiento 
 
   a.ready = b.ready = true;
   startRound(room, a, 0, () => 0);
-  a.ready = b.ready = true;
-  advanceIfComplete(room, 1);
+  assert.equal(room.phase, 'cards');
   room.cards = ['exchange', 'rest', 'eat'].map(id => CARDS.find(card => card.id === id)!);
   chooseCard(room, a, 'rest');
   chooseCard(room, b, 'exchange');
+  advanceIfComplete(room, 1);
+  assert.equal(room.phase, 'presentation');
+  a.ready = b.ready = true;
   advanceIfComplete(room, 2);
   submitResult(room, a, { ...timeoutResult(room.minigame), score: room.minigame.maxScore });
   submitResult(room, b, { ...timeoutResult(room.minigame), score: 0 });
@@ -192,11 +222,13 @@ test('radiación sin límite superior, daño por 0 comida/energía, decaimiento 
   b.health = 15;
   a.ready = b.ready = true;
   startRound(room, a, 10, () => 0);
-  a.ready = b.ready = true;
-  advanceIfComplete(room, 11);
+  assert.equal(room.phase, 'cards');
   room.cards = ['exchange', 'rest', 'eat'].map(id => CARDS.find(card => card.id === id)!);
   chooseCard(room, a, 'rest');
   chooseCard(room, b, 'exchange');
+  advanceIfComplete(room, 11);
+  assert.equal(room.phase, 'presentation');
+  a.ready = b.ready = true;
   advanceIfComplete(room, 12);
   submitResult(room, a, { ...timeoutResult(room.minigame), score: room.minigame.maxScore });
   submitResult(room, b, { ...timeoutResult(room.minigame), score: 0 });
@@ -210,16 +242,18 @@ test('radiación sin límite superior, daño por 0 comida/energía, decaimiento 
 test('los tiempos límite completan elecciones y resultados ausentes', () => {
   const a = player('Ana');
   const room = makeRoom('ABC123', a, 0);
+  room.round = 1; // Advance to round 2 so cards phase is active.
   a.ready = true;
   startRound(room, a, 0, () => 0);
+  assert.equal(room.phase, 'cards');
+  advanceIfComplete(room, room.deadline!);
+  assert.equal(room.phase, 'presentation');
+  assert.ok(a.selectedCardId === 'rest' || a.selectedCardId === 'eat');
   // Presentation/instructions phase has no timer; advances when alive players confirm.
   assert.equal(room.deadline, null);
   a.ready = true;
-  advanceIfComplete(room, 1);
-  assert.equal(room.phase, 'cards');
-  advanceIfComplete(room, room.deadline!);
+  advanceIfComplete(room, 100);
   assert.equal(room.phase, 'playing');
-  assert.ok(a.selectedCardId === 'rest' || a.selectedCardId === 'eat');
   advanceIfComplete(room, room.deadline!);
   assert.equal(room.phase, 'playing');
   advanceIfComplete(room, room.deadline! + RESULT_GRACE_MS);

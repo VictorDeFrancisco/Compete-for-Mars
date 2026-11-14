@@ -1,262 +1,178 @@
-import { Fragment, useState } from 'react';
-import { Controls } from '../../../shared/minigames/Controls';
+import type { MinigameDefinition } from '../../../shared/minigames/types';
 import type { PresentationProps } from '../../../shared/types';
 import AstronautPortraitSvg, { suitColorByIndex, suitColorForPlayer } from '../components/AstronautPortraitSvg';
-import { PaperclipSvg, TopoWatermarkSvg } from '../components/NasaMarks';
-import { playUiClick, playUiConfirm } from '../utils/uiAudio';
+import { playUiConfirm } from '../utils/uiAudio';
 import './MinigamePresentation.css';
-
-const START_BUTTON_LABELS: Record<string, string> = {
-  pipes: 'START REPAIR',
-  'suit-up': 'START SUIT-UP',
-  'mars-rover': 'LAUNCH ROVER',
-  trivia: 'START QUIZ',
-};
 
 function MinigamePreviewSvg({ id }: { id: string }) {
   switch (id) {
     case 'pipes':
       return (
-        <svg className="briefing-preview__svg" viewBox="0 0 160 100" aria-hidden="true">
-          <rect width="160" height="100" fill="#101824" />
-          <rect x="8" y="8" width="144" height="84" fill="#162233" stroke="#2D4363" strokeWidth="2" />
-          {/* Blue inflow + gold outflow pipe network */}
-          <path d="M16 30 H56 V68 H102 V34 H144" fill="none" stroke="#22D3EE" strokeWidth="10" strokeLinejoin="round" strokeLinecap="round" />
-          <path d="M16 30 H56 V68 H102 V34 H144" fill="none" stroke="#A5F3FC" strokeWidth="3" strokeLinejoin="round" />
-          <circle cx="22" cy="30" r="8" fill="#0B3D91" stroke="#F5EFE0" strokeWidth="2" />
-          <circle cx="138" cy="34" r="8" fill="#D97706" stroke="#F5EFE0" strokeWidth="2" />
-          <rect x="46" y="58" width="20" height="20" rx="2" fill="none" stroke="#FC3D21" strokeWidth="2" strokeDasharray="3 2" />
+        <svg className="briefing-card__svg" viewBox="0 0 200 130" aria-hidden="true">
+          <rect width="200" height="130" fill="#0D1B2A" />
+          <path d="M18 38 H72 V92 H128 V44 H182" fill="none" stroke="#22D3EE" strokeWidth="14" strokeLinejoin="round" strokeLinecap="round" />
+          <path d="M18 38 H72 V92 H128 V44 H182" fill="none" stroke="#A5F3FC" strokeWidth="4" strokeLinejoin="round" />
+          <circle cx="24" cy="38" r="11" fill="#0B3D91" stroke="#F5EFE0" strokeWidth="2.5" />
+          <circle cx="176" cy="44" r="11" fill="#D97706" stroke="#F5EFE0" strokeWidth="2.5" />
+          <rect x="60" y="80" width="24" height="24" rx="3" fill="none" stroke="#FC3D21" strokeWidth="2.5" strokeDasharray="4 3" />
         </svg>
       );
     case 'mars-rover':
       return (
-        <svg className="briefing-preview__svg" viewBox="0 0 160 100" aria-hidden="true">
-          <rect width="160" height="100" fill="#0B192C" />
-          <path d="M0 64 Q50 48 95 62 T160 56 V100 H0 Z" fill="#C1440E" stroke="#1A1817" strokeWidth="2" />
-          <circle cx="122" cy="26" r="14" fill="#E67A45" stroke="#1A1817" strokeWidth="2" />
-          {/* Stylized Rover */}
-          <rect x="48" y="50" width="42" height="16" rx="3" fill="#F5EFE0" stroke="#1A1817" strokeWidth="2.5" />
-          <rect x="64" y="38" width="14" height="12" fill="#0B3D91" stroke="#1A1817" strokeWidth="2" />
-          <circle cx="55" cy="70" r="7" fill="#2B2D2A" stroke="#1A1817" strokeWidth="2" />
-          <circle cx="70" cy="70" r="7" fill="#2B2D2A" stroke="#1A1817" strokeWidth="2" />
-          <circle cx="84" cy="70" r="7" fill="#2B2D2A" stroke="#1A1817" strokeWidth="2" />
+        <svg className="briefing-card__svg" viewBox="0 0 200 130" aria-hidden="true">
+          <rect width="200" height="130" fill="#0B192C" />
+          <circle cx="152" cy="34" r="18" fill="#E67A45" stroke="#1A1817" strokeWidth="2.5" />
+          <path d="M0 82 Q60 62 118 80 T200 72 V130 H0 Z" fill="#C1440E" stroke="#1A1817" strokeWidth="2.5" />
+          <rect x="58" y="62" width="54" height="20" rx="4" fill="#F5EFE0" stroke="#1A1817" strokeWidth="3" />
+          <rect x="78" y="46" width="18" height="16" fill="#0B3D91" stroke="#1A1817" strokeWidth="2.5" />
+          <circle cx="67" cy="88" r="9" fill="#2B2D2A" stroke="#1A1817" strokeWidth="2.5" />
+          <circle cx="85" cy="88" r="9" fill="#2B2D2A" stroke="#1A1817" strokeWidth="2.5" />
+          <circle cx="103" cy="88" r="9" fill="#2B2D2A" stroke="#1A1817" strokeWidth="2.5" />
         </svg>
       );
     case 'suit-up':
       return (
-        <svg className="briefing-preview__svg" viewBox="0 0 160 100" aria-hidden="true">
-          <rect width="160" height="100" fill="#131B26" />
-          <circle cx="80" cy="50" r="34" fill="none" stroke="#334155" strokeWidth="8" />
-          <path d="M52 30 A34 34 0 0 1 108 30" fill="none" stroke="#4ADE80" strokeWidth="8" strokeLinecap="round" />
-          <circle cx="80" cy="50" r="20" fill="#F5EFE0" stroke="#1A1817" strokeWidth="2.5" />
-          <rect x="67" y="42" width="26" height="16" rx="7" fill="#172A44" />
-          <rect x="116" y="70" width="32" height="16" rx="2" fill="#FC3D21" stroke="#1A1817" strokeWidth="2" />
+        <svg className="briefing-card__svg" viewBox="0 0 200 130" aria-hidden="true">
+          <rect width="200" height="130" fill="#0D1B2A" />
+          <circle cx="100" cy="65" r="44" fill="none" stroke="#294361" strokeWidth="10" />
+          <path d="M62 42 A44 44 0 0 1 138 42" fill="none" stroke="#22C55E" strokeWidth="10" strokeLinecap="round" />
+          <circle cx="100" cy="65" r="26" fill="#F5EFE0" stroke="#1A1817" strokeWidth="3" />
+          <rect x="82" y="54" width="36" height="20" rx="9" fill="#172A44" stroke="#1A1817" strokeWidth="2" />
+          <rect x="148" y="92" width="36" height="20" rx="3" fill="#FC3D21" stroke="#1A1817" strokeWidth="2.5" />
         </svg>
       );
     case 'trivia':
-      return (
-        <svg className="briefing-preview__svg" viewBox="0 0 160 100" aria-hidden="true">
-          <rect width="160" height="100" fill="#101824" />
-          <rect x="16" y="14" width="128" height="24" rx="3" fill="#0B3D91" stroke="#F5EFE0" strokeWidth="2" />
-          <rect x="26" y="23" width="84" height="6" rx="2" fill="#F5EFE0" />
-          <rect x="16" y="46" width="60" height="18" rx="3" fill="#2F6F4E" stroke="#F5EFE0" strokeWidth="1.5" />
-          <rect x="84" y="46" width="60" height="18" rx="3" fill="#24344D" stroke="#64748B" strokeWidth="1.5" />
-          <rect x="16" y="70" width="60" height="18" rx="3" fill="#24344D" stroke="#64748B" strokeWidth="1.5" />
-          <rect x="84" y="70" width="60" height="18" rx="3" fill="#24344D" stroke="#64748B" strokeWidth="1.5" />
-        </svg>
-      );
     default:
       return (
-        <svg className="briefing-preview__svg" viewBox="0 0 160 100" aria-hidden="true">
-          <rect width="160" height="100" fill="#101A17" />
-          <polyline points="12,56 40,56 52,24 68,78 86,38 102,56 148,56" fill="none" stroke="#4ADE80" strokeWidth="4" strokeLinejoin="round" />
-          <circle cx="80" cy="50" r="36" fill="none" stroke="#2D4A3E" strokeWidth="2" />
+        <svg className="briefing-card__svg" viewBox="0 0 200 130" aria-hidden="true">
+          <rect width="200" height="130" fill="#0D1B2A" />
+          <rect x="20" y="18" width="160" height="30" rx="4" fill="#0B3D91" stroke="#F5EFE0" strokeWidth="2.5" />
+          <rect x="34" y="29" width="104" height="8" rx="3" fill="#F5EFE0" />
+          <rect x="20" y="60" width="74" height="22" rx="4" fill="#2E8B57" stroke="#F5EFE0" strokeWidth="2" />
+          <rect x="106" y="60" width="74" height="22" rx="4" fill="#1D324D" stroke="#64748B" strokeWidth="2" />
+          <rect x="20" y="90" width="74" height="22" rx="4" fill="#1D324D" stroke="#64748B" strokeWidth="2" />
+          <rect x="106" y="90" width="74" height="22" rx="4" fill="#1D324D" stroke="#64748B" strokeWidth="2" />
         </svg>
       );
   }
 }
 
-function InputMethodBadgeSvg({ usesMouse, usesKeyboard }: { usesMouse: boolean; usesKeyboard: boolean }) {
-  return (
-    <div className="briefing-input-badge" aria-label={`Input: ${usesKeyboard && usesMouse ? 'Keyboard & Mouse' : usesMouse ? 'Mouse' : 'Keyboard'}`}>
-      <svg className="briefing-input-badge__svg" viewBox="0 0 48 48" aria-hidden="true">
-        <rect x="4" y="10" width="40" height="28" rx="4" fill="#F5EFE0" stroke="#1A1817" strokeWidth="2.5" />
-        {usesKeyboard ? (
-          <>
-            <rect x="10" y="17" width="8" height="7" rx="1" fill="#1A1817" />
-            <rect x="20" y="17" width="8" height="7" rx="1" fill="#1A1817" />
-            <rect x="30" y="17" width="8" height="7" rx="1" fill="#FC3D21" />
-            <rect x="12" y="27" width="24" height="5" rx="1" fill="#0B3D91" />
-          </>
-        ) : (
-          <>
-            <rect x="16" y="13" width="16" height="22" rx="8" fill="#E5D9C2" stroke="#1A1817" strokeWidth="2" />
-            <line x1="24" y1="13" x2="24" y2="23" stroke="#1A1817" strokeWidth="2" />
-            <circle cx="20" cy="18" r="2" fill="#FC3D21" />
-          </>
-        )}
-      </svg>
-      <span>{usesKeyboard && usesMouse ? 'KEYS + MOUSE' : usesMouse ? 'MOUSE' : 'KEYBOARD'}</span>
-    </div>
-  );
+function extractKeycaps(controls: MinigameDefinition['controls']): string[] {
+  const seen = new Set<string>();
+  const caps: string[] = [];
+
+  for (const action of controls) {
+    for (const binding of action.bindings) {
+      if (binding.device === 'keyboard') {
+        const raw = binding.label.toUpperCase();
+        const normalized = raw === 'ESPACIO' ? 'SPACE' : raw;
+        if (!seen.has(normalized)) {
+          seen.add(normalized);
+          caps.push(normalized);
+        }
+      } else if (binding.device === 'pointer') {
+        if (!seen.has('CLICK')) {
+          seen.add('CLICK');
+          caps.push('CLICK');
+        }
+      }
+    }
+  }
+
+  return caps.slice(0, 8);
 }
 
-// Phase 2: Mario-Party-inspired Retro-NASA Briefing with Challenge & Controls tabs and contextual Start button.
+// Phase 2/3: Unified Retro-NASA Briefing Card centered without redundant tabs or side boxes.
 export default function MinigamePresentation({ game, onReady }: PresentationProps) {
-  const [activeTab, setActiveTab] = useState<'challenge' | 'controls'>('challenge');
-
   const alivePlayers = game.players.filter(p => p.health > 0);
   const rewardFood = game.minigame.rewards.winner.resources?.food ?? 0;
   const rewardEnergy = game.minigame.rewards.winner.resources?.energy ?? 0;
-  const resource = rewardFood > rewardEnergy ? 'food' : 'energy';
-  const baseBonus = (resource === 'food' ? rewardFood : rewardEnergy) || 20;
+  const resourceLabel = rewardFood > rewardEnergy ? 'Food' : 'Energy';
+  const baseBonus = (rewardFood > rewardEnergy ? rewardFood : rewardEnergy) || 20;
   const roundBonus = Math.max(0, baseBonus - Math.max(0, game.round - 1) * 2);
   const deaths = game.players.filter(p => p.health <= 0).length;
   const loserPenalty = Math.max(1, game.round) * (deaths + 1);
-
-  const controls = new Controls(game.minigame.controls).describe();
-  const usesMouse = game.minigame.controls.some(c => c.bindings.some(b => b.device === 'pointer' || b.device === 'touch'));
-  const usesKeyboard = game.minigame.controls.some(c => c.bindings.some(b => b.device === 'keyboard'));
-
-  const startLabel = START_BUTTON_LABELS[game.minigame.id] ?? 'START MISSION';
-  const readyCount = alivePlayers.filter(p => p.ready).length;
+  const keycaps = extractKeycaps(game.minigame.controls);
 
   if (game.self.health <= 0) {
     return (
-      <section className="panel phase-presentation">
+      <section className="briefing-card briefing-card--spectator">
         <h2>Spectating the mission</h2>
-        <p>The surviving crew is preparing the next round.</p>
+        <p>The surviving crew is reviewing the briefing for the next round.</p>
       </section>
     );
   }
 
   return (
-    <section className="phase-presentation" aria-label={`Briefing: ${game.minigame.title}`}>
-      {/* Header Title Plate + Crew Matchup Strip (VS) */}
-      <header className="briefing-header">
-        <div className="briefing-banner">
-          <div className="briefing-banner__meta">
-            <span className="briefing-round-pill">ROUND {String(game.round).padStart(2, '0')}</span>
-            <h2 className="briefing-title">{game.minigame.title}</h2>
+    <section className="briefing-card" aria-label={`Briefing: ${game.minigame.title}`}>
+      <div className="briefing-card__body">
+        {/* Left Zone (35%): Minigame SVG preview + 3D physical keycaps */}
+        <div className="briefing-card__visual">
+          <div className="briefing-card__frame">
+            <MinigamePreviewSvg id={game.minigame.id} />
+          </div>
+
+          <div className="briefing-keycaps" aria-label="Controls">
+            {keycaps.map(cap => (
+              <kbd
+                key={cap}
+                className={`briefing-keycap3d${cap.length > 2 ? ' briefing-keycap3d--wide' : ''}`}
+              >
+                {cap}
+              </kbd>
+            ))}
           </div>
         </div>
 
-        <div className="briefing-vs-row" aria-label="Participating astronauts">
+        {/* Right Zone (65%): Big Title + Concise Objective + Stakes Strip */}
+        <div className="briefing-card__info">
+          <span className="briefing-card__kicker">MISSION BRIEFING</span>
+          <h2 className="briefing-card__title">{game.minigame.title}</h2>
+          <p className="briefing-card__objective">{game.minigame.objective}</p>
+
+          <div className="briefing-stakes-strip" aria-label="Round rewards and penalties">
+            <span className="briefing-stake briefing-stake--cost">-5 Energy · -5 Food</span>
+            <span className="briefing-stake briefing-stake--win">+{roundBonus} {resourceLabel} Winner</span>
+            <span className="briefing-stake briefing-stake--loss">-{loserPenalty} HP Last</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer: Small Crew Avatars with Ready Tick + Single NASA Orange READY Button */}
+      <footer className="briefing-card__footer">
+        <div className="briefing-crew" aria-label="Crew readiness">
           {alivePlayers.map((player, idx) => (
-            <Fragment key={player.id}>
-              {idx > 0 && <span className="briefing-vs-badge" aria-hidden="true">VS</span>}
-              <div className={`briefing-astronaut${player.ready ? ' briefing-astronaut--ready' : ''}`}>
-                <AstronautPortraitSvg
-                  suitColor={player.id === game.self.id ? suitColorForPlayer(game.self.stats, idx) : suitColorByIndex(idx)}
-                  variant={idx}
-                  className="briefing-astronaut__portrait"
-                />
-                <span className="briefing-astronaut__name">{player.name}</span>
-                {player.ready && <span className="briefing-astronaut__ready">READY</span>}
-              </div>
-            </Fragment>
+            <div
+              key={player.id}
+              className={`briefing-crew__chip${player.ready ? ' is-ready' : ''}`}
+              title={`${player.name}: ${player.ready ? 'Ready' : 'Waiting'}`}
+            >
+              <AstronautPortraitSvg
+                suitColor={player.id === game.self.id ? suitColorForPlayer(game.self.stats, idx) : suitColorByIndex(idx)}
+                variant={idx}
+                className="briefing-crew__avatar"
+              />
+              {player.ready && (
+                <span className="briefing-crew__tick" aria-label="Ready">
+                  ✓
+                </span>
+              )}
+            </div>
           ))}
         </div>
-      </header>
 
-      {/* Tabbed Manila Briefing Sheet (Description vs Controls) */}
-      <div className="briefing-folder-wrap">
-        <div className="briefing-tabs" role="tablist" aria-label="Briefing sections">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'challenge'}
-            className={`briefing-tab${activeTab === 'challenge' ? ' briefing-tab--active' : ''}`}
-            onClick={() => {
-              playUiClick();
-              setActiveTab('challenge');
-            }}
-          >
-            DESCRIPTION
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'controls'}
-            className={`briefing-tab${activeTab === 'controls' ? ' briefing-tab--active' : ''}`}
-            onClick={() => {
-              playUiClick();
-              setActiveTab('controls');
-            }}
-          >
-            CONTROLS
-          </button>
-        </div>
-
-        <div className="panel briefing-sheet" role="tabpanel">
-          <TopoWatermarkSvg />
-          <PaperclipSvg className="briefing-paperclip" />
-
-          {activeTab === 'challenge' ? (
-            <div className="briefing-challenge-grid">
-              <div className="briefing-preview-col">
-                <div className="briefing-preview-frame">
-                  <MinigamePreviewSvg id={game.minigame.id} />
-                </div>
-                <InputMethodBadgeSvg usesMouse={usesMouse} usesKeyboard={usesKeyboard} />
-              </div>
-
-              <div className="briefing-copy-col">
-                <p className="briefing-instructions">{game.minigame.instructions}</p>
-                <p className="briefing-objective">{game.minigame.objective}</p>
-                <p className="briefing-stakes">
-                  <strong>Round stakes:</strong> −5 energy & −5 food · Winner +{roundBonus} {resource} · Last −{loserPenalty} HP · Reinforced suits block radiation damage only.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="briefing-controls-panel">
-              <ul className="briefing-controls-list">
-                {controls.map(action => (
-                  <li key={action.id} className="briefing-control-row">
-                    <span className="briefing-keycap">{action.inputs}</span>
-                    <div className="briefing-control-text">
-                      <strong>{action.label}</strong>
-                      <span>{action.description}</span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Bottom Action Bar: Controls Toggle Button + Per-Minigame Start Action Button */}
-      <div className="briefing-footer">
         <button
           type="button"
-          className="secondary briefing-toggle-btn"
+          className="briefing-ready-btn"
+          disabled={game.self.ready || game.self.health <= 0}
           onClick={() => {
-            playUiClick();
-            setActiveTab(prev => (prev === 'challenge' ? 'controls' : 'challenge'));
+            playUiConfirm();
+            onReady();
           }}
         >
-          {activeTab === 'challenge' ? 'VIEW CONTROLS' : 'VIEW DESCRIPTION'}
+          {game.self.ready ? 'READY ✓' : 'READY'}
         </button>
-
-        <div className="briefing-start-group">
-          <span className="briefing-ready-count">
-            {readyCount}/{alivePlayers.length} CREW READY
-          </span>
-          <button
-            type="button"
-            className="briefing-start-btn"
-            disabled={game.self.ready || game.self.health <= 0}
-            onClick={() => {
-              playUiConfirm();
-              onReady();
-            }}
-          >
-            {game.self.ready ? 'WAITING FOR CREW…' : startLabel}
-          </button>
-        </div>
-      </div>
+      </footer>
     </section>
   );
 }

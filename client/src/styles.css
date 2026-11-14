@@ -75,6 +75,8 @@ body {
   position: relative;
   z-index: 2;
   width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
   height: 100%;
   min-height: 0;
   padding: 12px 20px 14px;
@@ -83,13 +85,28 @@ body {
   overflow: hidden;
 }
 
-.stage-topbar {
+.stage-error {
+  margin: 0 auto 8px;
+  max-width: 820px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.stage-center {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-bottom: 8px;
-  flex-shrink: 0;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.stage-center > fieldset {
+  width: 100%;
+  max-height: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .stage-timer {

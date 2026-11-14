@@ -15,25 +15,17 @@ function TriviaView({ engine, snapshot }: MinigameViewProps<TriviaData>) {
   const isRunning = status === 'running';
   const answered = data.selectedOption !== null || data.timedOut;
   const isLastQuestion = data.currentIndex + 1 >= data.questions.length;
-  const questionSeconds = Math.max(0, Math.ceil(data.questionRemainingMs / 1000));
   const timerRatio = Math.max(0, Math.min(1, data.questionRemainingMs / data.questionDurationMs));
-  const isLowTime = !answered && questionSeconds <= 5;
+  const isLowTime = !answered && data.questionRemainingMs <= 5000;
 
   return (
     <div className="trivia-game">
       <div className="trivia-game__header">
-        <div className="trivia-game__meta">
-          <span className="trivia-game__badge">{question.category}</span>
-          <span className={`trivia-game__timer ${isLowTime ? 'trivia-game__timer--low' : ''}`.trim()}>
-            {questionSeconds}s
-          </span>
-          {data.streak >= 2 && (
-            <span className="trivia-game__streak">{data.streak}x streak</span>
-          )}
-        </div>
-        <p className="trivia-game__counter">
-          Question {data.currentIndex + 1} / {data.questions.length} · Correct: {data.correctCount}
-        </p>
+        <span className="trivia-game__badge">{question.category}</span>
+        <span className="trivia-game__counter">
+          QUESTION {data.currentIndex + 1} / {data.questions.length}
+        </span>
+        <span className="trivia-game__score">{snapshot.score} PTS</span>
       </div>
 
       <div className="trivia-game__timer-track" aria-hidden="true">
@@ -66,7 +58,7 @@ function TriviaView({ engine, snapshot }: MinigameViewProps<TriviaData>) {
               onClick={() => engine.dispatch(`answer-${index + 1}`)}
             >
               <span className="trivia-game__key">{index + 1}</span>
-              <span>{optionText}</span>
+              <span className="trivia-game__option-text">{optionText}</span>
             </button>
           );
         })}
@@ -82,10 +74,10 @@ function TriviaView({ engine, snapshot }: MinigameViewProps<TriviaData>) {
           <div className="trivia-game__feedback-copy">
             <p className="trivia-game__feedback-title">
               {data.timedOut
-                ? "Time's up! (+0 points)"
+                ? "TIME'S UP · +0 PTS"
                 : data.isCorrect
-                  ? `Correct! +${data.pointsPerCorrect} points`
-                  : 'Incorrect (+0 points)'}
+                  ? `CORRECT · +${data.pointsPerCorrect} PTS`
+                  : 'INCORRECT · +0 PTS'}
             </p>
             <p className="trivia-game__feedback-fact">{question.fact}</p>
           </div>
@@ -95,7 +87,7 @@ function TriviaView({ engine, snapshot }: MinigameViewProps<TriviaData>) {
             disabled={!isRunning}
             onClick={() => engine.dispatch('next')}
           >
-            {isLastQuestion ? 'Finish' : 'Next question'}
+            {isLastQuestion ? 'FINISH →' : 'NEXT QUESTION →'}
           </button>
         </div>
       )}

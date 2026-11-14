@@ -1,13 +1,13 @@
-/* Estilos de fase 3: Retro-NASA Manila Dossier / Cardstock Cards */
+/* Fase 3: Cartas tácticas centradas sobre el paisaje de Marte */
 .phase-cards {
   position: relative;
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
   color: var(--ink-black);
-  padding: 14px 16px !important;
-}
-
-.phase-cards > :not(.manila-topo) {
-  position: relative;
-  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .phase-cards .cards-heading {
@@ -16,13 +16,16 @@
   gap: 12px;
   align-items: center;
   flex-wrap: wrap;
-  border-bottom: 2.5px solid var(--ink-black);
-  padding-bottom: 8px;
+  padding: 10px 16px;
+  background: var(--paper-cream);
+  border: 3px solid var(--ink-black);
+  border-radius: 12px;
+  box-shadow: 0 4px 0 var(--ink-black);
 }
 
 .phase-cards .cards-heading h2 {
   font-family: 'Archivo', sans-serif;
-  font-weight: 800;
+  font-weight: 900;
   font-size: clamp(1.15rem, 2vw, 1.5rem);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -268,9 +271,11 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 10px;
-  padding-top: 8px;
-  border-top: 2px solid rgba(26, 24, 23, 0.25);
+  padding: 8px 14px;
+  background: var(--paper-cream);
+  border: 2.5px solid var(--ink-black);
+  border-radius: 10px;
+  box-shadow: 0 4px 0 var(--ink-black);
   color: #4a4136;
   font-size: 0.8rem;
   font-weight: 700;
@@ -281,14 +286,14 @@
 }
 
 .phase-cards .cards-protection {
-  padding: 7px 10px;
-  margin: 8px 0 0;
+  padding: 5px 10px;
+  margin: 0;
   background: #d2eedd;
   border: 2px solid #1d6b41;
-  border-radius: 3px;
+  border-radius: 6px;
   color: #144d2e;
-  font-size: 0.8rem;
-  font-weight: 700;
+  font-size: 0.78rem;
+  font-weight: 800;
 }
 
 @media (max-width: 780px) {

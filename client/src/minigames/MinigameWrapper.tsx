@@ -8,13 +8,14 @@ export interface MinigameWrapperProps {
   context: MinigameContext;
   initialElapsedMs?: number;
   onResult: (result: MinigameResult) => void;
+  showChrome?: boolean;
 }
 export default function MinigameWrapper(props: MinigameWrapperProps) {
   const module = getMinigameModule(props.definition.id);
   if (!module) return <p role="alert">No está registrado el minijuego «{props.definition.id}».</p>;
   return <Runner {...props} module={module} />;
 }
-function Runner({ definition, context, initialElapsedMs = 0, onResult, module }: MinigameWrapperProps & { module: NonNullable<ReturnType<typeof getMinigameModule>> }) {
+function Runner({ definition, context, initialElapsedMs = 0, onResult, showChrome = true, module }: MinigameWrapperProps & { module: NonNullable<ReturnType<typeof getMinigameModule>> }) {
   // El padre debe cambiar key cuando comienza un intento nuevo.
   const [run] = useState(() => module.createRun(definition, context));
   const { engine } = run;
@@ -56,11 +57,11 @@ function Runner({ definition, context, initialElapsedMs = 0, onResult, module }:
     onBlur={event => {
       if (!event.currentTarget.contains(event.relatedTarget)) engine.controls.getActions().forEach(action => engine.dispatch(action.id, 'release'));
     }}>
-    {definition.id !== 'pipes' && <><p role="timer">{Math.ceil(snapshot.remainingMs / 1000)} s</p>
+    {showChrome && definition.id !== 'pipes' && <><p role="timer">{Math.ceil(snapshot.remainingMs / 1000)} s</p>
     <p>Energy: {engine.context.resources.energy}/10 · Food: {engine.context.resources.food}/10</p>
     <p className="score">{snapshot.score} / {definition.maxScore}</p></>}
     {run.render()}
-    {definition.id !== 'pipes' && <><p>Progress: {Math.round(snapshot.progress * 100)} %</p>
+    {showChrome && definition.id !== 'pipes' && <><p>Progress: {Math.round(snapshot.progress * 100)} %</p>
     {snapshot.result && <p role="status">Run finished: {snapshot.result.reason} · {(snapshot.result.elapsedMs / 1000).toFixed(2)} s</p>}</>}
   </div>;
 }

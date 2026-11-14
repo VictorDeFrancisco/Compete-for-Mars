@@ -174,17 +174,19 @@ export function startRound(room: Room, actor: Player, now = Date.now(), random: 
   requireRule(room.players.length <= MAX_PLAYERS && alivePlayers.every(p => p.connected && p.ready), 'Todos los supervivientes deben estar conectados y listos.');
   room.round++;
   room.minigame = pickNextMinigame(room, random);
-  room.cards = drawCards(alivePlayers, random); room.cardsResolved = false;
+  const hasCardsPhase = room.round > 1;
+  room.cards = hasCardsPhase ? drawCards(alivePlayers, random) : [];
+  room.cardsResolved = !hasCardsPhase;
   room.competitive ||= alivePlayers.length > 1;
   for (const player of room.players) {
     player.ready = player.isBot && player.health > 0;
-    player.hasChosenCard = player.health <= 0;
+    player.hasChosenCard = !hasCardsPhase || player.health <= 0;
     player.hasSubmitted = player.health <= 0;
     player.selectedCardId = null; player.selectedTargetId = null; player.cardOutcome = null;
     player.score = null;
     player.result = null;
   }
-  transition(room, 'presentation', null, now);
+  transition(room, hasCardsPhase ? 'cards' : 'presentation', hasCardsPhase ? CARDS_MS : null, now);
 }
 
 export function currentPhase(room: Room, expected: Room['phase'], phaseId: unknown) {
@@ -215,11 +217,6 @@ export function advanceIfComplete(room: Room, now = Date.now()): boolean {
   const timedOut = room.deadline !== null && now >= room.deadline;
   const alivePlayers = room.players.filter(p => p.health > 0);
 
-  if (room.phase === 'presentation' && (timedOut || alivePlayers.every(p => p.ready))) {
-    transition(room, 'cards', CARDS_MS, now);
-    return true;
-  }
-
   if (room.phase === 'cards' && (timedOut || alivePlayers.every(p => p.hasChosenCard))) {
     const fallback = room.cards.find(c => c.id === 'rest' || c.id === 'eat')!;
     for (const player of alivePlayers) {
@@ -227,6 +224,12 @@ export function advanceIfComplete(room: Room, now = Date.now()): boolean {
     }
     resolveCards(room);
     if (finishMatchIfNeeded(room)) { transition(room, 'lobby', null, now); return true; }
+    for (const player of room.players) player.ready = player.isBot && player.health > 0;
+    transition(room, 'presentation', null, now);
+    return true;
+  }
+
+  if (room.phase === 'presentation' && (timedOut || alivePlayers.every(p => p.ready))) {
     transition(room, 'playing', room.minigame.durationMs, now);
     return true;
   }
