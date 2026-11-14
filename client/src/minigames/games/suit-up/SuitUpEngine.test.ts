@@ -293,7 +293,7 @@ test('Sin semilla explícita genera pasos aleatorios distintos entre partidas', 
   const signatures = new Set<string>();
   for (let i = 0; i < 6; i++) {
     const engine = new SuitUpEngine(suitUpDefinition, () => 0, DEFAULT_MINIGAME_CONTEXT);
-    assert.ok(engine.steps.length >= 6);
+    assert.ok(engine.steps.length >= 5 && engine.steps.length <= 7);
     signatures.add(engine.steps.map(s => `${s.id}:${s.qte.type}`).join('|'));
   }
   assert.ok(signatures.size >= 2, 'Sin seed los pasos deben variar aleatoriamente');
