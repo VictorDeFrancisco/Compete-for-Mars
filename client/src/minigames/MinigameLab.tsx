@@ -3,6 +3,7 @@ import type { MinigameResult } from '../../../shared/minigames/types';
 import { minigameModules } from './registry';
 import MinigameInfo from './MinigameInfo';
 import MinigameWrapper from './MinigameWrapper';
+import { PipesSceneProvider } from './games/pipes/PipesScene';
 
 /** Laboratorio local: no importa useGame, no conecta a Socket.io. */
 export default function MinigameLab() {
@@ -29,7 +30,10 @@ export default function MinigameLab() {
           onChange={event => setResources(current => ({ ...current, [key]: Number(event.target.value) }))} />
       </label>)}
     </section>
-    {running && <section className="panel"><MinigameWrapper key={`${id}-${attempt}`} definition={definition} context={{ resources }} onResult={setResult} /></section>}
+    {running && <section className="panel"><PipesSceneProvider crew={[{ id: 'local', name: 'Tú', isSelf: true }]}
+      onExit={() => setRunning(false)} onRestart={() => { setAttempt(n => n + 1); setResult(null); }}>
+      <MinigameWrapper key={`${id}-${attempt}`} definition={definition} context={{ resources }} onResult={setResult} />
+    </PipesSceneProvider></section>}
     {result && <section className="panel"><h2>Resultado que recibiría el servidor</h2><pre>{JSON.stringify(result, null, 2)}</pre></section>}
   </main>;
 }

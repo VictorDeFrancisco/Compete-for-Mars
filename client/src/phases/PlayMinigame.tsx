@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import type { MinigameProps } from '../../../shared/types';
 import MinigameWrapper from '../minigames/MinigameWrapper';
 import './PlayMinigame.css';
+import { PipesSceneProvider } from '../minigames/games/pipes/PipesScene';
 
 // Local runner sends a single result without managing rewards or damage here.
 export default function PlayMinigame({ game, onSubmit }: MinigameProps) {
@@ -15,6 +16,12 @@ export default function PlayMinigame({ game, onSubmit }: MinigameProps) {
       radiation: Math.min(10, Math.max(0, game.self.resources.radiation)),
     },
   };
+
+  if (game.minigame.id === 'pipes') return <section className="phase-playing">
+    <PipesSceneProvider crew={game.players.map(player => ({ ...player, isSelf: player.id === game.self.id }))}>
+      <MinigameWrapper definition={game.minigame} context={minigameContext} initialElapsedMs={initialElapsed.current} onResult={onSubmit} />
+    </PipesSceneProvider>
+  </section>;
 
   return (
     <section className="panel phase-playing">
