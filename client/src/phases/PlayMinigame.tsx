@@ -34,7 +34,7 @@ export default function PlayMinigame({ game, onSubmit }: MinigameProps) {
         {(lowEnergy || lowFood) && (
           <p className="phase-playing__debuff" role="status">
             {lowEnergy ? 'Low Energy debuff: slower actions & suit brownout. ' : ''}
-            {lowFood ? 'Low Food debuff: reduced score & tunnel vision.' : ''}
+            {lowFood ? 'Low Food debuff: tunnel vision & reduced minigame output.' : ''}
           </p>
         )}
         <PipesSceneProvider crew={game.players.map(player => ({ ...player, isSelf: player.id === game.self.id }))}>
@@ -68,7 +68,7 @@ export default function PlayMinigame({ game, onSubmit }: MinigameProps) {
       {(lowEnergy || lowFood) && (
         <p className="phase-playing__debuff" role="status">
           {lowEnergy ? 'Low Energy debuff: slower actions & suit brownout. ' : ''}
-          {lowFood ? 'Low Food debuff: reduced score & tunnel vision.' : ''}
+          {lowFood ? 'Low Food debuff: tunnel vision & reduced minigame output.' : ''}
         </p>
       )}
 
@@ -87,7 +87,7 @@ export default function PlayMinigame({ game, onSubmit }: MinigameProps) {
           </div>
         ) : game.self.hasSubmitted ? (
           <div className="minigame-area phase-playing__state">
-            <p>Result submitted: {game.self.score} points. Waiting for others…</p>
+            <p>Result submitted. Waiting for others…</p>
           </div>
         ) : (
           <MinigameWrapper

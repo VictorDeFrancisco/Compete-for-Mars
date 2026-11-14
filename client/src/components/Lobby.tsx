@@ -179,8 +179,9 @@ export default function Lobby({
                 <h4>Last round (Level {game.round})</h4>
                 {game.lastResults.map(result => (
                   <p key={result.playerId}>
-                    #{result.rank} {result.name}: {result.score} pts ·
-                    {{ winner: ' winner', loser: ' loser', neutral: ' neutral', draw: ' draw' }[result.outcome]}
+                    #{result.rank} {result.name} ·{' '}
+                    {{ winner: 'winner', loser: 'loser', neutral: 'neutral', draw: 'draw' }[result.outcome]}
+                    {result.healthDelta !== 0 && ` · ${result.healthDelta > 0 ? '+' : ''}${result.healthDelta} HP`}
                   </p>
                 ))}
               </div>
