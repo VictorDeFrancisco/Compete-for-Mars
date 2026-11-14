@@ -1,0 +1,3 @@
+[
+  { "id": "pulse", "title": "Prueba de panel", "instructions": "Pulsa el botón hasta 20 veces y envía tu resultado antes de que termine el tiempo. Es una prueba provisional para verificar el ciclo.", "durationMs": 20000 }
+]

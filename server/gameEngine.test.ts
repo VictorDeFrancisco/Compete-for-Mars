@@ -1,0 +1,51 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { DEFAULT_STATS } from '../shared/constants';
+import { advanceIfComplete, chooseCard, currentPhase, makePlayer, makeRoom, startRound, submitScore, validateEntry, viewFor } from './gameEngine';
+
+const player = (name: string) => makePlayer({ name, stats: { ...DEFAULT_STATS } }, `secret-token-${name}`, 'socket-' + name);
+test('valida estadísticas y no acepta presupuestos o valores inválidos', () => {
+  assert.equal(validateEntry({ name: ' Ana ', stats: DEFAULT_STATS }).name, 'Ana');
+  for (const stats of [{ energy: 4, food: 4, shielding: 4 }, { energy: -1, food: 3, shielding: 4 }, { energy: 1.5, food: 2.5, shielding: 2 }]) {
+    assert.throws(() => validateEntry({ name: 'Ana', stats }));
+  }
+  assert.throws(() => validateEntry(null));
+});
+test('ciclo completo, acciones una sola vez y recursos privados', () => {
+  const a = player('Ana'), b = player('Luis');
+  const room = makeRoom('ABC123', a, 0); room.players.push(b);
+  a.ready = b.ready = true;
+  assert.throws(() => startRound(room, b, 0));
+  startRound(room, a, 0);
+  const oldPhaseId = room.phaseId;
+  assert.equal(room.phase, 'presentation');
+  a.ready = b.ready = true; advanceIfComplete(room, 1);
+  assert.equal(room.phase, 'cards');
+  assert.throws(() => currentPhase(room, 'cards', oldPhaseId));
+  chooseCard(room, a, 'expedition'); chooseCard(room, b, 'rest');
+  assert.throws(() => chooseCard(room, a, 'rest'));
+  const view = viewFor(room, a);
+  assert.equal('token' in view.self, false);
+  for (const remote of view.players) {
+    assert.equal('resources' in remote, false); assert.equal('stats' in remote, false);
+    assert.equal('selectedCardId' in remote, false); assert.equal('token' in remote, false);
+  }
+  advanceIfComplete(room, 2); assert.equal(room.phase, 'playing');
+  assert.equal(a.resources.food, 9);
+  assert.throws(() => submitScore(a, Infinity)); assert.throws(() => submitScore(a, 101));
+  submitScore(a, 75); submitScore(b, 25);
+  assert.throws(() => submitScore(a, 100));
+  advanceIfComplete(room, 3);
+  assert.equal(room.phase, 'lobby'); assert.equal(b.health, 95);
+  assert.equal(a.ready, false); assert.equal(room.lastResults.length, 2);
+  a.ready = b.ready = true; startRound(room, a, 4); assert.equal(room.round, 2);
+});
+test('los tiempos límite completan elecciones y resultados ausentes', () => {
+  const a = player('Ana'); const room = makeRoom('ABC123', a, 0);
+  a.ready = true; startRound(room, a, 0);
+  advanceIfComplete(room, room.deadline!); assert.equal(room.phase, 'cards');
+  advanceIfComplete(room, room.deadline!); assert.equal(room.phase, 'playing');
+  assert.equal(a.selectedCardId, 'rest');
+  advanceIfComplete(room, room.deadline!); assert.equal(room.phase, 'lobby');
+  assert.equal(room.lastResults[0].score, 0);
+});
