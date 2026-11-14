@@ -1,0 +1,308 @@
+/* ==========================================================================
+   MINIJUEGO: MODULACIÓN DE SEÑAL DSN (Retro-NASA Console Aesthetic)
+   ========================================================================== */
+
+.signal-mod {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  user-select: none;
+  font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--ink-black, #1a1817);
+}
+
+/* 1. Cabecera estilo dossier físico NASA */
+.signal-mod__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 14px;
+  background: var(--paper-cream, #f5efe0);
+  border: 3px solid var(--ink-black, #1a1817);
+  border-radius: 6px;
+  box-shadow: 0 4px 0 var(--ink-black, #1a1817);
+}
+
+.signal-mod__badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 4px;
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--nasa-blue, #0b3d91);
+  color: #ffffff;
+  border: 2px solid var(--ink-black, #1a1817);
+}
+
+.signal-mod__counter {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--ink-black, #1a1817);
+}
+
+.signal-mod__station {
+  padding: 3px 9px;
+  border-radius: 4px;
+  background: #e4ebf8;
+  border: 2px solid var(--ink-black, #1a1817);
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--nasa-blue, #0b3d91);
+  text-transform: uppercase;
+}
+
+/* 2. Pantalla de osciloscopio (CRT Bezel) */
+.signal-mod__screen {
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 3px solid var(--ink-black, #1a1817);
+  background: #090d16;
+  box-shadow:
+    inset 0 3px 10px rgba(0, 0, 0, 0.7),
+    0 4px 0 var(--ink-black, #1a1817);
+}
+
+.signal-canvas {
+  width: 100%;
+  height: auto;
+  max-height: 210px;
+  display: block;
+}
+
+/* Barra de progreso de bloqueo en base de pantalla */
+.signal-mod__lock-track {
+  width: 100%;
+  height: 8px;
+  background: #0f1522;
+  border-top: 2px solid var(--ink-black, #1a1817);
+  overflow: hidden;
+}
+
+.signal-mod__lock-fill {
+  height: 100%;
+  background: #0284c7;
+  transition: width 0.08s linear;
+}
+
+.signal-mod__lock-fill--active {
+  background: #16a34a;
+}
+
+/* Banners de estado contextual */
+.signal-mod__banner {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-align: center;
+  border: 3px solid var(--ink-black, #1a1817);
+  box-shadow: 0 3px 0 var(--ink-black, #1a1817);
+}
+
+.signal-mod__banner--storm {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.signal-mod__banner--locked {
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* 3. Controles Frecuencia / Potencia */
+.signal-mod__controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.signal-mod__card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--paper-cream, #f5efe0);
+  border: 3px solid var(--ink-black, #1a1817);
+  border-radius: 6px;
+  padding: 10px 14px;
+  box-shadow: 0 4px 0 var(--ink-black, #1a1817);
+  color: var(--ink-black, #1a1817);
+}
+
+.signal-mod__card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.signal-mod__card-title {
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #524d47;
+  text-transform: uppercase;
+}
+
+.signal-mod__status {
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 2px solid transparent;
+}
+
+.signal-mod__status.MATCH,
+.signal-mod__status--MATCH {
+  background: #d1fae5;
+  color: #065f46;
+  border-color: #065f46;
+}
+
+.signal-mod__status.TOO_LOW,
+.signal-mod__status.TOO_HIGH,
+.signal-mod__status--TOO_LOW,
+.signal-mod__status--TOO_HIGH {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #92400e;
+}
+
+.signal-mod__readout {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.signal-mod__val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink-black, #1a1817);
+  font-variant-numeric: tabular-nums;
+}
+
+.signal-mod__target {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #6b635b;
+}
+
+.signal-mod__keys {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+/* Teclas mecánicas retro con sombra táctil */
+.mod-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 30px;
+  padding: 0 10px;
+  background: #ffffff;
+  color: var(--ink-black, #1a1817);
+  border: 2.5px solid var(--ink-black, #1a1817);
+  border-radius: 5px;
+  box-shadow: 0 3px 0 var(--ink-black, #1a1817);
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 0.85rem;
+  transition: transform 0.05s ease, box-shadow 0.05s ease, background 0.05s ease;
+}
+
+.mod-key--active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--ink-black, #1a1817);
+  background: var(--nasa-orange, #fc3d21);
+  color: #ffffff;
+}
+
+.mod-key--space {
+  min-width: 104px;
+}
+
+/* 4. Filtro Solar */
+.signal-mod__filter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--paper-cream, #f5efe0);
+  border: 3px solid var(--ink-black, #1a1817);
+  border-radius: 6px;
+  padding: 8px 14px;
+  box-shadow: 0 4px 0 var(--ink-black, #1a1817);
+  color: var(--ink-black, #1a1817);
+}
+
+.signal-mod__filter--active {
+  border-color: var(--nasa-orange, #fc3d21);
+  background: #fff7ed;
+}
+
+.signal-mod__filter-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.signal-mod__filter-label {
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #524d47;
+}
+
+.signal-mod__battery {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.signal-mod__battery-pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink-black, #1a1817);
+  font-variant-numeric: tabular-nums;
+}
+
+.signal-mod__battery-track {
+  width: 90px;
+  height: 8px;
+  background: #e2d9c8;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 2px solid var(--ink-black, #1a1817);
+}
+
+.signal-mod__battery-fill {
+  height: 100%;
+  background: #0284c7;
+  transition: width 0.08s linear;
+}
+
+@media (max-width: 580px) {
+  .signal-mod__controls {
+    grid-template-columns: 1fr;
+  }
+}
