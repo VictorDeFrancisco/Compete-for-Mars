@@ -64,7 +64,7 @@ test('dos clientes reales: sala, autorizaciones, ronda, reconexión y segunda ro
   await state(b, view => view.players.some(p => p.id === id && !p.connected));
   const resumed = await connect('token-astronauta-a-123456');
   const restored = await state(resumed, view => view.phase === 'lobby');
-  assert.equal(restored.self.id, id); assert.equal(restored.self.resources.food, 10);
+  assert.equal(restored.self.id, id); assert.equal(restored.self.resources.food, 100);
   for (const client of [resumed, b]) assert.equal((await action(client, 'player:ready', true)).ok, true);
   assert.equal((await action(b, 'game:start')).ok, true);
   await state(resumed, view => view.phase === 'presentation' && view.round === 2);

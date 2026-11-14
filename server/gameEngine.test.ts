@@ -32,7 +32,9 @@ test('ciclo completo, acciones una sola vez y recursos privados', () => {
     assert.equal('selectedCardId' in remote, false); assert.equal('token' in remote, false);
   }
   advanceIfComplete(room, 2); assert.equal(room.phase, 'playing');
-  assert.equal(a.resources.food, 9);
+  assert.equal(a.resources.food, 100);
+  assert.equal(a.resources.energy, 98);
+  assert.equal(a.resources.radiation, 1);
   const result = timeoutResult(room.minigame);
   assert.throws(() => submitResult(room, a, { ...result, score: Infinity }));
   assert.throws(() => submitResult(room, a, { ...result, score: 101 }));
@@ -41,10 +43,29 @@ test('ciclo completo, acciones una sola vez y recursos privados', () => {
   assert.throws(() => submitResult(room, a, result));
   advanceIfComplete(room, 3);
   assert.equal(room.phase, 'lobby'); assert.equal(b.health, 90);
-  assert.equal(a.resources.food, 10);
+  assert.equal(a.resources.food, 100);
+  assert.equal(a.resources.energy, 100);
   assert.equal(room.lastResults.find(result => result.playerId === a.id)?.outcome, 'winner');
   assert.equal(a.ready, false); assert.equal(room.lastResults.length, 2);
   a.ready = b.ready = true; startRound(room, a, 4); assert.equal(room.round, 2);
+});
+test('radiation starts at 0 and has no upper limit', () => {
+  const a = player('Ana');
+  assert.equal(a.resources.energy, 100);
+  assert.equal(a.resources.food, 100);
+  assert.equal(a.resources.radiation, 0);
+  const room = makeRoom('RAD001', a, 0);
+  for (let round = 0; round < 12; round++) {
+    a.ready = true;
+    startRound(room, a, round * 10);
+    a.ready = true;
+    advanceIfComplete(room, round * 10 + 1);
+    chooseCard(room, a, 'expedition');
+    advanceIfComplete(room, round * 10 + 2);
+    submitResult(room, a, timeoutResult(room.minigame));
+    advanceIfComplete(room, round * 10 + 3);
+  }
+  assert.equal(a.resources.radiation, 12);
 });
 test('los tiempos límite completan elecciones y resultados ausentes', () => {
   const a = player('Ana'); const room = makeRoom('ABC123', a, 0);

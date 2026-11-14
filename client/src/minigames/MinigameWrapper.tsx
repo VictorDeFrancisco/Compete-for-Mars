@@ -46,7 +46,7 @@ function Runner({ definition, context, initialElapsedMs = 0, onResult, module }:
       queueMicrotask(() => { if (lifecycle.current === generation) engine.dispose(); });
     };
   }, [engine]);
-  return <div ref={container} tabIndex={0} aria-label="Área del minijuego" className="minigame-area"
+  return <div ref={container} tabIndex={0} aria-label="Minigame area" className="minigame-area"
     onKeyDown={event => {
       if (event.repeat) return;
       const actions = engine.controls.forKey(event.code);
@@ -56,11 +56,11 @@ function Runner({ definition, context, initialElapsedMs = 0, onResult, module }:
     onBlur={event => {
       if (!event.currentTarget.contains(event.relatedTarget)) engine.controls.getActions().forEach(action => engine.dispatch(action.id, 'release'));
     }}>
-    <p role="timer">{Math.ceil(snapshot.remainingMs / 1000)} s</p>
-    <p>Energía: {engine.context.resources.energy}/10 · Comida: {engine.context.resources.food}/10</p>
-    <p className="score">{snapshot.score} / {definition.maxScore}</p>
+    {definition.id !== 'pipes' && <><p role="timer">{Math.ceil(snapshot.remainingMs / 1000)} s</p>
+    <p>Energy: {engine.context.resources.energy}/10 · Food: {engine.context.resources.food}/10</p>
+    <p className="score">{snapshot.score} / {definition.maxScore}</p></>}
     {run.render()}
-    <p>Progreso: {Math.round(snapshot.progress * 100)} %</p>
-    {snapshot.result && <p role="status">Prueba terminada: {snapshot.result.reason} · {(snapshot.result.elapsedMs / 1000).toFixed(2)} s</p>}
+    {definition.id !== 'pipes' && <><p>Progress: {Math.round(snapshot.progress * 100)} %</p>
+    {snapshot.result && <p role="status">Run finished: {snapshot.result.reason} · {(snapshot.result.elapsedMs / 1000).toFixed(2)} s</p>}</>}
   </div>;
 }

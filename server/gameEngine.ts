@@ -23,7 +23,10 @@ export interface Room {
   round: number; deadline: number | null; players: Player[];
   minigame: MinigameDefinition; lastResults: RoundResult[]; lastActive: number;
 }
-export const clamp = (n: number, low = 0, high = 10) => Math.max(low, Math.min(high, n));
+export const clamp = (n: number, low = 0, high = 100) => Math.max(low, Math.min(high, n));
+export function clampResource(key: keyof Resources, value: number): number {
+  return key === 'radiation' ? Math.max(0, value) : clamp(value, 0, 100);
+}
 export function requireRule(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
 }
@@ -43,7 +46,7 @@ export function validateEntry(input: unknown): Entry {
 export function makePlayer(entry: Entry, token: string, socketId: string | null, isBot = false): Player {
   return { id: randomUUID(), ...entry, token, socketId, health: 100, isBot, connected: true,
     ready: isBot, hasChosenCard: false, hasSubmitted: false, selectedCardId: null, score: null, result: null,
-    resources: { energy: 4 + entry.stats.energy, food: 4 + entry.stats.food, radiation: 0 } };
+    resources: { energy: 100, food: 100, radiation: 0 } };
 }
 export function makeRoom(code: string, player: Player, now = Date.now()): Room {
   return { code, hostId: player.id, phase: 'lobby', phaseId: randomUUID(), round: 0,
@@ -101,7 +104,7 @@ export function advanceIfComplete(room: Room, now = Date.now()): boolean {
       if (!player.hasChosenCard) chooseCard(room, player, CARDS[0].id);
       const card = CARDS.find(c => c.id === player.selectedCardId)!;
       for (const key of Object.keys(card.effect) as (keyof Resources)[]) {
-        player.resources[key] = clamp(player.resources[key] + (card.effect[key] ?? 0));
+        player.resources[key] = clampResource(key, player.resources[key] + (card.effect[key] ?? 0));
       }
     }
     transition(room, 'playing', room.minigame.durationMs, now); return true;
@@ -116,7 +119,7 @@ export function advanceIfComplete(room: Room, now = Date.now()): boolean {
       const previousResources = { ...player.resources };
       player.health = clamp(player.health + (reward.health ?? 0), 1, 100);
       for (const key of ['energy', 'food', 'radiation'] as const) {
-        player.resources[key] = clamp(player.resources[key] + (reward.resources?.[key] ?? 0));
+        player.resources[key] = clampResource(key, player.resources[key] + (reward.resources?.[key] ?? 0));
       }
       player.ready = player.isBot;
       return { playerId: player.id, name: player.name, score: entry.result.score, rank: entry.rank, outcome: entry.outcome,

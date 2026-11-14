@@ -196,7 +196,7 @@ export default function MarsBase3D({ game }: { game: GameView }) {
 
   const cameraRef = useRef({
     yaw: 0.55,
-    pitch: 0.34,
+    pitch: 0.36,
     distance: 5.5,
     autoOrbit: true,
     dragging: false,
@@ -230,8 +230,8 @@ export default function MarsBase3D({ game }: { game: GameView }) {
       const z1 = pt.x * sinY + pt.z * cosY;
       const y1 = pt.y - 0.55;
 
-      const y2 = y1 * cosP - z1 * sinP;
-      const z2 = y1 * sinP + z1 * cosP + distance;
+      const y2 = y1 * cosP + z1 * sinP;
+      const z2 = -y1 * sinP + z1 * cosP + distance;
 
       if (z2 <= 0.4) return null;
       const fov = Math.min(width, height) * 1.12;
@@ -272,56 +272,60 @@ export default function MarsBase3D({ game }: { game: GameView }) {
       const height = canvas.height;
       const currentGame = gameRef.current;
       const { yaw, pitch } = cameraRef.current;
-      const horizonY = height * (0.42 + (pitch - 0.34) * 0.24);
+      const fov = Math.min(width, height) * 1.12;
+      const horizonY = height * 0.56 - fov * Math.tan(pitch);
 
-      // 1. Deep starry Mars night sky
-      const sky = ctx.createLinearGradient(0, 0, 0, horizonY);
-      sky.addColorStop(0, '#05070c');
-      sky.addColorStop(0.58, '#171117');
-      sky.addColorStop(1, '#582c1a');
-      ctx.fillStyle = sky;
-      ctx.fillRect(0, 0, width, horizonY + 2);
+      // 1. Deep starry Mars night sky & distant mountains when horizon is visible
+      if (horizonY > 0) {
+        const sky = ctx.createLinearGradient(0, 0, 0, horizonY);
+        sky.addColorStop(0, '#05070c');
+        sky.addColorStop(0.58, '#171117');
+        sky.addColorStop(1, '#582c1a');
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, width, horizonY + 2);
 
-      // Stars rotating smoothly with camera yaw
-      for (const star of STARS) {
-        const relAngle = ((star.angle - yaw) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
-        if (Math.abs(relAngle) > 1.35) continue;
-        const sx = width * (0.5 + relAngle / 2.2);
-        const sy = star.y * horizonY * 1.6;
-        if (sy > horizonY) continue;
-        const twinkle = 0.65 + 0.35 * Math.sin(now * 0.002 + star.angle * 7);
-        ctx.fillStyle = `rgba(235, 242, 255, ${(star.alpha * twinkle).toFixed(2)})`;
+        // Stars rotating smoothly with camera yaw
+        for (const star of STARS) {
+          const relAngle = ((star.angle - yaw) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
+          if (Math.abs(relAngle) > 1.35) continue;
+          const sx = width * (0.5 + relAngle / 2.2);
+          const sy = star.y * horizonY * 1.85;
+          if (sy > horizonY) continue;
+          const twinkle = 0.65 + 0.35 * Math.sin(now * 0.002 + star.angle * 7);
+          ctx.fillStyle = `rgba(235, 242, 255, ${(star.alpha * twinkle).toFixed(2)})`;
+          ctx.beginPath();
+          ctx.arc(sx, sy, star.r * dpr, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // 2. Distant Martian mountain ridge panning with yaw
         ctx.beginPath();
-        ctx.arc(sx, sy, star.r * dpr, 0, Math.PI * 2);
+        ctx.moveTo(0, horizonY);
+        for (let px = 0; px <= width; px += Math.max(18, width / 40)) {
+          const worldAngle = yaw + (px / width - 0.5) * 2.1;
+          const ridgeH =
+            (Math.sin(worldAngle * 3.1) * 0.5 +
+              Math.cos(worldAngle * 6.7) * 0.3 +
+              Math.sin(worldAngle * 11.3) * 0.2 +
+              1) *
+            height *
+            0.036;
+          ctx.lineTo(px, horizonY - ridgeH);
+        }
+        ctx.lineTo(width, horizonY + 2);
+        ctx.closePath();
+        ctx.fillStyle = '#2d1610';
         ctx.fill();
       }
 
-      // 2. Distant Martian mountain ridge panning with yaw
-      ctx.beginPath();
-      ctx.moveTo(0, horizonY);
-      for (let px = 0; px <= width; px += Math.max(18, width / 40)) {
-        const worldAngle = yaw + (px / width - 0.5) * 2.1;
-        const ridgeH =
-          (Math.sin(worldAngle * 3.1) * 0.5 +
-            Math.cos(worldAngle * 6.7) * 0.3 +
-            Math.sin(worldAngle * 11.3) * 0.2 +
-            1) *
-          height *
-          0.036;
-        ctx.lineTo(px, horizonY - ridgeH);
-      }
-      ctx.lineTo(width, horizonY + 2);
-      ctx.closePath();
-      ctx.fillStyle = '#2d1610';
-      ctx.fill();
-
       // 3. Full Martian ground plane from horizon to bottom
+      const groundTop = Math.max(0, horizonY);
       const ground = ctx.createLinearGradient(0, horizonY, 0, height);
       ground.addColorStop(0, '#5a2818');
       ground.addColorStop(0.32, '#411b11');
       ground.addColorStop(1, '#180b08');
       ctx.fillStyle = ground;
-      ctx.fillRect(0, horizonY, width, height - horizonY);
+      ctx.fillRect(0, groundTop, width, height - groundTop);
 
       // Warm atmospheric glow around the dome
       const center = project({ x: 0, y: 0.4, z: 0 }, width, height);
@@ -458,8 +462,8 @@ export default function MarsBase3D({ game }: { game: GameView }) {
         ctx.arc(head.x, head.y + helmR * 0.85, helmR * 0.58, 0, Math.PI * 2);
         ctx.fill();
 
-        const label = `${player.name}${isSelf ? ' (Tú)' : ''}`;
-        const statusText = !player.connected ? 'OFF' : player.ready ? 'LISTO' : 'ESPERA';
+        const label = `${player.name}${isSelf ? ' (You)' : ''}`;
+        const statusText = !player.connected ? 'OFF' : player.ready ? 'READY' : 'WAIT';
         ctx.font = `600 ${Math.round(11 * dpr)}px Inter, system-ui, sans-serif`;
         const textWidth = ctx.measureText(`${label} · ${statusText}`).width;
         const padX = 8 * dpr;
@@ -513,7 +517,7 @@ export default function MarsBase3D({ game }: { game: GameView }) {
       <canvas
         ref={canvasRef}
         className="mars-base-bg__canvas"
-        aria-label="Vista 3D de la base marciana"
+        aria-label="3D view of the Mars base"
         onPointerDown={event => {
           cameraRef.current.dragging = true;
           cameraRef.current.lastX = event.clientX;
@@ -527,7 +531,7 @@ export default function MarsBase3D({ game }: { game: GameView }) {
           cameraRef.current.lastX = event.clientX;
           cameraRef.current.lastY = event.clientY;
           cameraRef.current.yaw += dx * 0.007;
-          cameraRef.current.pitch = Math.max(0.14, Math.min(0.85, cameraRef.current.pitch + dy * 0.005));
+          cameraRef.current.pitch = Math.max(0.12, Math.min(1.18, cameraRef.current.pitch + dy * 0.005));
         }}
         onPointerUp={() => {
           cameraRef.current.dragging = false;
@@ -543,12 +547,12 @@ export default function MarsBase3D({ game }: { game: GameView }) {
 
       <div className="mars-base-bg__camera-controls">
         <button type="button" className="secondary" onClick={() => setAutoOrbit(value => !value)}>
-          {autoOrbit ? 'Pausar órbita' : 'Auto-órbita'}
+          {autoOrbit ? 'Pause orbit' : 'Auto-orbit'}
         </button>
-        <button type="button" className="secondary" onClick={() => zoomBy(-0.6)} aria-label="Acercar cámara">
+        <button type="button" className="secondary" onClick={() => zoomBy(-0.6)} aria-label="Zoom in">
           +
         </button>
-        <button type="button" className="secondary" onClick={() => zoomBy(0.6)} aria-label="Alejar cámara">
+        <button type="button" className="secondary" onClick={() => zoomBy(0.6)} aria-label="Zoom out">
           -
         </button>
       </div>

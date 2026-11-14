@@ -2,12 +2,19 @@ import type { PresentationProps } from '../../../shared/types';
 import MinigameInfo from '../minigames/MinigameInfo';
 import './MinigamePresentation.css';
 
-// Fase 2: este componente no crea sockets ni cambia de fase por su cuenta.
+// Phase 2: this component does not create sockets or change phases by itself.
 export default function MinigamePresentation({ game, onReady }: PresentationProps) {
-  return <section className="panel phase-presentation"><p className="eyebrow">2 · Presentación del minijuego</p>
-    <MinigameInfo definition={game.minigame} />
-    <p>Después de esta presentación elegirás una carta.</p>
-    <button disabled={game.self.ready} onClick={onReady}>{game.self.ready ? 'Esperando a la tripulación…' : 'Entendido'}</button>
-    <p>{game.players.filter(p => p.ready).length}/{game.players.length} preparados. La fase avanza también al terminar el tiempo.</p>
-  </section>;
+  return (
+    <section className="panel phase-presentation">
+      <p className="eyebrow">2 · Minigame Briefing</p>
+      <MinigameInfo definition={game.minigame} />
+      <p>After this briefing you will choose an action card.</p>
+      <button disabled={game.self.ready} onClick={onReady}>
+        {game.self.ready ? 'Waiting for crew…' : 'Got it'}
+      </button>
+      <p>
+        {game.players.filter(p => p.ready).length}/{game.players.length} ready. The phase also advances when time expires.
+      </p>
+    </section>
+  );
 }

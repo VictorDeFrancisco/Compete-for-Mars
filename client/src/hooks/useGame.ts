@@ -19,7 +19,7 @@ export function useGame() {
     const failure = (err: Error) =>
       setError(
         err.message === 'xhr poll error' || err.message === 'websocket error'
-          ? 'No hay conexión con el servidor (puerto 3001). Arranca el servidor con «pnpm dev» o «pnpm dev:server».'
+          ? 'No connection to server (port 3001). Start the server with "pnpm dev" or "pnpm dev:server".'
           : err.message,
       );
     socket.on('game:state', state); socket.on('connect', connect);
@@ -31,8 +31,8 @@ export function useGame() {
     };
   }, []);
   const act = (send: (reply: Reply) => void) => {
-    if (!socket.connected) { setError('Sin conexión con el servidor.'); return; }
-    setError(''); send(result => { if (!result.ok) setError(result.error ?? 'No se pudo realizar la acción.'); });
+    if (!socket.connected) { setError('No connection to server.'); return; }
+    setError(''); send(result => { if (!result.ok) setError(result.error ?? 'Action failed.'); });
   };
   const leave = () => act(reply => socket.emit('room:leave', result => {
     if (result.ok) setGame(null); reply(result);

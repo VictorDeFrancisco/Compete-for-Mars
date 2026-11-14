@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DEFAULT_STATS, PHASE_LABELS } from '../../shared/constants';
+import { PHASE_LABELS } from '../../shared/constants';
 import type { Phase, Stats } from '../../shared/types';
 import { socket, useGame } from './hooks/useGame';
 import { useCountdown } from './hooks/useCountdown';
@@ -7,18 +7,20 @@ import RoleSelect from './components/RoleSelect';
 import Lobby from './components/Lobby';
 import Hud from './components/Hud';
 import StartScreen from './components/StartScreen';
+import RoomEntryScreen from './components/RoomEntryScreen';
+import { PROFESSIONS } from './components/professions';
 import TestPanel, { buildPreviewGame } from './components/TestPanel';
 import MinigamePresentation from './phases/MinigamePresentation';
 import CardSelection from './phases/CardSelection';
 import PlayMinigame from './phases/PlayMinigame';
 
-type AppView = 'start' | 'classic' | 'test-panel' | 'preview';
+type AppView = 'start' | 'create' | 'join' | 'classic' | 'test-panel' | 'preview';
 
 export default function App() {
   const { game, connected, error, act, leave, serverOffset } = useGame();
   const [view, setView] = useState<AppView>('start');
   const [name, setName] = useState('');
-  const [stats, setStats] = useState<Stats>({ ...DEFAULT_STATS });
+  const [stats, setStats] = useState<Stats>({ ...PROFESSIONS[0].stats });
   const [prepared, setPrepared] = useState(false);
 
   const [previewPhase, setPreviewPhase] = useState<Exclude<Phase, 'stats'>>('lobby');
@@ -66,16 +68,11 @@ export default function App() {
       <main>
         <header>
           <div>
-            <p className="eyebrow">C-Moon Dynamics · base de desarrollo</p>
+            <p className="eyebrow">C-Moon Dynamics · Mission</p>
             <h1>Compete For Mars</h1>
           </div>
-          <div className="actions">
-            <span className={connected ? 'status' : 'status offline'}>
-              {connected ? 'Conectado' : 'Reconectando…'}
-            </span>
-          </div>
         </header>
-        <nav aria-label="Fases">
+        <nav aria-label="Phases">
           {(Object.keys(PHASE_LABELS) as Phase[]).map(p => (
             <span key={p} aria-current={p === phase ? 'step' : undefined}>
               {PHASE_LABELS[p]}
@@ -84,9 +81,9 @@ export default function App() {
         </nav>
         {error && <p className="error" role="alert">{error}</p>}
         <div className="room-bar">
-          <span>Sala <strong>{game.code}</strong> · Ronda {game.round}</span>
+          <span>Room <strong>{game.code}</strong> · Round {game.round}</span>
           {seconds !== null && <strong role="timer">{seconds} s</strong>}
-          <button className="secondary" onClick={leave} disabled={!connected}>Salir de la sala</button>
+          <button className="secondary" onClick={leave} disabled={!connected}>Leave room</button>
         </div>
         <div className="layout">
           <div>
@@ -122,12 +119,12 @@ export default function App() {
     const previewGame = buildPreviewGame(previewPhase, previewMinigameId, previewReady);
     const previewBanner = (
       <div className="preview-banner">
-        <span>MODO TEST (vista previa)</span>
+        <span>TEST MODE (preview)</span>
         <button type="button" className="secondary" onClick={() => setView('test-panel')}>
-          Panel de control
+          Control panel
         </button>
         <button type="button" className="secondary" onClick={() => setView('start')}>
-          Inicio
+          Start
         </button>
       </div>
     );
@@ -157,11 +154,11 @@ export default function App() {
       <main>
         <header>
           <div>
-            <p className="eyebrow">Compete For Mars · Vista previa TEST</p>
+            <p className="eyebrow">Compete For Mars · TEST Preview</p>
             <h1>Compete For Mars</h1>
           </div>
           <button type="button" className="secondary" onClick={() => setView('test-panel')}>
-            Volver al panel
+            Back to panel
           </button>
         </header>
         <div className="layout">
@@ -205,17 +202,34 @@ export default function App() {
     );
   }
 
-  if (view === 'start') {
+  if (view === 'create' || view === 'join') {
     return (
-      <StartScreen
+      <RoomEntryScreen
+        mode={view}
         connected={connected}
         error={error}
         name={name}
         stats={stats}
         onName={setName}
         onStats={setStats}
-        onCreateRoom={() => act(reply => socket.emit('room:create', entry, reply))}
-        onJoinRoom={code => act(reply => socket.emit('room:join', { ...entry, code }, reply))}
+        onSubmit={code => {
+          if (view === 'create') {
+            act(reply => socket.emit('room:create', entry, reply));
+          } else if (code) {
+            act(reply => socket.emit('room:join', { ...entry, code }, reply));
+          }
+        }}
+        onSwitchMode={nextMode => setView(nextMode)}
+        onBack={() => setView('start')}
+      />
+    );
+  }
+
+  if (view === 'start') {
+    return (
+      <StartScreen
+        onCreateScreen={() => setView('create')}
+        onJoinScreen={() => setView('join')}
         onOpenTest={() => setView('test-panel')}
       />
     );
@@ -225,22 +239,19 @@ export default function App() {
     <main>
       <header>
         <div>
-          <p className="eyebrow">C-Moon Dynamics · base de desarrollo</p>
+          <p className="eyebrow">C-Moon Dynamics · Dev Flow</p>
           <h1>Compete For Mars</h1>
         </div>
         <div className="actions">
           <button type="button" className="secondary" onClick={() => setView('test-panel')}>
-            Panel Test
+            Test Panel
           </button>
           <button type="button" className="secondary" onClick={() => setView('start')}>
-            Inicio
+            Start
           </button>
-          <span className={connected ? 'status' : 'status offline'}>
-            {connected ? 'Conectado' : 'Reconectando…'}
-          </span>
         </div>
       </header>
-      <nav aria-label="Fases">
+      <nav aria-label="Phases">
         {(Object.keys(PHASE_LABELS) as Phase[]).map(p => (
           <span key={p} aria-current={p === phase ? 'step' : undefined}>
             {PHASE_LABELS[p]}
@@ -273,7 +284,7 @@ export default function App() {
         )}
       </fieldset>
       <footer>
-        Prototipo · <a href="/?minigame=pulse">Laboratorio local de minijuegos</a>
+        Prototype · <a href="/?minigame=pulse">Local minigame lab</a>
       </footer>
     </main>
   );
