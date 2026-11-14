@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { MAX_PLAYERS } from '../../../shared/constants';
 import type { GameView } from '../../../shared/types';
+import AstronautPortraitSvg, { suitColorByIndex, suitColorForPlayer } from './AstronautPortraitSvg';
 import MarsBase3D from './MarsBase3D';
 import { RadiationIcon } from './RadiationIcon';
+import { playUiClick, playUiConfirm } from '../utils/uiAudio';
 import './Lobby.css';
 
 export interface LobbyProps {
@@ -19,10 +22,17 @@ export interface LobbyProps {
   onLeave?: () => void;
 }
 
+const BASE_RESOURCE_CAP = 100;
+
+function percentOf(value: number, max: number): number {
+  if (max <= 0) return 0;
+  return Math.max(0, Math.min(100, Math.round((value / max) * 100)));
+}
+
 export default function Lobby({
   game,
   connected = true,
-  error = '',
+  error,
   disabled,
   onCreate,
   onJoin,
@@ -34,244 +44,397 @@ export default function Lobby({
   onLeave,
 }: LobbyProps) {
   const [code, setCode] = useState('');
+  const [orbitPaused, setOrbitPaused] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+    const timer = window.setTimeout(() => setCopied(false), 1800);
+    return () => window.clearTimeout(timer);
+  }, [copied]);
 
   if (!game) {
     return (
       <section className="panel">
         <h2>1 · Base &amp; Room</h2>
-        <p>Create a room or share the code to compete from other browsers.</p>
-        <button disabled={disabled} onClick={onCreate}>Create room</button>
-        <form onSubmit={e => { e.preventDefault(); onJoin(code); }}>
-          <label>
-            Room code
-            <input
-              value={code}
-              maxLength={6}
-              onChange={e => setCode(e.target.value.toUpperCase())}
-              placeholder="ABC123"
-            />
-          </label>
-          <button disabled={disabled || code.trim().length !== 6}>Join</button>
-        </form>
+        <div className="row">
+          <button disabled={disabled} onClick={onCreate}>Create room</button>
+          <span className="muted">or</span>
+          <input
+            value={code}
+            onChange={e => setCode(e.target.value.toUpperCase())}
+            placeholder="CODE"
+            maxLength={8}
+            aria-label="Room code"
+          />
+          <button disabled={disabled || !code.trim()} onClick={() => onJoin(code)}>Join</button>
+        </div>
         <button className="secondary" onClick={onBack}>Change profession</button>
       </section>
     );
   }
 
-  const host = game.hostId === game.self.id;
-  const nextLevel = game.round + 1;
+  const isHost = game.hostId === game.self.id;
+  const gameOver = Boolean(game.matchFinished || game.winnerId != null);
   const alivePlayers = game.players.filter(p => p.health > 0);
   const readyCount = alivePlayers.filter(p => p.ready).length;
-  const allReady = !game.matchFinished && alivePlayers.length > 0 && alivePlayers.every(p => p.ready && p.connected);
-  const otherPlayers = game.players.filter(p => p.id !== game.self.id);
-  const matchWinner = game.winnerId ? game.players.find(p => p.id === game.winnerId) ?? null : null;
-  const gameOver = Boolean(game.matchFinished || matchWinner);
-  const selfDead = game.self.health <= 0;
-  const maxHealth = game.self.maxHealth || 100 + (game.self.stats.health ?? 0);
-  const maxEnergy = 100 + game.self.stats.energy;
-  const maxFood = 100 + game.self.stats.food;
+  const allAliveReady = alivePlayers.length > 0 && alivePlayers.every(p => p.connected && p.ready);
+  const canStart = isHost && !disabled && !gameOver && allAliveReady;
+  const canAddBots = isHost && !disabled && !gameOver && game.round === 0 && game.players.length < MAX_PLAYERS;
+  const winner = game.winnerId ? game.players.find(p => p.id === game.winnerId) : null;
+
+  const selfMaxEnergy = BASE_RESOURCE_CAP + game.self.stats.energy;
+  const selfMaxFood = BASE_RESOURCE_CAP + game.self.stats.food;
+
+  const handleCopyCode = async () => {
+    playUiClick();
+    try {
+      await navigator.clipboard.writeText(game.code);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  };
 
   return (
-    <div className="lobby-world" aria-label="3D Mars Base">
-      <MarsBase3D game={game} />
+    <section className="lobby-world" aria-label="Mars Base Lobby">
+      <MarsBase3D game={game} autoOrbit={!orbitPaused} />
 
       <div className="lobby-hud">
-        <header className="lobby-hud__top">
-          <div className="lobby-hud__brand">
-            <span className="lobby-hud__eyebrow">
-              {game.round === 0 ? 'COMPETE FOR MARS · CREW ASSEMBLY' : `COMPETE FOR MARS · LEVEL ${nextLevel}`}
-            </span>
-            <div className="lobby-hud__title-row">
-              <strong>{game.round === 0 ? `Room ${game.code}` : `Mars Outpost · Round ${game.round}`}</strong>
-              <span className={`lobby-hud__pill ${allReady ? 'lobby-hud__pill--all' : ''}`.trim()}>
-                {gameOver ? (matchWinner ? `Winner: ${matchWinner.name}` : 'Mission ended') : `${readyCount}/${alivePlayers.length} ready`}
-              </span>
-            </div>
-            <span className="lobby-hud__drag-hint">Drag background to orbit base · Scroll to zoom</span>
-          </div>
-
-          {onLeave && (
-            <div className="lobby-hud__top-right">
-              <button type="button" className="secondary" disabled={!connected} onClick={onLeave}>
-                Leave room
-              </button>
-            </div>
-          )}
-        </header>
-
-        {error && (
-          <p className="error lobby-hud__error" role="alert">
-            {error}
-          </p>
-        )}
-
-        <div className="lobby-hud__corners">
-          <section className="lobby-glass lobby-hud__self" aria-label="Your status">
-            <div className="lobby-glass__head">
-              <h3>{game.self.name}</h3>
-              <span className={`lobby-ready-badge ${selfDead ? 'lobby-ready-badge--off' : game.self.ready ? 'lobby-ready-badge--yes' : 'lobby-ready-badge--no'}`}>
-                {selfDead ? 'Eliminated' : game.self.ready ? '✓ Ready' : 'Waiting'}
-              </span>
-            </div>
-
-            {game.self.cardOutcome && <p className="lobby-card-result">{game.self.cardOutcome.summary}</p>}
-            {game.self.protection?.radiationShield && <p className="lobby-card-result">Radiation shield ready.</p>}
-            {game.self.protection?.reinforcedSuit && <p className="lobby-card-result">Reinforced suit ready.</p>}
-            <div className="lobby-stat-row">
-              <div className="lobby-stat-row__label">
-                <span>Health</span>
-                <strong>{game.self.health} / {maxHealth}</strong>
+        <header className="lobby-topbar">
+          <div className="lobby-topbar__left">
+            {game.round === 0 ? (
+              <div className="lobby-room-plaque">
+                <span className="lobby-room-plaque__eyebrow">ROOM</span>
+                <strong className="lobby-room-plaque__code">{game.code}</strong>
+                <button
+                  type="button"
+                  className="lobby-copy-btn"
+                  onClick={handleCopyCode}
+                  aria-label="Copy room code"
+                  title="Copy room code"
+                >
+                  {copied ? 'COPIED' : 'COPY'}
+                </button>
               </div>
-              <div className="lobby-bar">
-                <div className="lobby-bar__fill" style={{ width: `${Math.min(100, (game.self.health / maxHealth) * 100)}%` }} />
-              </div>
-            </div>
-
-            <div className="lobby-stat-row">
-              <div className="lobby-stat-row__label">
-                <span>Energy</span>
-                <strong>{game.self.resources.energy} / {maxEnergy}</strong>
-              </div>
-              <div className="lobby-bar">
-                <div
-                  className="lobby-bar__fill lobby-bar__fill--energy"
-                  style={{ width: `${Math.min(100, (game.self.resources.energy / maxEnergy) * 100)}%` }}
-                />
-              </div>
-            </div>
-
-            <div className="lobby-stat-row">
-              <div className="lobby-stat-row__label">
-                <span>Food</span>
-                <strong>{game.self.resources.food} / {maxFood}</strong>
-              </div>
-              <div className="lobby-bar">
-                <div
-                  className="lobby-bar__fill lobby-bar__fill--food"
-                  style={{ width: `${Math.min(100, (game.self.resources.food / maxFood) * 100)}%` }}
-                />
-              </div>
-            </div>
-
-            <div className="lobby-radiation-row" aria-label={`Radiation ${game.self.resources.radiation}`}>
-              <span className="lobby-radiation-row__label">
-                <RadiationIcon />
-                <span>Radiation</span>
-              </span>
-              <strong className="lobby-radiation-row__value">{game.self.resources.radiation}</strong>
-            </div>
-
-            <div className="lobby-traits">
-              {game.self.stats.energy > 0 && <span className="lobby-trait">Max Energy +{game.self.stats.energy}</span>}
-              {game.self.stats.food > 0 && <span className="lobby-trait">Max Food +{game.self.stats.food}</span>}
-              {game.self.stats.health > 0 && <span className="lobby-trait">Max Health +{game.self.stats.health}</span>}
-              {(game.self.resources.energy <= 30 || game.self.resources.food <= 30 || game.self.resources.radiation > 0) && (
-                <span className="lobby-trait">
-                  {game.self.resources.energy === 0 || game.self.resources.food === 0
-                    ? '0 resource: -10 HP/minigame'
-                    : game.self.resources.radiation > 0
-                      ? game.self.protection?.reinforcedSuit ? 'Radiation: next damage blocked' : `Rad: -${game.self.resources.radiation * 5} HP/minigame`
-                      : 'Low reserves debuff active'}
-                </span>
-              )}
-            </div>
-
-            {game.lastResults.length > 0 && (
-              <div className="lobby-last-results">
-                <h4>Last round (Level {game.round})</h4>
-                {game.lastResults.map(result => (
-                  <p key={result.playerId}>
-                    #{result.rank} {result.name} ·{' '}
-                    {{ winner: 'winner', loser: 'loser', neutral: 'neutral', draw: 'draw' }[result.outcome]}
-                    {result.healthDelta !== 0 && ` · ${result.healthDelta > 0 ? '+' : ''}${result.healthDelta} HP`}
-                  </p>
-                ))}
+            ) : (
+              <div className="lobby-room-plaque lobby-room-plaque--locked">
+                <span className="lobby-room-plaque__eyebrow">MARS BASE</span>
+                <strong className="lobby-room-plaque__code">ROUND {game.round}</strong>
               </div>
             )}
-          </section>
 
-          <div className="lobby-hud__right-col">
-            <section className="lobby-glass lobby-hud__crew" aria-label="Other players">
-              <h3>Other players</h3>
-              {otherPlayers.length === 0 ? (
-                <p className="lobby-crew-note">No other players in the base yet.</p>
+            <div className="lobby-ready-pill" title="Crew ready count">
+              <span className={`lobby-ready-pill__dot ${allAliveReady ? 'is-all' : ''}`} aria-hidden="true" />
+              <span>{readyCount}/{alivePlayers.length} READY</span>
+            </div>
+
+            {!connected && (
+              <div className="lobby-alert-pill" role="status">
+                RECONNECTING...
+              </div>
+            )}
+
+            {error && (
+              <div className="lobby-alert-pill lobby-alert-pill--error" role="alert">
+                {error}
+              </div>
+            )}
+          </div>
+
+          <div className="lobby-topbar__right">
+            <button
+              type="button"
+              className={`lobby-orbit-btn ${orbitPaused ? 'is-paused' : ''}`}
+              onClick={() => {
+                playUiClick();
+                setOrbitPaused(prev => !prev);
+              }}
+              aria-label={orbitPaused ? 'Resume orbit' : 'Pause orbit'}
+              aria-pressed={orbitPaused}
+              title={orbitPaused ? 'Resume base orbit' : 'Pause base orbit'}
+            >
+              {orbitPaused ? (
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <polygon points="8,5 19,12 8,19" fill="currentColor" />
+                </svg>
               ) : (
-                <ul className="lobby-crew">
-                  {otherPlayers.map(player => (
-                    <li key={player.id} className="lobby-crew__item">
-                      <div className="lobby-crew__info">
-                        <span className="lobby-crew__name">
-                          {player.name} {player.isBot ? '(bot)' : ''} {player.id === game.hostId ? '★' : ''}
-                        </span>
-                        <span className="lobby-crew__meta">Health: {player.health}/{player.maxHealth}</span>
-                      </div>
-                      <div className="lobby-crew__status">
-                        {player.health <= 0 ? (
-                          <span className="lobby-ready-badge lobby-ready-badge--off">Eliminated</span>
-                        ) : !player.connected ? (
-                          <span className="lobby-ready-badge lobby-ready-badge--off">Offline</span>
-                        ) : player.ready ? (
-                          <span className="lobby-ready-badge lobby-ready-badge--yes">✓ Ready</span>
-                        ) : (
-                          <span className="lobby-ready-badge lobby-ready-badge--no">Not ready</span>
-                        )}
-                        {host && (player.isBot || !player.connected) && (
-                          <button type="button" className="secondary" onClick={() => onRemove(player.id)}>
-                            Remove
-                          </button>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor" />
+                  <rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor" />
+                </svg>
               )}
-            </section>
+            </button>
 
-            <section className="lobby-glass lobby-hud__actions" aria-label="Level actions">
-              {gameOver ? (
-                <p className="lobby-crew-note">
-                  {matchWinner ? <><strong>{matchWinner.name}</strong> wins the mission.</> : 'Mission ended. No survivors remain.'}
-                </p>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    className={`lobby-actions__ready ${game.self.ready ? 'secondary' : ''}`.trim()}
-                    disabled={disabled || selfDead}
-                    onClick={onReady}
-                  >
-                    {selfDead ? 'Eliminated' : game.self.ready ? 'Cancel ready' : `Ready for Level ${nextLevel}`}
-                  </button>
+            <button
+              type="button"
+              className="secondary lobby-leave-btn"
+              disabled={disabled}
+              onClick={() => {
+                playUiClick();
+                (onLeave ?? onBack)();
+              }}
+            >
+              LEAVE ROOM
+            </button>
+          </div>
+        </header>
 
-                  {host ? (
-                    <div className="lobby-actions__host">
-                      {game.round === 0 && (
+        {gameOver && (
+          <div className="lobby-gameover-banner" role="status">
+            <span className="lobby-gameover-banner__tag">EXPEDITION COMPLETE</span>
+            <strong>{winner ? `${winner.name} survives Mars!` : 'No crew survived the expedition.'}</strong>
+          </div>
+        )}
+
+        <footer className="lobby-bottom-bar">
+          <div className="crew-dock" aria-label="Crew Roster">
+            {Array.from({ length: MAX_PLAYERS }, (_, slotIndex) => {
+              const player = game.players[slotIndex];
+
+              if (!player) {
+                return (
+                  <article key={`empty-${slotIndex}`} className="crew-slot crew-slot--empty">
+                    <div className="crew-slot__empty-top">
+                      <span className="crew-slot__num">SLOT 0{slotIndex + 1}</span>
+                      <span className="crew-slot__open-tag">OPEN</span>
+                    </div>
+
+                    <div className="crew-slot__empty-body">
+                      <div className="crew-slot__silhouette" aria-hidden="true">
+                        <svg viewBox="0 0 48 48">
+                          <circle cx="24" cy="18" r="9" fill="none" stroke="currentColor" strokeWidth="2.5" strokeDasharray="4 3" />
+                          <path d="M10 40c1-8 7-12 14-12s13 4 14 12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeDasharray="4 3" strokeLinecap="round" />
+                        </svg>
+                      </div>
+
+                      {canAddBots ? (
                         <button
                           type="button"
-                          className="secondary"
-                          disabled={disabled || gameOver || game.players.length >= 4}
-                          onClick={onBots}
+                          className="crew-add-bot-btn"
+                          disabled={disabled}
+                          onClick={() => {
+                            playUiClick();
+                            onBots();
+                          }}
                         >
-                          + Bots
+                          + ADD BOT
+                        </button>
+                      ) : (
+                        <span className="crew-slot__waiting-copy">
+                          {game.round > 0 ? 'NO SEAT IN PLAY' : 'WAITING FOR CREW'}
+                        </span>
+                      )}
+                    </div>
+                  </article>
+                );
+              }
+
+              const isSelf = player.id === game.self.id;
+              const isSlotHost = player.id === game.hostId;
+              const dead = player.health <= 0;
+              const offline = !player.connected && !player.isBot;
+              const canKick = isHost && !disabled && !isSelf && (player.isBot || !player.connected);
+              const suitColor = isSelf
+                ? suitColorForPlayer(game.self.stats, slotIndex)
+                : suitColorByIndex(slotIndex);
+
+              const healthPct = percentOf(player.health, player.maxHealth);
+              const stampText = dead
+                ? 'ELIMINATED'
+                : offline
+                  ? 'OFFLINE'
+                  : player.ready
+                    ? 'READY'
+                    : 'WAITING';
+              const stampKind = dead
+                ? 'dead'
+                : offline
+                  ? 'offline'
+                  : player.ready
+                    ? 'ready'
+                    : 'waiting';
+
+              return (
+                <article
+                  key={player.id}
+                  className={[
+                    'crew-slot',
+                    isSelf ? 'crew-slot--self' : '',
+                    dead ? 'crew-slot--dead' : '',
+                    offline ? 'crew-slot--offline' : '',
+                  ].filter(Boolean).join(' ')}
+                >
+                  <div className="crew-slot__top">
+                    <span className={`crew-stamp crew-stamp--${stampKind}`}>
+                      {stampText}
+                    </span>
+
+                    <div className="crew-slot__badges">
+                      {isSlotHost && <span className="crew-badge crew-badge--host" title="Room Host">★ HOST</span>}
+                      {player.isBot && <span className="crew-badge crew-badge--bot">BOT</span>}
+                      {canKick && (
+                        <button
+                          type="button"
+                          className="crew-slot__kick"
+                          onClick={() => {
+                            playUiClick();
+                            onRemove(player.id);
+                          }}
+                          title={`Remove ${player.name}`}
+                          aria-label={`Remove ${player.name}`}
+                        >
+                          ×
                         </button>
                       )}
-                      <button
-                        type="button"
-                        disabled={disabled || !allReady}
-                        onClick={onStart}
-                      >
-                        {game.round === 0 ? 'Start Match' : `Start Level ${nextLevel}`}
-                      </button>
                     </div>
-                  ) : (
-                    <p className="lobby-crew-note">Host will start Level {nextLevel} once all survivors are ready.</p>
+                  </div>
+
+                  <div className="crew-slot__hero">
+                    <div className={`crew-slot__avatar ${isSelf ? 'crew-slot__avatar--self' : ''}`}>
+                      <AstronautPortraitSvg
+                        suitColor={suitColor}
+                        variant={slotIndex}
+                        className="crew-slot__portrait"
+                      />
+                    </div>
+
+                    <div className="crew-slot__identity">
+                      <div className="crew-slot__name-row">
+                        <strong className="crew-slot__name" title={player.name}>
+                          {player.name}
+                        </strong>
+                        {isSelf && <span className="crew-you-tag">YOU</span>}
+                      </div>
+
+                      <div className="crew-health" aria-label={`Health ${player.health} of ${player.maxHealth}`}>
+                        <div className="crew-health__head">
+                          <span className="crew-health__label">
+                            <svg className="crew-icon crew-icon--hp" viewBox="0 0 20 20" aria-hidden="true">
+                              <path
+                                d="M10 17.2s-6.2-4-7.6-7.8C1.3 6.4 3.3 3.4 6.3 3.4c1.6 0 3 .9 3.7 2.2.7-1.3 2.1-2.2 3.7-2.2 3 0 5 3 3.9 6-1.4 3.8-7.6 7.8-7.6 7.8z"
+                                fill="currentColor"
+                              />
+                            </svg>
+                            HP
+                          </span>
+                          <span className="crew-health__val">{player.health}/{player.maxHealth}</span>
+                        </div>
+                        <div className="crew-bar crew-bar--hp">
+                          <div
+                            className={`crew-bar__fill ${healthPct <= 30 ? 'is-critical' : ''}`}
+                            style={{ width: `${healthPct}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {isSelf && (
+                    <div className="crew-private-meters" aria-label="Private suit resources">
+                      <div className="crew-meter crew-meter--energy" title={`Energy: ${game.self.resources.energy}/${selfMaxEnergy}`}>
+                        <div className="crew-meter__top">
+                          <span className="crew-meter__label">
+                            <svg className="crew-icon" viewBox="0 0 20 20" aria-hidden="true">
+                              <polygon points="11,1.5 4,11.5 9.5,11.5 8.5,18.5 16,8.5 10.5,8.5" fill="currentColor" />
+                            </svg>
+                            NRG
+                          </span>
+                          <strong className="crew-meter__val">{game.self.resources.energy}</strong>
+                        </div>
+                        <div className="crew-bar crew-bar--energy">
+                          <div
+                            className="crew-bar__fill"
+                            style={{ width: `${percentOf(game.self.resources.energy, selfMaxEnergy)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="crew-meter crew-meter--food" title={`Food: ${game.self.resources.food}/${selfMaxFood}`}>
+                        <div className="crew-meter__top">
+                          <span className="crew-meter__label">
+                            <svg className="crew-icon" viewBox="0 0 20 20" aria-hidden="true">
+                              <path
+                                d="M16.5 3.5c-5.8.2-10.3 3.2-12 8.2-.4 1.3-.4 2.7.2 3.9l-2 2 1.4 1.4 2-2c1.2.6 2.6.6 3.9.2 5-1.7 8-6.2 8.2-12l-1.7-1.7zm-3.2 4.9c-2 2-4.3 3.6-6.9 4.4 1-2.5 2.5-4.7 4.7-6.4l2.2 2z"
+                                fill="currentColor"
+                              />
+                            </svg>
+                            FOOD
+                          </span>
+                          <strong className="crew-meter__val">{game.self.resources.food}</strong>
+                        </div>
+                        <div className="crew-bar crew-bar--food">
+                          <div
+                            className="crew-bar__fill"
+                            style={{ width: `${percentOf(game.self.resources.food, selfMaxFood)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="crew-meter crew-meter--rad" title={`Radiation: ${game.self.resources.radiation}`}>
+                        <div className="crew-meter__top">
+                          <span className="crew-meter__label">
+                            <span className="crew-rad-icon" aria-hidden="true">
+                              <RadiationIcon />
+                            </span>
+                            RAD
+                          </span>
+                          <strong className="crew-meter__val">{game.self.resources.radiation}</strong>
+                        </div>
+                        <div className="crew-bar crew-bar--rad">
+                          <div
+                            className="crew-bar__fill"
+                            style={{ width: `${percentOf(game.self.resources.radiation, Math.max(100, game.self.resources.radiation))}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
                   )}
-                </>
-              )}
-            </section>
+                </article>
+              );
+            })}
           </div>
-        </div>
+
+          <div className="lobby-cta-pair">
+            <button
+              type="button"
+              className={`lobby-ready-toggle ${game.self.ready ? 'is-ready' : ''}`}
+              disabled={disabled || gameOver || game.self.health <= 0}
+              aria-pressed={game.self.ready}
+              onClick={() => {
+                playUiConfirm();
+                onReady();
+              }}
+            >
+              <span className="lobby-ready-toggle__check" aria-hidden="true">
+                {game.self.ready ? '✓' : '○'}
+              </span>
+              <span>{game.self.ready ? 'READY' : 'NOT READY'}</span>
+            </button>
+
+            <button
+              type="button"
+              className="lobby-start-cta"
+              disabled={!canStart}
+              title={
+                gameOver
+                  ? 'Match finished'
+                  : !isHost
+                    ? 'Only the host can launch the mission'
+                    : !allAliveReady
+                      ? 'Waiting for all crew members to be ready'
+                      : 'Launch mission'
+              }
+              onClick={() => {
+                playUiConfirm();
+                onStart();
+              }}
+            >
+              {game.round === 0 ? 'START MATCH' : `START LEVEL ${game.round + 1}`}
+            </button>
+          </div>
+        </footer>
       </div>
-    </div>
+    </section>
   );
 }

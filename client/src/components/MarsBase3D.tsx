@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import type { GameView, PublicPlayer } from '../../../shared/types';
 
 interface Vec3 {
@@ -189,7 +189,7 @@ function addBox(
 
 const BASE_FACES = buildBaseFaces();
 
-export default function MarsBase3D({ game }: { game: GameView }) {
+export default function MarsBase3D({ game, autoOrbit = true }: { game: GameView; autoOrbit?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameRef = useRef(game);
   gameRef.current = game;
@@ -198,13 +198,11 @@ export default function MarsBase3D({ game }: { game: GameView }) {
     yaw: 0.55,
     pitch: 0.36,
     distance: 5.5,
-    autoOrbit: true,
+    autoOrbit,
     dragging: false,
     lastX: 0,
     lastY: 0,
   });
-
-  const [autoOrbit, setAutoOrbit] = useState(true);
 
   useEffect(() => {
     cameraRef.current.autoOrbit = autoOrbit;
@@ -245,7 +243,8 @@ export default function MarsBase3D({ game }: { game: GameView }) {
     };
 
     const resize = () => {
-      const rect = canvas.getBoundingClientRect();
+      const container = canvas.parentElement ?? canvas;
+      const rect = container.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const w = Math.max(1, Math.round(rect.width * dpr));
       const h = Math.max(1, Math.round(rect.height * dpr));
@@ -257,7 +256,7 @@ export default function MarsBase3D({ game }: { game: GameView }) {
 
     resize();
     const observer = new ResizeObserver(resize);
-    observer.observe(canvas);
+    observer.observe(canvas.parentElement ?? canvas);
 
     const draw = (now: number) => {
       const dt = Math.min(0.05, (now - lastTime) / 1000);
@@ -544,18 +543,6 @@ export default function MarsBase3D({ game }: { game: GameView }) {
           zoomBy(event.deltaY > 0 ? 0.5 : -0.5);
         }}
       />
-
-      <div className="mars-base-bg__camera-controls">
-        <button type="button" className="secondary" onClick={() => setAutoOrbit(value => !value)}>
-          {autoOrbit ? 'Pause orbit' : 'Auto-orbit'}
-        </button>
-        <button type="button" className="secondary" onClick={() => zoomBy(-0.6)} aria-label="Zoom in">
-          +
-        </button>
-        <button type="button" className="secondary" onClick={() => zoomBy(0.6)} aria-label="Zoom out">
-          -
-        </button>
-      </div>
     </div>
   );
 }
