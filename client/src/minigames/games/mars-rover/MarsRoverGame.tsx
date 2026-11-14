@@ -9,6 +9,7 @@ import {
 } from './MarsRoverEngine';
 import { MAP_SIZE, calculateMarsCoordinates } from './jezeroMapData';
 import { fetchNasaMarsTelemetry } from './nasaMarsApi';
+import { ROVER_GLB_GEOMETRY } from './roverModelData';
 import './MarsRoverGame.css';
 
 export { MarsRoverGame, type MarsRoverData };
@@ -224,12 +225,27 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
   const rover = engine as MarsRoverGame;
   const { data, status } = snapshot;
   const isRunning = status === 'running';
+  const isGameOver = status === 'finished' || snapshot.result !== null;
+  const isMissionCompleted = snapshot.result?.completed ?? false;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const programRef = useRef<WebGLProgram | null>(null);
   const glTextureRef = useRef<WebGLTexture | null>(null);
   const textureImgRef = useRef<HTMLImageElement | null>(null);
   const [textureVersion, setTextureVersion] = useState(0);
+
+  // Animación continua de la cámara orbital cenital al finalizar la misión
+  const [animTick, setAnimTick] = useState(0);
+  useEffect(() => {
+    if (!isGameOver) return;
+    let frameId: number;
+    const loop = () => {
+      setAnimTick(t => (t + 1) % 100000);
+      frameId = requestAnimationFrame(loop);
+    };
+    frameId = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(frameId);
+  }, [isGameOver]);
 
   // Carga de la imagen satelital real de la NASA desde assets locales
   useEffect(() => {
@@ -390,7 +406,7 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
     gl.bindTexture(gl.TEXTURE_2D, glTextureRef.current);
     gl.uniform1i(uNasaTexLoc, 0);
 
-    // 2. Cámara Orbital de Seguimiento Dinámico
+    // 2. Cámara Orbital de Seguimiento Dinámico (con elevación cenital en 360° al terminar la partida)
     const aspect = canvas.width / canvas.height;
     const projMat = mat4Perspective(mat4Create(), (48 * Math.PI) / 180, aspect, 1.0, 600.0);
 
@@ -401,17 +417,33 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
     const ufX = Math.sin(headingRad);
     const ufZ = -Math.cos(headingRad);
 
-    const camDist = 26.0;
-    const camHeight = 22.0;
-    const eyeX = roverX - ufX * camDist;
-    const eyeY = groundZ + camHeight;
-    const eyeZ = roverY - ufZ * camDist;
-    const targetX = roverX + ufX * 10.0;
-    const targetY = groundZ + 1.5;
-    const targetZ = roverY + ufZ * 10.0;
+    const isGameOver = status === 'finished' || snapshot.result !== null;
+    let camDist = 26.0;
+    let camHeight = 22.0;
+    let lookTargetX = roverX + ufX * 10.0;
+    let lookTargetY = groundZ + 1.5;
+    let lookTargetZ = roverY + ufZ * 10.0;
+
+    let eyeX = roverX - ufX * camDist;
+    let eyeY = groundZ + camHeight;
+    let eyeZ = roverY - ufZ * camDist;
+
+    if (isGameOver) {
+      // Cámara elevada cinematográfica en 360° orbitando sobre el rover
+      const orbitSpeed = 0.0007;
+      const angle = headingRad + (Date.now() * orbitSpeed) % (Math.PI * 2);
+      camDist = 26.0;
+      camHeight = 24.0;
+      eyeX = roverX - Math.sin(angle) * camDist;
+      eyeY = groundZ + camHeight;
+      eyeZ = roverY + Math.cos(angle) * camDist;
+      lookTargetX = roverX;
+      lookTargetY = groundZ + 1.2;
+      lookTargetZ = roverY;
+    }
 
     const viewMat = mat4Create();
-    mat4LookAt(viewMat, [eyeX, eyeY, eyeZ], [targetX, targetY, targetZ], [0, 1, 0]);
+    mat4LookAt(viewMat, [eyeX, eyeY, eyeZ], [lookTargetX, lookTargetY, lookTargetZ], [0, 1, 0]);
     const vpMat = mat4Multiply(mat4Create(), projMat, viewMat);
 
     // Renderizar Terreno Marciano con textura satelital y micro-relieve
@@ -577,7 +609,7 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(beaconIndices), gl.STATIC_DRAW);
     gl.drawElements(gl.TRIANGLES, beaconIndices.length, gl.UNSIGNED_SHORT, 0);
 
-    // 5. Renderizar Rover 3D Low-Poly estilizado (Chasis NASA, cubierta solar, mástil y 6 ruedas - SIN haz de luz frontal)
+    // 5. Renderizar Rover 3D Low-Poly desde el modelo GLB real (rover modelo.glb)
     const cosH = Math.cos(headingRad);
     const sinH = Math.sin(headingRad);
     const pitchRad = (data.pitchDeg * Math.PI) / 180;
@@ -587,110 +619,62 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
     const cosR = Math.cos(rollRad);
     const sinR = Math.sin(rollRad);
 
-    const chassisBaseY = groundZ + 0.45 + data.suspensionOffset;
+    const chassisBaseY = groundZ + 0.05 + data.suspensionOffset;
 
-    const roverVerts: number[] = [];
-    const roverNorms: number[] = [];
-    const roverColors: number[] = [];
+    const vCount = ROVER_GLB_GEOMETRY.vertexCount;
+    const rawP = ROVER_GLB_GEOMETRY.positions;
+    const rawN = ROVER_GLB_GEOMETRY.normals;
+    const roverVerts = new Float32Array(rawP.length);
+    const roverNorms = new Float32Array(rawN.length);
 
-    // Función auxiliar para transformar vértices y normales locales del rover según cabeceo, balanceo y orientación
-    const transformRoverVertex = (lx: number, ly: number, lz: number): [number, number, number] => {
+    for (let i = 0; i < vCount; i++) {
+      const idx3 = i * 3;
+      const lx = rawP[idx3];
+      const ly = rawP[idx3 + 1];
+      const lz = rawP[idx3 + 2];
+
       const rlx = lx * cosR - ly * sinR;
       const rly = lx * sinR + ly * cosR;
       const ply = rly * cosP - lz * sinP;
       const plz = rly * sinP + lz * cosP;
-      return [
-        roverX + (rlx * cosH - plz * sinH),
-        chassisBaseY + ply,
-        roverY + (rlx * sinH + plz * cosH),
-      ];
-    };
 
-    const transformRoverNormal = (nx: number, ny: number, nz: number): [number, number, number] => {
+      roverVerts[idx3] = roverX + (rlx * cosH - plz * sinH);
+      roverVerts[idx3 + 1] = chassisBaseY + ply;
+      roverVerts[idx3 + 2] = roverY + (rlx * sinH + plz * cosH);
+
+      const nx = rawN[idx3];
+      const ny = rawN[idx3 + 1];
+      const nz = rawN[idx3 + 2];
+
       const rnx = nx * cosR - ny * sinR;
       const rny = nx * sinR + ny * cosR;
       const pny = rny * cosP - nz * sinP;
       const pnz = rny * sinP + nz * cosP;
-      return [
-        rnx * cosH - pnz * sinH,
-        pny,
-        rnx * sinH + pnz * cosH,
-      ];
-    };
 
-    const addRoverBox = (
-      cx: number, cy: number, cz: number,
-      wx: number, wy: number, wz: number,
-      color: [number, number, number]
-    ) => {
-      const x0 = cx - wx / 2, x1 = cx + wx / 2;
-      const y0 = cy, y1 = cy + wy;
-      const z0 = cz - wz / 2, z1 = cz + wz / 2;
-
-      const faces: Array<{ verts: [number, number, number][]; norm: [number, number, number] }> = [
-        // Front (+Z)
-        { verts: [[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y0, z1], [x1, y1, z1], [x0, y1, z1]], norm: [0, 0, 1] },
-        // Back (-Z)
-        { verts: [[x1, y0, z0], [x0, y0, z0], [x0, y1, z0], [x1, y0, z0], [x0, y1, z0], [x1, y1, z0]], norm: [0, 0, -1] },
-        // Top (+Y)
-        { verts: [[x0, y1, z1], [x1, y1, z1], [x1, y1, z0], [x0, y1, z1], [x1, y1, z0], [x0, y1, z0]], norm: [0, 1, 0] },
-        // Bottom (-Y)
-        { verts: [[x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [x0, y0, z0], [x1, y0, z1], [x0, y0, z1]], norm: [0, -1, 0] },
-        // Right (+X)
-        { verts: [[x1, y0, z1], [x1, y0, z0], [x1, y1, z0], [x1, y0, z1], [x1, y1, z0], [x1, y1, z1]], norm: [1, 0, 0] },
-        // Left (-X)
-        { verts: [[x0, y0, z0], [x0, y0, z1], [x0, y1, z1], [x0, y0, z0], [x0, y1, z1], [x0, y1, z0]], norm: [-1, 0, 0] },
-      ];
-
-      for (const face of faces) {
-        const tn = transformRoverNormal(face.norm[0], face.norm[1], face.norm[2]);
-        for (const pt of face.verts) {
-          const tp = transformRoverVertex(pt[0], pt[1], pt[2]);
-          roverVerts.push(...tp);
-          roverNorms.push(...tn);
-          roverColors.push(...color);
-        }
-      }
-    };
-
-    // A. Chasis central aeronaval (Blanco titanio NASA)
-    addRoverBox(0.0, 0.0, 0.0, 2.2, 0.85, 3.2, [0.95, 0.96, 0.98]);
-
-    // B. Cubierta solar fotovoltaica superior (Azul oscuro metalizado)
-    addRoverBox(0.0, 0.85, 0.1, 1.8, 0.12, 2.6, [0.14, 0.24, 0.38]);
-
-    // C. Mástil de navegación frontal y cámara panorámica
-    addRoverBox(-0.6, 0.85, -1.0, 0.14, 1.1, 0.14, [0.82, 0.84, 0.88]);
-    addRoverBox(-0.6, 1.95, -1.0, 0.45, 0.25, 0.35, [0.96, 0.96, 0.98]);
-
-    // D. 6 Ruedas de oruga/rocker-bogie (3 izquierda, 3 derecha)
-    const wheelPositions = [-1.1, 0.0, 1.1];
-    for (const wz of wheelPositions) {
-      // Rueda izquierda
-      addRoverBox(-1.35, -0.35, wz, 0.35, 0.70, 0.65, [0.22, 0.25, 0.28]);
-      // Rueda derecha
-      addRoverBox(1.35, -0.35, wz, 0.35, 0.70, 0.65, [0.22, 0.25, 0.28]);
+      roverNorms[idx3] = rnx * cosH - pnz * sinH;
+      roverNorms[idx3 + 1] = pny;
+      roverNorms[idx3 + 2] = rnx * sinH + pnz * cosH;
     }
 
     const rVBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, rVBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(roverVerts), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, roverVerts, gl.STATIC_DRAW);
     gl.vertexAttribPointer(aPosLoc, 3, gl.FLOAT, false, 0, 0);
 
     const rNBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, rNBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(roverNorms), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, roverNorms, gl.STATIC_DRAW);
     gl.vertexAttribPointer(aNormLoc, 3, gl.FLOAT, false, 0, 0);
 
     const rCBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, rCBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(roverColors), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, ROVER_GLB_GEOMETRY.colors, gl.STATIC_DRAW);
     gl.vertexAttribPointer(aColorLoc, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(aColorLoc);
 
     gl.uniform1f(uUseVertexColorLoc, 1.0);
     gl.uniform1f(uUseCustomColorLoc, 0.0);
-    gl.drawArrays(gl.TRIANGLES, 0, roverVerts.length / 3);
+    gl.drawArrays(gl.TRIANGLES, 0, vCount);
 
     gl.disableVertexAttribArray(aColorLoc);
 
@@ -708,7 +692,7 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
     gl.deleteBuffer(rVBuffer);
     gl.deleteBuffer(rNBuffer);
     gl.deleteBuffer(rCBuffer);
-  }, [data, rover.sector, textureVersion]);
+  }, [data, rover.sector, textureVersion, status, animTick]);
 
   const energyClass =
     data.energy > 55 ? 'energy-high' : data.energy > 20 ? 'energy-med' : 'energy-low';
@@ -789,6 +773,44 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
 
       <div className="canvas-map-wrapper">
         <canvas ref={canvasRef} width={520} height={420} className="mars-canvas" />
+
+        {isGameOver && (
+          <div className="mission-debrief-card">
+            <div className="debrief-header">
+              <span className="debrief-icon">{isMissionCompleted ? '🏆' : '⚠️'}</span>
+              <div>
+                <h3>{isMissionCompleted ? '¡MISIÓN CUMPLIDA · OBJETIVO ALCANZADO!' : 'MISIÓN FINALIZADA'}</h3>
+                <p>{isMissionCompleted ? 'El rover ha asegurado la posición en la Baliza B.' : 'Operación concluida en el sector marciano.'}</p>
+              </div>
+            </div>
+            <div className="debrief-grid">
+              <div className="debrief-metric">
+                <span className="debrief-label">⚡ BATERÍA FINAL</span>
+                <span className="debrief-val" style={{ color: data.energy > 30 ? '#4ade80' : '#f87171' }}>
+                  {data.energy.toFixed(1)} %
+                </span>
+              </div>
+              <div className="debrief-metric">
+                <span className="debrief-label">⏱️ TIEMPO</span>
+                <span className="debrief-val">{(snapshot.elapsedMs / 1000).toFixed(1)} s</span>
+              </div>
+              <div className="debrief-metric">
+                <span className="debrief-label">🎯 PROGRESO</span>
+                <span className="debrief-val">{(snapshot.progress * 100).toFixed(0)} %</span>
+              </div>
+              <div className="debrief-metric">
+                <span className="debrief-label">⭐ PUNTUACIÓN</span>
+                <span className="debrief-val" style={{ color: '#fbbf24' }}>
+                  {snapshot.score} pts
+                </span>
+              </div>
+            </div>
+            <div className="debrief-footer">
+              <span>📍 {data.sector.sectorName}</span>
+              <span className="debrief-coords">{roverCoords.formatted}</span>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="legend-bar">

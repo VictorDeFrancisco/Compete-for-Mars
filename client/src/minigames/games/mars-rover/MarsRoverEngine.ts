@@ -215,43 +215,54 @@ export class MarsRoverGame extends BaseMinigame<MarsRoverData> {
       posX += vx * dt;
       posY += vy * dt;
 
-      // 7. Colisiones físicas con rocas y peñascos marcianos
-      const roverEffectiveRadius = 1.45;
+      // 7. Colisiones físicas mejoradas con rocas y peñascos marcianos
+      // Radio ajustado al tamaño visual real de las rocas y el rover para evitar muros invisibles
+      const roverEffectiveRadius = 1.15;
       for (const rock of this.sector.rocks) {
         const dx = posX - rock.x;
         const dy = posY - rock.y;
         const distSq = dx * dx + dy * dy;
-        const minSafeDist = rock.radius + roverEffectiveRadius;
+        const minSafeDist = rock.radius * 0.85 + roverEffectiveRadius;
         if (distSq < minSafeDist * minSafeDist && distSq > 0.0001) {
           const dist = Math.sqrt(distSq);
           const overlap = minSafeDist - dist;
           const nx = dx / dist;
           const ny = dy / dist;
 
-          // Empuje elástico: resolver penetración para que el rover no atraviese la roca
+          // Resolver penetración para evitar atravesar la roca
           posX += nx * overlap;
           posY += ny * overlap;
 
-          // Componente normal de la velocidad
-          const vDotN = vx * nx + vy * ny;
-          if (vDotN < 0) {
-            const restitution = 0.35;
-            vx = (vx - (1 + restitution) * vDotN * nx) * 0.65;
-            vy = (vy - (1 + restitution) * vDotN * ny) * 0.65;
+          // Descomponer velocidad en componente normal (hacia la roca) y tangencial (a lo largo de la roca)
+          const vNormal = vx * nx + vy * ny;
+          const tx = -ny;
+          const ty = nx;
+          const vTangent = vx * tx + vy * ty;
 
-            // Sacudida física de la suspensión
-            const impactForce = Math.abs(vDotN);
-            this.suspensionVelocity += impactForce * 1.6;
+          if (vNormal < 0) {
+            // Rebote elástico muy suave en la componente normal
+            const restitution = Math.abs(vNormal) > 1.2 ? 0.15 : 0.05;
+            const newVNormal = -vNormal * restitution;
 
-            // Deflexión angular por choque descentrado
+            // Conservar el deslizamiento tangencial (84%) para permitir rodear la roca fluidamente
+            const newVTangent = vTangent * 0.84;
+
+            vx = nx * newVNormal + tx * newVTangent;
+            vy = ny * newVNormal + ty * newVTangent;
+
+            // Sacudida física suave de la suspensión
+            const impactSpeed = Math.abs(vNormal);
+            this.suspensionVelocity += impactSpeed * 0.7;
+
+            // Amortiguación de giro angular para evitar que el rover trompique o gire descontrolado
             const crossImpact = ufX * ny - ufY * nx;
-            angularVelocity += crossImpact * 40.0;
+            angularVelocity = angularVelocity * 0.65 + crossImpact * 5.0;
 
             // Drenaje de energía si el choque fue a velocidad significativa
-            if (impactForce > 0.65) {
-              const energyLost = Math.min(2.5, impactForce * 0.7);
+            if (impactSpeed > 0.75) {
+              const energyLost = Math.min(2.0, impactSpeed * 0.5);
               energy = Math.max(0, energy - energyLost);
-              lastEventMessage = `¡Colisión con roca marciana! Daño a las orugas y pérdida de energía (-${energyLost.toFixed(1)}%).`;
+              lastEventMessage = `¡Roce con roca marciana! Velocidad absorbida (-${energyLost.toFixed(1)}% energía).`;
             }
           }
         }

@@ -364,12 +364,12 @@ export function generateMarsSector(seed = Math.floor(Math.random() * 1_000_000))
     if (Math.hypot(rx - startX, ry - startY) < 14) continue;
     if (Math.hypot(rx - targetX, ry - targetY) < 12) continue;
 
-    const rRadius = 1.1 + rand() * 1.5; // Radio de 1.1m a 2.6m
-    const rHeight = 0.9 + rand() * 1.4; // Altura de 0.9m a 2.3m
+    const rRadius = 0.9 + rand() * 1.1; // Radio de 0.9m a 2.0m
+    const rHeight = 0.8 + rand() * 1.1; // Altura de 0.8m a 1.9m
 
-    // Evitar solapamiento excesivo entre rocas
+    // Evitar solapamiento entre rocas y dejar paso holgado para el rover
     const overlaps = rocks.some(
-      other => Math.hypot(rx - other.x, ry - other.y) < rRadius + other.radius + 1.2
+      other => Math.hypot(rx - other.x, ry - other.y) < rRadius + other.radius + 2.2
     );
     if (overlaps) continue;
 
