@@ -8,13 +8,13 @@
   height: 100%;
   min-height: 0;
   margin: 0;
-  color: #f5efe0;
+  color: #1a1817;
   font-family: 'Archivo', system-ui, sans-serif;
   user-select: none;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 14px;
+  gap: 10px;
 }
 
 .suit-game *,
@@ -29,8 +29,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #223b57;
+  padding-bottom: 8px;
+  border-bottom: 2.5px solid #cbbda2;
+  flex-shrink: 0;
 }
 
 .suit-header__badges {
@@ -44,7 +45,7 @@
   border-radius: 5px;
   background: #0b3d91;
   color: #f5efe0;
-  border: 2px solid #f5efe0;
+  border: 2.5px solid #1a1817;
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -53,12 +54,12 @@
 .suit-header__code {
   padding: 4px 10px;
   border-radius: 5px;
-  background: #172e47;
-  color: #b8cde0;
-  border: 2px solid #35577a;
+  background: #f5efe0;
+  color: #1a1817;
+  border: 2.5px solid #1a1817;
   font-family: 'Courier Prime', monospace;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .suit-telemetry-strip {
@@ -72,22 +73,22 @@
   align-items: baseline;
   gap: 6px;
   padding: 4px 10px;
-  background: #14283d;
-  border: 2px solid #35577a;
+  background: #f5efe0;
+  border: 2.5px solid #1a1817;
   border-radius: 5px;
   font-family: 'Courier Prime', monospace;
 }
 
 .suit-telemetry-pill span {
   font-size: 0.7rem;
-  font-weight: 700;
-  color: #8aa5bf;
+  font-weight: 800;
+  color: #5b5144;
 }
 
 .suit-telemetry-pill b {
   font-size: 0.92rem;
-  font-weight: 800;
-  color: #f5efe0;
+  font-weight: 900;
+  color: #1a1817;
 }
 
 .suit-telemetry-pill--score {
@@ -101,39 +102,39 @@
   color: #f5efe0;
 }
 
-/* --- DISEÑO PRINCIPAL EN DOS COLUMNAS --- */
+/* --- DISEÑO PRINCIPAL EN DOS COLUMNAS HORIZONTALES --- */
 .suit-main-layout {
   flex: 1 1 auto;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(260px, 0.78fr) minmax(0, 1.45fr);
-  gap: 18px;
+  grid-template-columns: minmax(250px, 0.72fr) minmax(0, 1.55fr);
+  gap: 14px;
   align-items: stretch;
 }
 
-@media (max-width: 780px) {
+@media (max-width: 560px) {
   .suit-main-layout {
     grid-template-columns: 1fr;
   }
 }
 
-/* Columna Izquierda: Traje + checklist */
+/* Columna Izquierda: Traje + checklist en crema Retro-NASA */
 .suit-astronaut-column {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  background: #112337;
+  background: #f5efe0;
   border: 3px solid #1a1817;
   border-radius: 8px;
-  padding: 10px 10px 10px;
-  box-shadow: inset 0 2px 0 #1f3d5c;
+  padding: 10px 10px;
+  box-shadow: 0 4px 0 #1a1817;
 }
 
 .suit-astronaut-viewport {
   width: 100%;
-  max-width: 185px;
+  max-width: 195px;
   transition: transform 0.15s ease-out;
 }
 
@@ -150,12 +151,12 @@
 }
 
 @keyframes suitFlashGold {
-  0% { filter: drop-shadow(0 0 16px #f5c242); }
+  0% { filter: drop-shadow(0 0 14px #f5c242); }
   100% { filter: none; }
 }
 
 @keyframes suitFlashCyan {
-  0% { filter: drop-shadow(0 0 12px #5ed4f3); }
+  0% { filter: drop-shadow(0 0 10px #2e8b57); }
   100% { filter: none; }
 }
 
@@ -169,7 +170,7 @@
 .suit-parts-checklist {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px;
+  gap: 5px;
   width: 100%;
 }
 
@@ -177,41 +178,42 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 6px;
+  padding: 4px 6px;
   border-radius: 4px;
-  border: 1.5px solid #2b4560;
-  background: #0d1b2a;
+  border: 2px solid #bcae92;
+  background: #efe6d5;
   font-family: 'Courier Prime', monospace;
-  font-size: 0.66rem;
-  font-weight: 700;
-  color: #8aa5bf;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #4f463a;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .suit-part-pill--done {
-  background: #143626;
+  background: #d2eedd;
   border-color: #2e8b57;
-  color: #9ff3c4;
+  color: #144d2e;
 }
 
 .suit-part-pill--active {
-  background: #382411;
+  background: #fde2db;
   border-color: #fc3d21;
-  color: #ffd37a;
+  color: #9e210e;
 }
 
-/* Columna Derecha: Arena QTE + Teclas Gigantes */
+/* Columna Derecha: Arena QTE + Teclas Gigantes en crema Retro-NASA */
 .suit-qte-arena {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 12px;
-  background: #112337;
+  background: #f5efe0;
   border: 3px solid #1a1817;
   border-radius: 8px;
-  padding: 16px 18px;
+  padding: 14px 18px;
+  box-shadow: 0 4px 0 #1a1817;
 }
 
 .suit-step-head {
@@ -220,23 +222,23 @@
 
 .suit-step-title {
   margin: 0 0 4px;
-  font-size: clamp(1.2rem, 2.1vw, 1.55rem);
+  font-size: clamp(1.25rem, 2.2vw, 1.65rem);
   font-weight: 900;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: #f5efe0;
+  color: #1a1817;
 }
 
 .suit-step-description {
   margin: 0;
   font-family: 'Courier Prime', monospace;
-  font-size: 0.94rem;
+  font-size: 0.96rem;
   font-weight: 700;
-  color: #b8cde0;
+  color: #463d33;
 }
 
 .suit-qte-prompt-box {
-  background: #0a1522;
+  background: #e7dcc4;
   border: 3px solid #1a1817;
   border-radius: 8px;
   padding: 16px;
@@ -248,8 +250,8 @@
 /* 1. TIMING QTE */
 .suit-timing-track-wrap {
   position: relative;
-  height: 44px;
-  background: #14283d;
+  height: 46px;
+  background: #d4c6ab;
   border: 3px solid #1a1817;
   border-radius: 6px;
   overflow: hidden;
@@ -259,36 +261,37 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  background: rgba(46, 139, 87, 0.55);
-  border-left: 3px solid #38ef7d;
-  border-right: 3px solid #38ef7d;
+  background: rgba(46, 139, 87, 0.45);
+  border-left: 3px solid #1d6b41;
+  border-right: 3px solid #1d6b41;
 }
 
 .suit-timing-perfect-line {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 4px;
+  width: 5px;
   transform: translateX(-50%);
   background: #f5c242;
+  border-left: 1px solid #1a1817;
+  border-right: 1px solid #1a1817;
 }
 
 .suit-timing-needle {
   position: absolute;
   top: -2px;
   bottom: -2px;
-  width: 8px;
+  width: 10px;
   transform: translateX(-50%);
-  background: #f5efe0;
+  background: #fc3d21;
   border: 2px solid #1a1817;
-  box-shadow: 0 0 12px rgba(245, 239, 224, 0.85);
 }
 
 /* 2. MASH QTE */
 .suit-mash-track {
   position: relative;
-  height: 42px;
-  background: #14283d;
+  height: 44px;
+  background: #d4c6ab;
   border: 3px solid #1a1817;
   border-radius: 6px;
   overflow: hidden;
@@ -296,7 +299,7 @@
 
 .suit-mash-fill {
   height: 100%;
-  background: linear-gradient(90deg, #0b3d91, #2e8b57, #f5c242);
+  background: linear-gradient(90deg, #fc3d21, #2e8b57, #f5c242);
   transition: width 0.08s ease-out;
 }
 
@@ -307,10 +310,9 @@
   align-items: center;
   justify-content: center;
   font-family: 'Courier Prime', monospace;
-  font-size: 1rem;
-  font-weight: 800;
-  color: #f5efe0;
-  text-shadow: 0 2px 0 #1a1817;
+  font-size: 1.02rem;
+  font-weight: 900;
+  color: #1a1817;
 }
 
 /* 3. SEQUENCE QTE (Teclas físicas grandes 3D) */
@@ -330,7 +332,7 @@
   width: 68px;
   height: 68px;
   border-radius: 8px;
-  background: #f5efe0;
+  background: #fffaf0;
   border: 3px solid #1a1817;
   box-shadow: 0 5px 0 #1a1817;
   color: #1a1817;
@@ -369,8 +371,8 @@
 .suit-hold-bar {
   position: relative;
   width: 100%;
-  height: 42px;
-  background: #14283d;
+  height: 44px;
+  background: #d4c6ab;
   border: 3px solid #1a1817;
   border-radius: 6px;
   overflow: hidden;
@@ -380,23 +382,23 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  background: rgba(46, 139, 87, 0.55);
-  border-left: 3px solid #38ef7d;
-  border-right: 3px solid #38ef7d;
+  background: rgba(46, 139, 87, 0.45);
+  border-left: 3px solid #1d6b41;
+  border-right: 3px solid #1d6b41;
 }
 
 .suit-hold-perfect-zone {
   position: absolute;
   top: 0;
   bottom: 0;
-  background: rgba(245, 194, 66, 0.55);
-  border-left: 2px solid #f5c242;
-  border-right: 2px solid #f5c242;
+  background: rgba(245, 194, 66, 0.65);
+  border-left: 2px solid #1a1817;
+  border-right: 2px solid #1a1817;
 }
 
 .suit-hold-meter {
   height: 100%;
-  background: linear-gradient(90deg, #0b3d91, #5ed4f3, #f5efe0);
+  background: linear-gradient(90deg, #0b3d91, #2e8b57, #f5c242);
   transition: width 0.03s linear;
 }
 
@@ -440,7 +442,7 @@
   border-radius: 4px;
   background: #0b3d91;
   color: #f5efe0;
-  border: 2px solid #f5efe0;
+  border: 2px solid #1a1817;
   font-size: 0.78rem;
   font-weight: 800;
 }
@@ -448,8 +450,8 @@
 .suit-warning-text {
   font-family: 'Courier Prime', monospace;
   font-size: 0.82rem;
-  font-weight: 700;
-  color: #ff8e7a;
+  font-weight: 800;
+  color: #9e210e;
 }
 
 /* --- DECK DE TECLAS GRANDES 3D --- */
@@ -460,7 +462,7 @@
   gap: 16px;
 }
 
-@media (max-width: 580px) {
+@media (max-width: 560px) {
   .suit-controls-deck {
     grid-template-columns: 1fr;
     justify-items: center;
@@ -471,7 +473,7 @@
   width: 100%;
   min-height: 68px;
   padding: 10px 16px;
-  background: #f5efe0;
+  background: #fffaf0;
   color: #1a1817;
   border: 3px solid #1a1817;
   border-radius: 8px;
@@ -483,7 +485,7 @@
   gap: 4px;
   font-family: 'Archivo', sans-serif;
   font-weight: 900;
-  font-size: 0.92rem;
+  font-size: 0.94rem;
   letter-spacing: 0.04em;
   cursor: pointer;
   touch-action: manipulation;
@@ -531,7 +533,7 @@
 }
 
 .suit-key-arrow {
-  background: #f5efe0;
+  background: #fffaf0;
   color: #1a1817;
   border: 3px solid #1a1817;
   border-radius: 8px;
@@ -551,7 +553,7 @@
 }
 
 .suit-key-arrow:hover:not(:disabled) {
-  background: #fff9eb;
+  background: #fff5d6;
 }
 
 .suit-key-arrow:active:not(:disabled) {
@@ -579,27 +581,28 @@
 .suit-key-arrow--down { grid-column: 2; grid-row: 2; }
 .suit-key-arrow--right { grid-column: 3; grid-row: 2; }
 
-/* Pantalla final */
+/* Pantalla final Retro-NASA crema */
 .suit-finish-screen {
   text-align: center;
   padding: 20px 14px;
-  background: #0a1522;
-  border: 3px solid #f5c242;
+  background: #fff9eb;
+  border: 3px solid #1a1817;
   border-radius: 8px;
+  box-shadow: 0 4px 0 #1a1817;
 }
 
 .suit-finish-title {
   margin: 0 0 6px;
   font-size: 1.35rem;
   font-weight: 900;
-  color: #f5c242;
+  color: #144d2e;
 }
 
 .suit-finish-subtitle {
   margin: 0 0 16px;
   font-family: 'Courier Prime', monospace;
   font-size: 0.9rem;
-  color: #b8cde0;
+  color: #4f463a;
 }
 
 .suit-finish-stats {
@@ -609,8 +612,8 @@
 }
 
 .suit-finish-stat-box {
-  background: #14283d;
-  border: 2px solid #35577a;
+  background: #efe6d5;
+  border: 2.5px solid #1a1817;
   border-radius: 6px;
   padding: 8px 6px;
 }
@@ -619,11 +622,11 @@
   display: block;
   font-size: 0.68rem;
   font-weight: 800;
-  color: #8aa5bf;
+  color: #4f463a;
 }
 
 .suit-finish-stat-box b {
   font-family: 'Courier Prime', monospace;
   font-size: 1.05rem;
-  color: #f5efe0;
+  color: #1a1817;
 }

@@ -44,28 +44,6 @@ export default function PlayMinigame({ game, onSubmit, onProgress }: PlayMinigam
     .filter(Boolean)
     .join(' ');
 
-  if (game.minigame.id === 'pipes' && game.self.health > 0) {
-    return (
-      <section className={`phase-playing ${debuffClasses}`.trim()}>
-        <PipesSceneProvider
-          crew={game.players.map(player => ({
-            ...player,
-            isSelf: player.id === game.self.id,
-          }))}
-        >
-          <MinigameWrapper
-            definition={game.minigame}
-            context={minigameContext}
-            initialElapsedMs={initialElapsed.current}
-            onResult={onSubmit}
-            onScoreChange={onProgress}
-            showChrome={false}
-          />
-        </PipesSceneProvider>
-      </section>
-    );
-  }
-
   return (
     <section className={`phase-playing ${debuffClasses}`.trim()}>
       <div className="nasa-console">
@@ -104,6 +82,23 @@ export default function PlayMinigame({ game, onSubmit, onProgress }: PlayMinigam
               <p className="phase-playing__state-title">TELEMETRY LOGGED</p>
               <p className="phase-playing__state-sub">Waiting for remaining crewmates…</p>
             </div>
+          ) : game.minigame.id === 'pipes' ? (
+            <PipesSceneProvider
+              embedded
+              crew={game.players.map(player => ({
+                ...player,
+                isSelf: player.id === game.self.id,
+              }))}
+            >
+              <MinigameWrapper
+                definition={game.minigame}
+                context={minigameContext}
+                initialElapsedMs={initialElapsed.current}
+                onResult={onSubmit}
+                onScoreChange={onProgress}
+                showChrome={false}
+              />
+            </PipesSceneProvider>
           ) : (
             <MinigameWrapper
               definition={game.minigame}

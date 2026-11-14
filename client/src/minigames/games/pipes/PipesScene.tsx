@@ -9,6 +9,7 @@ export interface PipesCrewMember {
 }
 interface PipesSceneContext {
   crew: readonly PipesCrewMember[];
+  embedded?: boolean;
   onExit?: () => void;
   onRestart?: () => void;
 }

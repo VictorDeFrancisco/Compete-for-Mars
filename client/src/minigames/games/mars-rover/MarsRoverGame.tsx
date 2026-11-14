@@ -228,11 +228,29 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
   const isGameOver = status === 'finished' || snapshot.result !== null;
   const isMissionCompleted = snapshot.result?.completed ?? false;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const [viewportSize, setViewportSize] = useState({ width: 960, height: 540 });
 
   const programRef = useRef<WebGLProgram | null>(null);
   const glTextureRef = useRef<WebGLTexture | null>(null);
   const textureImgRef = useRef<HTMLImageElement | null>(null);
   const [textureVersion, setTextureVersion] = useState(0);
+
+  // Mantener la relación de aspecto del lienzo 3D adaptada al ancho completo disponible
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const sync = () => {
+      const rect = el.getBoundingClientRect();
+      const w = Math.max(320, Math.round(rect.width));
+      const h = Math.max(220, Math.round(rect.height));
+      setViewportSize(prev => (prev.width === w && prev.height === h ? prev : { width: w, height: h }));
+    };
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   // Animación continua de la cámara orbital cenital al finalizar la misión
   const [animTick, setAnimTick] = useState(0);
@@ -692,7 +710,7 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
     gl.deleteBuffer(rVBuffer);
     gl.deleteBuffer(rNBuffer);
     gl.deleteBuffer(rCBuffer);
-  }, [data, rover.sector, textureVersion, status, animTick]);
+  }, [data, rover.sector, textureVersion, status, animTick, viewportSize]);
 
   const energyClass =
     data.energy > 55 ? 'energy-high' : data.energy > 20 ? 'energy-med' : 'energy-low';
@@ -728,106 +746,66 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
 
   return (
     <div className="mars-rover-container">
-      <div className="rover-cockpit">
-        <div className="canvas-map-wrapper">
-          <canvas ref={canvasRef} width={720} height={520} className="mars-canvas" />
+      <div className="canvas-map-wrapper" ref={wrapperRef}>
+        <canvas
+          ref={canvasRef}
+          width={viewportSize.width}
+          height={viewportSize.height}
+          className="mars-canvas"
+        />
 
-          <div className="rover-hud-overlay">
+        {/* HUD flotante Retro-NASA sobre toda la vista 3D panorámica */}
+        <div className="rover-hud-overlay">
+          <div className="rover-hud-group">
             <span className={`rover-hud-pill ${energyClass}`}>BAT {data.energy.toFixed(0)}%</span>
-
-            {/* Brújula rotatoria grande hacia la Baliza B */}
-            <div
-              className={`rover-compass-dial${isAligned ? ' is-aligned' : ''}`}
-              aria-label={`Dirección hacia la baliza: ${targetNavHint}, ${targetDist} metros`}
-            >
-              <div className="rover-compass-ring">
-                <svg
-                  className="rover-compass-arrow"
-                  viewBox="0 0 40 40"
-                  style={{ transform: `rotate(${relBearing}deg)` }}
-                  aria-hidden="true"
-                >
-                  <polygon
-                    points="20,4 32,32 20,25 8,32"
-                    fill={isAligned ? '#2E8B57' : '#FC3D21'}
-                    stroke="#1A1817"
-                    strokeWidth="2.5"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-              <div className="rover-compass-text">
-                <span className="rover-compass-label">{isAligned ? 'ALINEADO' : 'OBJETIVO'}</span>
-                <strong className="rover-compass-dist">{targetDist} M</strong>
-              </div>
-            </div>
-
             <span className="rover-hud-pill">{speedKmh} KM/H</span>
+            <span className={`rover-hud-pill ${slopeClass}`}>
+              PEND {data.pitchDeg > 0 ? `+${data.pitchDeg}°` : `${data.pitchDeg}°`}
+            </span>
           </div>
 
-          {isGameOver && (
-            <div className="mission-debrief-card">
-              <div className="debrief-header">
-                <h3>{isMissionCompleted ? 'OBJETIVO ALCANZADO' : 'MISIÓN FINALIZADA'}</h3>
-                <p>{isMissionCompleted ? 'Posición asegurada en la Baliza B.' : 'Operación concluida.'}</p>
-              </div>
-              <div className="debrief-grid">
-                <div className="debrief-metric">
-                  <span className="debrief-label">BATERÍA</span>
-                  <span className="debrief-val">{data.energy.toFixed(0)}%</span>
-                </div>
-                <div className="debrief-metric">
-                  <span className="debrief-label">TIEMPO</span>
-                  <span className="debrief-val">{(snapshot.elapsedMs / 1000).toFixed(1)}s</span>
-                </div>
-                <div className="debrief-metric">
-                  <span className="debrief-label">SCORE</span>
-                  <span className="debrief-val">{snapshot.score} PTS</span>
-                </div>
-              </div>
+          {/* Brújula rotatoria grande hacia la Baliza B */}
+          <div
+            className={`rover-compass-dial${isAligned ? ' is-aligned' : ''}`}
+            aria-label={`Dirección hacia la baliza: ${targetNavHint}, ${targetDist} metros`}
+          >
+            <div className="rover-compass-ring">
+              <svg
+                className="rover-compass-arrow"
+                viewBox="0 0 40 40"
+                style={{ transform: `rotate(${relBearing}deg)` }}
+                aria-hidden="true"
+              >
+                <polygon
+                  points="20,4 32,32 20,25 8,32"
+                  fill={isAligned ? '#2E8B57' : '#FC3D21'}
+                  stroke="#1A1817"
+                  strokeWidth="2.5"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </div>
-          )}
+            <div className="rover-compass-text">
+              <span className="rover-compass-label">
+                {isAligned ? 'ALINEADO' : 'OBJETIVO'} · {targetNavHint}
+              </span>
+              <strong className="rover-compass-dist">{targetDist} M</strong>
+            </div>
+          </div>
+
+          <div className="rover-hud-group rover-hud-group--right">
+            <span className="rover-hud-pill rover-hud-pill--sector" title={roverCoords.formatted}>
+              {data.sector.sectorName} · {getHeadingCompass(data.heading)}
+            </span>
+            <span className="rover-hud-pill rover-hud-pill--score">{snapshot.score} PTS</span>
+          </div>
         </div>
 
-        <aside className="rover-side-panel">
-          <div className="rover-sector-box">
-            <span className="rover-sector-tag">JEZERO TELEMETRY</span>
-            <strong className="rover-sector-name">{data.sector.sectorName}</strong>
-            <span className="rover-sector-coords">{roverCoords.formatted}</span>
+        {/* Franja inferior flotante: mensaje fijo de 1 línea + cruceta WASD compacta */}
+        <div className="rover-bottom-overlay">
+          <div className="rover-status-banner" title={data.lastEventMessage}>
+            <span>{data.lastEventMessage}</span>
           </div>
-
-          <div className="mars-telemetry-strip">
-            <div className="telemetry-card">
-              <span className="telemetry-label">RUMBO</span>
-              <span className="telemetry-value">{getHeadingCompass(data.heading)}</span>
-            </div>
-            <div className="telemetry-card">
-              <span className="telemetry-label">GUÍA BALIZA</span>
-              <span className="telemetry-value rover-nav-inline">
-                <svg
-                  className="rover-nav-inline__arrow"
-                  viewBox="0 0 20 20"
-                  style={{ transform: `rotate(${relBearing}deg)` }}
-                  aria-hidden="true"
-                >
-                  <polygon points="10,2 17,17 10,13.5 3,17" fill={isAligned ? '#2E8B57' : '#FC3D21'} />
-                </svg>
-                {targetNavHint}
-              </span>
-            </div>
-            <div className="telemetry-card">
-              <span className="telemetry-label">INCLINACIÓN</span>
-              <span className={`telemetry-value ${slopeClass}`}>
-                {data.pitchDeg > 0 ? `+${data.pitchDeg}°` : `${data.pitchDeg}°`}
-              </span>
-            </div>
-            <div className="telemetry-card">
-              <span className="telemetry-label">SCORE</span>
-              <span className="telemetry-value telemetry-value--pts">{snapshot.score} PTS</span>
-            </div>
-          </div>
-
-          <div className="rover-status-banner">{data.lastEventMessage}</div>
 
           <div className="tank-controls-cluster" aria-label="Controles del rover">
             <button
@@ -871,7 +849,30 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
               <span>▶</span>
             </button>
           </div>
-        </aside>
+        </div>
+
+        {isGameOver && (
+          <div className="mission-debrief-card">
+            <div className="debrief-header">
+              <h3>{isMissionCompleted ? 'OBJETIVO ALCANZADO' : 'MISIÓN FINALIZADA'}</h3>
+              <p>{isMissionCompleted ? 'Posición asegurada en la Baliza B.' : 'Operación concluida.'}</p>
+            </div>
+            <div className="debrief-grid">
+              <div className="debrief-metric">
+                <span className="debrief-label">BATERÍA</span>
+                <span className="debrief-val">{data.energy.toFixed(0)}%</span>
+              </div>
+              <div className="debrief-metric">
+                <span className="debrief-label">TIEMPO</span>
+                <span className="debrief-val">{(snapshot.elapsedMs / 1000).toFixed(1)}s</span>
+              </div>
+              <div className="debrief-metric">
+                <span className="debrief-label">SCORE</span>
+                <span className="debrief-val">{snapshot.score} PTS</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

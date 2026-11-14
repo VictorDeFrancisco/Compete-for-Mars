@@ -401,15 +401,16 @@ export default function Lobby({
               className={`lobby-ready-toggle ${game.self.ready ? 'is-ready' : ''}`}
               disabled={disabled || gameOver || game.self.health <= 0}
               aria-pressed={game.self.ready}
+              title={game.self.ready ? 'Click to cancel ready status' : 'Click to mark yourself ready'}
               onClick={() => {
                 playUiConfirm();
                 onReady();
               }}
             >
               <span className="lobby-ready-toggle__check" aria-hidden="true">
-                {game.self.ready ? '✓' : '○'}
+                {game.self.ready ? '✓' : '▸'}
               </span>
-              <span>{game.self.ready ? 'READY' : 'NOT READY'}</span>
+              <span>{game.self.ready ? 'READY ✓' : 'READY UP'}</span>
             </button>
 
             <button

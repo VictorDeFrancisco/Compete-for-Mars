@@ -1,12 +1,12 @@
 .crew-sidebar {
-  width: 222px;
+  width: 198px;
   flex-shrink: 0;
   align-self: flex-start;
   background: var(--paper-cream, #F5EFE0);
   color: var(--ink-black, #1A1817);
   border: 3px solid var(--ink-black, #1A1817);
   border-radius: 12px;
-  padding: 10px 10px 12px;
+  padding: 9px 9px 10px;
   box-shadow: 0 5px 0 var(--ink-black, #1A1817);
   display: flex;
   flex-direction: column;

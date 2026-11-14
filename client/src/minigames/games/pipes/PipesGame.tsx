@@ -29,45 +29,60 @@ function PipesView({ engine, snapshot }: MinigameViewProps<PipesData>) {
   const connected = nextBoardAt !== null;
   const wetCells = new Set(wet);
   const seconds = Math.ceil(snapshot.remainingMs / 1000);
-  const { crew, onExit, onRestart } = usePipesScene();
+  const { crew, embedded, onExit, onRestart } = usePipesScene();
 
   return (
     <section
-      className={`pipes-game${connected ? ' pipes-game--connected' : ''}${seconds <= 10 ? ' pipes-game--urgent' : ''}${finished ? ' pipes-game--finished' : ''}`}
+      className={`pipes-game${embedded ? ' pipes-game--embedded' : ''}${connected ? ' pipes-game--connected' : ''}${seconds <= 10 ? ' pipes-game--urgent' : ''}${finished ? ' pipes-game--finished' : ''}`}
       aria-label="Circuito de agua"
     >
-      <LunarBackdrop />
+      {!embedded && <LunarBackdrop />}
       <div className="pipes-screen">
-        <header className="pipes-topbar">
-          <div className="pipes-plaque pipes-counter" aria-label={`${solved} circuitos reparados, ${snapshot.score} puntos`}>
-            <b>{snapshot.score}</b>
-            <span>
-              PTS<br />
-              {solved} {solved === 1 ? 'circuito' : 'circuitos'}
-            </span>
-          </div>
-
-          <div className="pipes-title-text">
-            <span className="pipes-kicker">LIFE SUPPORT // WATER GRID</span>
-            <h2>RESTABLECE EL FLUJO</h2>
-          </div>
-
-          <div className="pipes-plaque pipes-timer-panel">
-            <div className="pipes-clock" role="timer" aria-label={`${seconds} segundos restantes`}>
-              <b>{String(seconds).padStart(2, '0')}s</b>
-              <span>TIEMPO</span>
+        {!embedded ? (
+          <header className="pipes-topbar">
+            <div className="pipes-plaque pipes-counter" aria-label={`${solved} circuitos reparados, ${snapshot.score} puntos`}>
+              <b>{snapshot.score}</b>
+              <span>
+                PTS<br />
+                {solved} {solved === 1 ? 'circuito' : 'circuitos'}
+              </span>
             </div>
-            <div className="pipes-time-track">
-              <span style={{ width: `${(snapshot.remainingMs / engine.definition.durationMs) * 100}%` }} />
-            </div>
-          </div>
-        </header>
 
-        <div className="pipes-workspace">
-          <div className="pipes-console">
+            <div className="pipes-title-text">
+              <span className="pipes-kicker">LIFE SUPPORT // WATER GRID</span>
+              <h2>RESTABLECE EL FLUJO</h2>
+            </div>
+
+            <div className="pipes-plaque pipes-timer-panel">
+              <div className="pipes-clock" role="timer" aria-label={`${seconds} segundos restantes`}>
+                <b>{String(seconds).padStart(2, '0')}s</b>
+                <span>TIEMPO</span>
+              </div>
+              <div className="pipes-time-track">
+                <span style={{ width: `${(snapshot.remainingMs / engine.definition.durationMs) * 100}%` }} />
+              </div>
+            </div>
+          </header>
+        ) : (
+          <div className="pipes-embedded-bar">
+            <span className="pipes-kicker">WATER GRID</span>
             <p className="pipes-instruction">
               Haz clic para girar las tuberías. Conecta la <strong>ENTRADA AZUL</strong> con la <strong>SALIDA DORADA</strong>.
             </p>
+            <div className="pipes-embedded-score" aria-label={`${solved} circuitos reparados, ${snapshot.score} puntos`}>
+              <b>{snapshot.score} PTS</b>
+              <span>{solved} {solved === 1 ? 'CIRCUITO' : 'CIRCUITOS'}</span>
+            </div>
+          </div>
+        )}
+
+        <div className="pipes-workspace">
+          <div className="pipes-console">
+            {!embedded && (
+              <p className="pipes-instruction">
+                Haz clic para girar las tuberías. Conecta la <strong>ENTRADA AZUL</strong> con la <strong>SALIDA DORADA</strong>.
+              </p>
+            )}
             <div
               className="pipes-machine"
               style={{
@@ -126,39 +141,41 @@ function PipesView({ engine, snapshot }: MinigameViewProps<PipesData>) {
             )}
           </div>
 
-          <aside className="pipes-crew" aria-label="Puntuación en tiempo real">
-            <div className="pipes-crew__heading">CREW LIVE SCORE</div>
-            {[...crew]
-              .map((member, index) => ({
-                member,
-                index,
-                livePoints: member.isSelf ? snapshot.score : (member.liveScore ?? 0),
-              }))
-              .sort((a, b) => b.livePoints - a.livePoints)
-              .map(({ member, index, livePoints }) => (
-                <div
-                  key={member.id}
-                  className={`pipes-astronaut pipes-astronaut--${index}${member.isSelf ? ' pipes-astronaut--self' : ''}`}
-                  title={`${member.name}${member.isSelf ? ' · Tú' : ''}`}
-                >
-                  <div className="pipes-astronaut__avatar">
-                    <Astronaut active={!!member.isSelf} />
+          {!embedded && (
+            <aside className="pipes-crew" aria-label="Puntuación en tiempo real">
+              <div className="pipes-crew__heading">CREW LIVE SCORE</div>
+              {[...crew]
+                .map((member, index) => ({
+                  member,
+                  index,
+                  livePoints: member.isSelf ? snapshot.score : (member.liveScore ?? 0),
+                }))
+                .sort((a, b) => b.livePoints - a.livePoints)
+                .map(({ member, index, livePoints }) => (
+                  <div
+                    key={member.id}
+                    className={`pipes-astronaut pipes-astronaut--${index}${member.isSelf ? ' pipes-astronaut--self' : ''}`}
+                    title={`${member.name}${member.isSelf ? ' · Tú' : ''}`}
+                  >
+                    <div className="pipes-astronaut__avatar">
+                      <Astronaut active={!!member.isSelf} />
+                    </div>
+                    <div className="pipes-astronaut__info">
+                      <span className="pipes-astronaut-name">
+                        {member.name}
+                        {member.isSelf ? ' (YOU)' : ''}
+                      </span>
+                      <span className="pipes-astronaut-meta">
+                        {member.isSelf
+                          ? finished ? 'DONE' : 'PLAYING'
+                          : member.hasSubmitted ? 'DONE' : 'LIVE'}
+                      </span>
+                    </div>
+                    <span className="pipes-astronaut-score">{livePoints} PTS</span>
                   </div>
-                  <div className="pipes-astronaut__info">
-                    <span className="pipes-astronaut-name">
-                      {member.name}
-                      {member.isSelf ? ' (YOU)' : ''}
-                    </span>
-                    <span className="pipes-astronaut-meta">
-                      {member.isSelf
-                        ? finished ? 'DONE' : 'PLAYING'
-                        : member.hasSubmitted ? 'DONE' : 'LIVE'}
-                    </span>
-                  </div>
-                  <span className="pipes-astronaut-score">{livePoints} PTS</span>
-                </div>
-              ))}
-          </aside>
+                ))}
+            </aside>
+          )}
         </div>
 
         {onExit && !finished && (

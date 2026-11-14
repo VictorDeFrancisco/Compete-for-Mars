@@ -9,18 +9,18 @@ function MinigamePreviewSvg({ id }: { id: string }) {
     case 'pipes':
       return (
         <svg className="briefing-card__svg" viewBox="0 0 200 130" aria-hidden="true">
-          <rect width="200" height="130" fill="#0D1B2A" />
-          <path d="M18 38 H72 V92 H128 V44 H182" fill="none" stroke="#22D3EE" strokeWidth="14" strokeLinejoin="round" strokeLinecap="round" />
-          <path d="M18 38 H72 V92 H128 V44 H182" fill="none" stroke="#A5F3FC" strokeWidth="4" strokeLinejoin="round" />
-          <circle cx="24" cy="38" r="11" fill="#0B3D91" stroke="#F5EFE0" strokeWidth="2.5" />
-          <circle cx="176" cy="44" r="11" fill="#D97706" stroke="#F5EFE0" strokeWidth="2.5" />
+          <rect width="200" height="130" fill="#EAE0CA" />
+          <path d="M18 38 H72 V92 H128 V44 H182" fill="none" stroke="#1F7A8C" strokeWidth="14" strokeLinejoin="round" strokeLinecap="round" />
+          <path d="M18 38 H72 V92 H128 V44 H182" fill="none" stroke="#7AE5F5" strokeWidth="4" strokeLinejoin="round" />
+          <circle cx="24" cy="38" r="11" fill="#0B3D91" stroke="#1A1817" strokeWidth="2.5" />
+          <circle cx="176" cy="44" r="11" fill="#D97706" stroke="#1A1817" strokeWidth="2.5" />
           <rect x="60" y="80" width="24" height="24" rx="3" fill="none" stroke="#FC3D21" strokeWidth="2.5" strokeDasharray="4 3" />
         </svg>
       );
     case 'mars-rover':
       return (
         <svg className="briefing-card__svg" viewBox="0 0 200 130" aria-hidden="true">
-          <rect width="200" height="130" fill="#0B192C" />
+          <rect width="200" height="130" fill="#E8B99B" />
           <circle cx="152" cy="34" r="18" fill="#E67A45" stroke="#1A1817" strokeWidth="2.5" />
           <path d="M0 82 Q60 62 118 80 T200 72 V130 H0 Z" fill="#C1440E" stroke="#1A1817" strokeWidth="2.5" />
           <rect x="58" y="62" width="54" height="20" rx="4" fill="#F5EFE0" stroke="#1A1817" strokeWidth="3" />
@@ -33,11 +33,11 @@ function MinigamePreviewSvg({ id }: { id: string }) {
     case 'suit-up':
       return (
         <svg className="briefing-card__svg" viewBox="0 0 200 130" aria-hidden="true">
-          <rect width="200" height="130" fill="#0D1B2A" />
-          <circle cx="100" cy="65" r="44" fill="none" stroke="#294361" strokeWidth="10" />
+          <rect width="200" height="130" fill="#EAE0CA" />
+          <circle cx="100" cy="65" r="44" fill="none" stroke="#C7B99D" strokeWidth="10" />
           <path d="M62 42 A44 44 0 0 1 138 42" fill="none" stroke="#22C55E" strokeWidth="10" strokeLinecap="round" />
           <circle cx="100" cy="65" r="26" fill="#F5EFE0" stroke="#1A1817" strokeWidth="3" />
-          <rect x="82" y="54" width="36" height="20" rx="9" fill="#172A44" stroke="#1A1817" strokeWidth="2" />
+          <rect x="82" y="54" width="36" height="20" rx="9" fill="#334155" stroke="#1A1817" strokeWidth="2" />
           <rect x="148" y="92" width="36" height="20" rx="3" fill="#FC3D21" stroke="#1A1817" strokeWidth="2.5" />
         </svg>
       );
@@ -45,13 +45,13 @@ function MinigamePreviewSvg({ id }: { id: string }) {
     default:
       return (
         <svg className="briefing-card__svg" viewBox="0 0 200 130" aria-hidden="true">
-          <rect width="200" height="130" fill="#0D1B2A" />
-          <rect x="20" y="18" width="160" height="30" rx="4" fill="#0B3D91" stroke="#F5EFE0" strokeWidth="2.5" />
-          <rect x="34" y="29" width="104" height="8" rx="3" fill="#F5EFE0" />
-          <rect x="20" y="60" width="74" height="22" rx="4" fill="#2E8B57" stroke="#F5EFE0" strokeWidth="2" />
-          <rect x="106" y="60" width="74" height="22" rx="4" fill="#1D324D" stroke="#64748B" strokeWidth="2" />
-          <rect x="20" y="90" width="74" height="22" rx="4" fill="#1D324D" stroke="#64748B" strokeWidth="2" />
-          <rect x="106" y="90" width="74" height="22" rx="4" fill="#1D324D" stroke="#64748B" strokeWidth="2" />
+          <rect width="200" height="130" fill="#EAE0CA" />
+          <rect x="20" y="18" width="160" height="30" rx="4" fill="#F5EFE0" stroke="#1A1817" strokeWidth="2.5" />
+          <rect x="34" y="29" width="104" height="8" rx="3" fill="#1A1817" />
+          <rect x="20" y="60" width="74" height="22" rx="4" fill="#2E8B57" stroke="#1A1817" strokeWidth="2" />
+          <rect x="106" y="60" width="74" height="22" rx="4" fill="#FFF9EB" stroke="#1A1817" strokeWidth="2" />
+          <rect x="20" y="90" width="74" height="22" rx="4" fill="#FFF9EB" stroke="#1A1817" strokeWidth="2" />
+          <rect x="106" y="90" width="74" height="22" rx="4" fill="#FFF9EB" stroke="#1A1817" strokeWidth="2" />
         </svg>
       );
   }
