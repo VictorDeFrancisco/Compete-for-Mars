@@ -46,10 +46,24 @@ body {
   pointer-events: none;
 }
 
-.mars-backdrop__svg {
+.mars-backdrop__svg,
+.mars-backdrop__img {
   display: block;
   width: 100%;
   height: 100%;
+  object-fit: cover;
+  object-position: center 62%;
+}
+
+.mars-backdrop__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(9, 15, 28, 0.48) 0%,
+    rgba(16, 12, 10, 0.22) 48%,
+    rgba(10, 8, 8, 0.56) 100%
+  );
 }
 
 .mars-backdrop__grain {

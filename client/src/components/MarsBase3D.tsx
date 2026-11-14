@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { GameView, PublicPlayer } from '../../../shared/types';
 import { resolvePlayerSuitColor } from './AstronautPortraitSvg';
+import { loadBaseGlb, type LoadedBaseModel } from './baseGlbLoader';
 
 interface Vec3 {
   x: number;
@@ -8,197 +9,266 @@ interface Vec3 {
   z: number;
 }
 
-interface Projected {
-  x: number;
-  y: number;
-  depth: number;
-  scale: number;
-}
-
-interface Face {
-  points: Vec3[];
-  fill: string;
-  stroke?: string;
-  lineWidth?: number;
-}
-
 const CREW_SLOTS: readonly Vec3[] = [
-  { x: -1.35, y: 0, z: 1.55 },
-  { x: 1.35, y: 0, z: 1.5 },
-  { x: -2.0, y: 0, z: -0.95 },
-  { x: 2.05, y: 0, z: -0.9 },
+  { x: -1.55, y: 0.04, z: 2.35 },
+  { x: 1.55, y: 0.04, z: 2.3 },
+  { x: -2.45, y: 0.04, z: -1.25 },
+  { x: 2.45, y: 0.04, z: -1.15 },
 ];
 
-const STARS = Array.from({ length: 140 }, (_, i) => ({
+const STARS = Array.from({ length: 130 }, (_, i) => ({
   angle: ((i * 137.5) % 360) * (Math.PI / 180),
-  y: ((i * 41 + 7) % 52) / 100,
+  y: ((i * 41 + 7) % 50) / 100,
   r: (i % 3) * 0.55 + 0.55,
   alpha: 0.3 + ((i * 17) % 65) / 100,
 }));
 
-const CRATERS: readonly { x: number; z: number; r: number }[] = [
-  { x: -4.2, z: 2.6, r: 0.9 },
-  { x: 4.5, z: 2.1, r: 1.15 },
-  { x: -3.8, z: -3.2, r: 1.3 },
-  { x: 3.4, z: -3.8, r: 0.8 },
-  { x: 0.4, z: 4.1, r: 0.7 },
-  { x: -5.4, z: -0.4, r: 0.95 },
-];
-
-function buildBaseFaces(): Face[] {
-  const faces: Face[] = [];
-
-  // Outer foundation ring & inner landing deck
-  addDisc(faces, 0, 0.01, 0, 2.55, 16, 'rgba(34, 24, 22, 0.85)', 'rgba(245, 156, 66, 0.25)');
-  addDisc(faces, 0, 0.03, 0, 1.85, 16, 'rgba(38, 46, 58, 0.92)', 'rgba(255, 196, 128, 0.45)');
-
-  // Left Life-Support & Hydroponics Wing
-  addBox(faces, -2.55, 0, -0.2, 1.35, 0.76, 0.96, '#27384b', '#33485f', '#1c2938', 'rgba(115, 212, 194, 0.58)');
-  addBox(faces, -1.6, 0, -0.15, 0.72, 0.44, 0.46, '#2d3b4d', '#3a4c62', '#1f2b39', 'rgba(145, 237, 201, 0.45)');
-  // Hydroponics glowing window strip
-  addBox(faces, -2.55, 0.26, 0.29, 0.85, 0.22, 0.04, '#6ae0c4', '#91edc9', '#45b89d', 'rgba(190, 255, 238, 0.8)');
-
-  // Right Engineering & Comms Wing
-  addBox(faces, 2.35, 0, -0.15, 1.18, 0.6, 0.88, '#263445', '#34475c', '#1c2633', 'rgba(245, 156, 66, 0.5)');
-  addBox(faces, 1.55, 0, -0.12, 0.68, 0.42, 0.44, '#2d3a4b', '#38485c', '#202b38', 'rgba(245, 156, 66, 0.4)');
-  // Comms mast
-  addBox(faces, 2.55, 0.6, -0.25, 0.08, 0.85, 0.08, '#8fa3b8', '#b8cbe0', '#5a6b7d', 'rgba(220, 235, 250, 0.6)');
-
-  // Solar farm panels on the right
-  for (const zOff of [-1.25, 0.95]) {
-    addBox(faces, 2.5, 0, zOff, 0.14, 0.35, 0.14, '#394657', '#4b5a6e', '#26303d', 'rgba(130, 170, 210, 0.4)');
-    faces.push({
-      points: [
-        { x: 1.88, y: 0.32, z: zOff - 0.38 },
-        { x: 3.22, y: 0.8, z: zOff - 0.38 },
-        { x: 3.22, y: 0.8, z: zOff + 0.38 },
-        { x: 1.88, y: 0.32, z: zOff + 0.38 },
-      ],
-      fill: 'rgba(34, 88, 138, 0.92)',
-      stroke: 'rgba(138, 216, 255, 0.72)',
-      lineWidth: 1.2,
-    });
+const VERT_SRC = `
+  attribute vec3 aPos;
+  attribute vec3 aNorm;
+  uniform mat4 uViewProj;
+  varying vec3 vNorm;
+  varying vec3 vWorldPos;
+  void main() {
+    vNorm = aNorm;
+    vWorldPos = aPos;
+    gl_Position = uViewProj * vec4(aPos, 1.0);
   }
+`;
 
-  // Front airlock & lit entryway
-  addBox(faces, 0, 0, 1.32, 0.78, 0.64, 0.66, '#324052', '#425369', '#232e3d', 'rgba(255, 194, 118, 0.75)');
-  addBox(faces, 0, 0.06, 1.66, 0.36, 0.42, 0.04, '#ffbe6b', '#ffdba8', '#d98c3b', 'rgba(255, 232, 196, 0.9)');
+const FRAG_SRC = `
+  precision mediump float;
+  varying vec3 vNorm;
+  varying vec3 vWorldPos;
+  uniform vec4 uColor;
+  uniform vec3 uCamPos;
+  uniform float uMetal;
+  uniform float uRoughness;
+  uniform float uIsGlass;
+  void main() {
+    vec3 N = normalize(vNorm);
+    vec3 L1 = normalize(vec3(0.65, 0.78, 0.52));
+    vec3 L2 = normalize(vec3(-0.7, 0.35, -0.55));
+    vec3 V = normalize(uCamPos - vWorldPos);
 
-  // Mars Rover parked near front-right
-  addBox(faces, 1.15, 0.14, 2.15, 0.68, 0.28, 0.46, '#9c563c', '#bd6e4f', '#6b3826', 'rgba(255, 208, 158, 0.6)');
-  addBox(faces, 1.32, 0.42, 2.15, 0.14, 0.22, 0.14, '#cad6e2', '#eef5fc', '#8ca0b5', 'rgba(255, 255, 255, 0.65)');
+    float diff1 = max(dot(N, L1), 0.0);
+    float diff2 = max(dot(N, L2), 0.0);
+    float hemi = N.y * 0.5 + 0.5;
 
-  // Glowing inner core inside the geodesic dome
-  const coreRings = 3;
-  const coreSlices = 10;
-  for (let r = 0; r < coreRings; r++) {
-    const phi1 = (r / coreRings) * (Math.PI / 2);
-    const phi2 = ((r + 1) / coreRings) * (Math.PI / 2);
-    for (let s = 0; s < coreSlices; s++) {
-      const th1 = (s / coreSlices) * Math.PI * 2;
-      const th2 = ((s + 1) / coreSlices) * Math.PI * 2;
-      faces.push({
-        points: [
-          spherePt(0.75, phi1, th1),
-          spherePt(0.75, phi1, th2),
-          spherePt(0.75, phi2, th2),
-          spherePt(0.75, phi2, th1),
-        ],
-        fill: 'rgba(255, 176, 84, 0.45)',
-      });
+    vec3 skyTint = vec3(0.95, 0.72, 0.45);
+    vec3 groundTint = vec3(0.45, 0.19, 0.11);
+    vec3 ambient = mix(groundTint, skyTint, hemi) * 0.52;
+    vec3 sunLight = vec3(1.05, 0.88, 0.72) * diff1 * 0.78;
+    vec3 fillLight = vec3(0.55, 0.62, 0.78) * diff2 * 0.25;
+
+    vec3 H = normalize(L1 + V);
+    float shininess = mix(96.0, 10.0, uRoughness);
+    float spec = pow(max(dot(N, H), 0.0), shininess) * mix(0.28, 0.75, uMetal);
+
+    vec3 lit = uColor.rgb * (ambient + sunLight + fillLight) + vec3(1.0, 0.92, 0.8) * spec;
+
+    // Atmospheric Martian distance haze
+    float dist = length(vWorldPos.xz);
+    float fog = clamp((dist - 5.5) / 11.0, 0.0, 0.65);
+    lit = mix(lit, vec3(0.55, 0.26, 0.14), fog);
+
+    float alpha = uColor.a;
+    if (uIsGlass > 0.5) {
+      float fresnel = pow(1.0 - max(dot(N, V), 0.0), 2.2);
+      lit += vec3(0.65, 0.86, 1.0) * fresnel * 0.45;
+      alpha = clamp(uColor.a + fresnel * 0.42, 0.2, 0.85);
     }
+    gl_FragColor = vec4(lit, alpha);
   }
+`;
 
-  // Geodesic dome outer glass + warm ribs
-  const rings = 5;
-  const slices = 16;
-  const radius = 1.42;
-  for (let r = 0; r < rings; r++) {
-    const phi1 = (r / rings) * (Math.PI / 2);
-    const phi2 = ((r + 1) / rings) * (Math.PI / 2);
-    for (let s = 0; s < slices; s++) {
-      const th1 = (s / slices) * Math.PI * 2;
-      const th2 = ((s + 1) / slices) * Math.PI * 2;
-      const warmth = 0.24 + (1 - r / rings) * 0.34;
-      faces.push({
-        points: [
-          spherePt(radius, phi1, th1),
-          spherePt(radius, phi1, th2),
-          spherePt(radius, phi2, th2),
-          spherePt(radius, phi2, th1),
-        ],
-        fill: `rgba(245, 152, 62, ${warmth.toFixed(2)})`,
-        stroke: 'rgba(255, 218, 168, 0.64)',
-        lineWidth: 1,
-      });
-    }
+function compileShader(gl: WebGLRenderingContext, type: number, src: string): WebGLShader {
+  const shader = gl.createShader(type)!;
+  gl.shaderSource(shader, src);
+  gl.compileShader(shader);
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    const info = gl.getShaderInfoLog(shader);
+    gl.deleteShader(shader);
+    throw new Error(`Shader error: ${info}`);
   }
-
-  return faces;
+  return shader;
 }
 
-function addDisc(faces: Face[], cx: number, y: number, cz: number, radius: number, segs: number, fill: string, stroke: string) {
-  const pts: Vec3[] = [];
-  for (let i = 0; i < segs; i++) {
-    const a = (i / segs) * Math.PI * 2;
-    pts.push({ x: cx + Math.cos(a) * radius, y, z: cz + Math.sin(a) * radius });
-  }
-  faces.push({ points: pts, fill, stroke, lineWidth: 1.3 });
+function buildViewProj(
+  yaw: number,
+  pitch: number,
+  distance: number,
+  aspect: number,
+): { mat: Float32Array; camPos: [number, number, number] } {
+  const target: Vec3 = { x: 0, y: 0.28, z: -0.25 };
+  const cosY = Math.cos(yaw);
+  const sinY = Math.sin(yaw);
+  const cosP = Math.cos(pitch);
+  const sinP = Math.sin(pitch);
+
+  // Camera position in world space orbiting around target
+  const eyeX = target.x + distance * cosP * sinY;
+  const eyeY = target.y + distance * sinP;
+  const eyeZ = target.z + distance * cosP * cosY;
+
+  // View basis
+  let fx = target.x - eyeX;
+  let fy = target.y - eyeY;
+  let fz = target.z - eyeZ;
+  const flen = Math.hypot(fx, fy, fz) || 1;
+  fx /= flen; fy /= flen; fz /= flen;
+
+  // right = normalize(cross(f, up(0,1,0)))
+  let rx = -fz;
+  let ry = 0;
+  let rz = fx;
+  const rlen = Math.hypot(rx, ry, rz) || 1;
+  rx /= rlen; rz /= rlen;
+
+  // up = cross(r, f)
+  const ux = ry * fz - rz * fy;
+  const uy = rz * fx - rx * fz;
+  const uz = rx * fy - ry * fx;
+
+  const fovY = 0.72;
+  const f = 1 / Math.tan(fovY * 0.5);
+  const near = 0.1;
+  const far = 80;
+  const nf = 1 / (near - far);
+
+  const p00 = f / Math.max(0.2, aspect);
+  const p11 = f;
+  const p22 = (far + near) * nf;
+  const p32 = 2 * far * near * nf;
+
+  // Column-major viewProj = P * V
+  const tx = -(rx * eyeX + ry * eyeY + rz * eyeZ);
+  const ty = -(ux * eyeX + uy * eyeY + uz * eyeZ);
+  const tz = fx * eyeX + fy * eyeY + fz * eyeZ;
+
+  const mat = new Float32Array([
+    p00 * rx, p11 * ux, p22 * -fx, fx,
+    p00 * ry, p11 * uy, p22 * -fy, fy,
+    p00 * rz, p11 * uz, p22 * -fz, fz,
+    p00 * tx, p11 * ty, p22 * tz + p32, -tz,
+  ]);
+
+  return { mat, camPos: [eyeX, eyeY, eyeZ] };
 }
 
-function spherePt(radius: number, phi: number, theta: number): Vec3 {
+function projectPoint(
+  pt: Vec3,
+  mat: Float32Array,
+  width: number,
+  height: number,
+): { x: number; y: number; scale: number; depth: number } | null {
+  const cx = mat[0] * pt.x + mat[4] * pt.y + mat[8] * pt.z + mat[12];
+  const cy = mat[1] * pt.x + mat[5] * pt.y + mat[9] * pt.z + mat[13];
+  const cw = mat[3] * pt.x + mat[7] * pt.y + mat[11] * pt.z + mat[15];
+  if (cw <= 0.15) return null;
+  const ndcX = cx / cw;
+  const ndcY = cy / cw;
   return {
-    x: radius * Math.cos(phi) * Math.cos(theta),
-    y: radius * Math.sin(phi),
-    z: radius * Math.cos(phi) * Math.sin(theta),
+    x: (ndcX * 0.5 + 0.5) * width,
+    y: (0.5 - ndcY * 0.5) * height,
+    scale: (height * 0.85) / cw,
+    depth: cw,
   };
 }
 
-function addBox(
-  faces: Face[],
-  cx: number,
-  y0: number,
-  cz: number,
-  w: number,
-  h: number,
-  d: number,
-  frontFill: string,
-  topFill: string,
-  sideFill: string,
-  stroke: string,
+function drawAstronautOverlay(
+  ctx: CanvasRenderingContext2D,
+  player: PublicPlayer,
+  pos: Vec3,
+  mat: Float32Array,
+  width: number,
+  height: number,
+  dpr: number,
+  accent: string,
+  bob: number,
 ) {
-  const hw = w / 2;
-  const hd = d / 2;
-  const y1 = y0 + h;
-  const b0 = { x: cx - hw, y: y0, z: cz - hd };
-  const b1 = { x: cx + hw, y: y0, z: cz - hd };
-  const b2 = { x: cx + hw, y: y0, z: cz + hd };
-  const b3 = { x: cx - hw, y: y0, z: cz + hd };
-  const t0 = { x: cx - hw, y: y1, z: cz - hd };
-  const t1 = { x: cx + hw, y: y1, z: cz - hd };
-  const t2 = { x: cx + hw, y: y1, z: cz + hd };
-  const t3 = { x: cx - hw, y: y1, z: cz + hd };
+  const foot = projectPoint({ x: pos.x, y: pos.y + bob, z: pos.z }, mat, width, height);
+  const head = projectPoint({ x: pos.x, y: pos.y + 0.62 + bob, z: pos.z }, mat, width, height);
+  if (!foot || !head) return;
 
-  faces.push(
-    { points: [t0, t1, t2, t3], fill: topFill, stroke, lineWidth: 1 },
-    { points: [b3, b2, t2, t3], fill: frontFill, stroke, lineWidth: 1 },
-    { points: [b0, b1, t1, t0], fill: sideFill, stroke, lineWidth: 1 },
-    { points: [b1, b2, t2, t1], fill: sideFill, stroke, lineWidth: 1 },
-    { points: [b0, b3, t3, t0], fill: frontFill, stroke, lineWidth: 1 },
-  );
+  const h = Math.max(20, foot.y - head.y);
+  const cx = foot.x;
+
+  // Shadow on Martian soil
+  ctx.fillStyle = 'rgba(10, 6, 4, 0.55)';
+  ctx.beginPath();
+  ctx.ellipse(cx, foot.y + 2 * dpr, h * 0.34, h * 0.12, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Suit torso & helmet silhouette
+  ctx.strokeStyle = '#141211';
+  ctx.lineWidth = Math.max(1.5, h * 0.06);
+  ctx.fillStyle = accent;
+  ctx.beginPath();
+  ctx.roundRect(cx - h * 0.2, head.y + h * 0.35, h * 0.4, h * 0.46, h * 0.1);
+  ctx.fill();
+  ctx.stroke();
+
+  // Legs
+  ctx.fillStyle = '#e5dccb';
+  ctx.beginPath();
+  ctx.roundRect(cx - h * 0.16, foot.y - h * 0.22, h * 0.13, h * 0.22, h * 0.04);
+  ctx.roundRect(cx + h * 0.03, foot.y - h * 0.22, h * 0.13, h * 0.22, h * 0.04);
+  ctx.fill();
+  ctx.stroke();
+
+  // Helmet + gold visor
+  ctx.fillStyle = '#f5efe0';
+  ctx.beginPath();
+  ctx.arc(cx, head.y + h * 0.2, h * 0.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = '#f59e0b';
+  ctx.beginPath();
+  ctx.ellipse(cx, head.y + h * 0.2, h * 0.13, h * 0.09, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Floating nameplate pill
+  const label = player.name.slice(0, 12);
+  const statusText = !player.connected ? 'OFF' : player.ready ? 'READY' : 'WAIT';
+  ctx.font = `700 ${Math.round(11 * dpr)}px Archivo, Inter, system-ui, sans-serif`;
+  const textWidth = ctx.measureText(`${label} · ${statusText}`).width;
+  const padX = 9 * dpr;
+  const pillW = textWidth + padX * 2;
+  const pillH = 22 * dpr;
+  const pillX = cx - pillW / 2;
+  const pillY = head.y - 26 * dpr;
+
+  ctx.fillStyle = 'rgba(12, 18, 30, 0.9)';
+  ctx.strokeStyle = accent;
+  ctx.lineWidth = 1.6 * dpr;
+  ctx.beginPath();
+  ctx.roundRect(pillX, pillY, pillW, pillH, 6 * dpr);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = '#f5efe0';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`${label} · ${statusText}`, cx, pillY + pillH / 2);
 }
 
-const BASE_FACES = buildBaseFaces();
-
+/**
+ * Interactive 3D Mars Base Lobby stage rendering the architect's GLB model via WebGL
+ * plus a synchronized 2D overlay for crew avatars, status badges, and Martian sky.
+ */
 export default function MarsBase3D({ game, autoOrbit = true }: { game: GameView; autoOrbit?: boolean }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const glCanvasRef = useRef<HTMLCanvasElement>(null);
+  const hudCanvasRef = useRef<HTMLCanvasElement>(null);
   const gameRef = useRef(game);
   gameRef.current = game;
+  const [model, setModel] = useState<LoadedBaseModel | null>(null);
 
   const cameraRef = useRef({
-    yaw: 0.55,
-    pitch: 0.36,
-    distance: 5.5,
+    yaw: 0.68,
+    pitch: 0.34,
+    distance: 6.4,
     autoOrbit,
     dragging: false,
     lastX: 0,
@@ -210,316 +280,300 @@ export default function MarsBase3D({ game, autoOrbit = true }: { game: GameView;
   }, [autoOrbit]);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let animId = 0;
-    let lastTime = performance.now();
-
-    const project = (pt: Vec3, width: number, height: number): Projected | null => {
-      const { yaw, pitch, distance } = cameraRef.current;
-      const cosY = Math.cos(yaw);
-      const sinY = Math.sin(yaw);
-      const cosP = Math.cos(pitch);
-      const sinP = Math.sin(pitch);
-
-      const x1 = pt.x * cosY - pt.z * sinY;
-      const z1 = pt.x * sinY + pt.z * cosY;
-      const y1 = pt.y - 0.55;
-
-      const y2 = y1 * cosP + z1 * sinP;
-      const z2 = -y1 * sinP + z1 * cosP + distance;
-
-      if (z2 <= 0.4) return null;
-      const fov = Math.min(width, height) * 1.12;
-      const scale = fov / z2;
-      return {
-        x: width * 0.5 + x1 * scale,
-        y: height * 0.56 - y2 * scale,
-        depth: z2,
-        scale,
-      };
+    let active = true;
+    loadBaseGlb()
+      .then(loaded => {
+        if (active) setModel(loaded);
+      })
+      .catch(() => {
+        // Fallback sky + crew overlay still renders cleanly
+      });
+    return () => {
+      active = false;
     };
+  }, []);
+
+  useEffect(() => {
+    const glCanvas = glCanvasRef.current;
+    const hudCanvas = hudCanvasRef.current;
+    if (!glCanvas || !hudCanvas) return;
+
+    const hudCtx = hudCanvas.getContext('2d');
+    if (!hudCtx) return;
+
+    const gl = (glCanvas.getContext('webgl2', { alpha: true, antialias: true }) ??
+      glCanvas.getContext('webgl', { alpha: true, antialias: true })) as WebGLRenderingContext | null;
+
+    let program: WebGLProgram | null = null;
+    const gpuBatches: {
+      posBuf: WebGLBuffer;
+      normBuf: WebGLBuffer;
+      idxBuf: WebGLBuffer;
+      idxCount: number;
+      color: [number, number, number, number];
+      metalness: number;
+      roughness: number;
+      isGlass: boolean;
+    }[] = [];
+
+    // Ground disc geometry for surrounding Mars desert
+    let groundPosBuf: WebGLBuffer | null = null;
+    let groundNormBuf: WebGLBuffer | null = null;
+    let groundIdxBuf: WebGLBuffer | null = null;
+    let groundIdxCount = 0;
+
+    if (gl) {
+      if (!(gl instanceof WebGL2RenderingContext)) {
+        gl.getExtension('OES_element_index_uint');
+      }
+      const vs = compileShader(gl, gl.VERTEX_SHADER, VERT_SRC);
+      const fs = compileShader(gl, gl.FRAGMENT_SHADER, FRAG_SRC);
+      program = gl.createProgram()!;
+      gl.attachShader(program, vs);
+      gl.attachShader(program, fs);
+      gl.linkProgram(program);
+
+      // Build broad Martian terrain apron so the base sits seamlessly on Mars regolith
+      const segs = 48;
+      const gPos = [0, -0.02, 0];
+      const gNorm = [0, 1, 0];
+      const gIdx: number[] = [];
+      for (let i = 0; i <= segs; i++) {
+        const a = (i / segs) * Math.PI * 2;
+        const r = 18;
+        gPos.push(Math.cos(a) * r, -0.04, Math.sin(a) * r);
+        gNorm.push(0, 1, 0);
+        if (i < segs) gIdx.push(0, i + 1, i + 2);
+      }
+      groundPosBuf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, groundPosBuf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(gPos), gl.STATIC_DRAW);
+
+      groundNormBuf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, groundNormBuf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(gNorm), gl.STATIC_DRAW);
+
+      groundIdxBuf = gl.createBuffer();
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, groundIdxBuf);
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(gIdx), gl.STATIC_DRAW);
+      groundIdxCount = gIdx.length;
+
+      if (model) {
+        for (const batch of model.batches) {
+          const posBuf = gl.createBuffer()!;
+          gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+          gl.bufferData(gl.ARRAY_BUFFER, batch.positions, gl.STATIC_DRAW);
+
+          const normBuf = gl.createBuffer()!;
+          gl.bindBuffer(gl.ARRAY_BUFFER, normBuf);
+          gl.bufferData(gl.ARRAY_BUFFER, batch.normals, gl.STATIC_DRAW);
+
+          const idxBuf = gl.createBuffer()!;
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idxBuf);
+          gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, batch.indices, gl.STATIC_DRAW);
+
+          gpuBatches.push({
+            posBuf,
+            normBuf,
+            idxBuf,
+            idxCount: batch.indices.length,
+            color: batch.color,
+            metalness: batch.metalness,
+            roughness: batch.roughness,
+            isGlass: batch.isGlass,
+          });
+        }
+      }
+    }
 
     const resize = () => {
-      const container = canvas.parentElement ?? canvas;
+      const container = glCanvas.parentElement ?? glCanvas;
       const rect = container.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const w = Math.max(1, Math.round(rect.width * dpr));
       const h = Math.max(1, Math.round(rect.height * dpr));
-      if (canvas.width !== w || canvas.height !== h) {
-        canvas.width = w;
-        canvas.height = h;
+      if (glCanvas.width !== w || glCanvas.height !== h) {
+        glCanvas.width = w;
+        glCanvas.height = h;
+      }
+      if (hudCanvas.width !== w || hudCanvas.height !== h) {
+        hudCanvas.width = w;
+        hudCanvas.height = h;
       }
     };
 
     resize();
     const observer = new ResizeObserver(resize);
-    observer.observe(canvas.parentElement ?? canvas);
+    observer.observe(glCanvas.parentElement ?? glCanvas);
 
-    const draw = (now: number) => {
+    let animId = 0;
+    let lastTime = performance.now();
+
+    const renderFrame = (now: number) => {
       const dt = Math.min(0.05, (now - lastTime) / 1000);
       lastTime = now;
 
-      if (cameraRef.current.autoOrbit && !cameraRef.current.dragging) {
-        cameraRef.current.yaw += dt * 0.14;
+      const cam = cameraRef.current;
+      if (cam.autoOrbit && !cam.dragging) {
+        cam.yaw += dt * 0.12;
       }
 
+      const width = hudCanvas.width;
+      const height = hudCanvas.height;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const width = canvas.width;
-      const height = canvas.height;
+      const aspect = width / Math.max(1, height);
+      const { mat, camPos } = buildViewProj(cam.yaw, cam.pitch, cam.distance, aspect);
+
+      // 1. Background sky + stars on HUD canvas first, then WebGL base on top, OR draw sky on hudCtx when clear.
+      // We draw sky behind WebGL via CSS gradient and draw stars + crew astronauts cleanly on hudCtx!
+      hudCtx.clearRect(0, 0, width, height);
+
+      const horizonY = height * (0.46 - cam.pitch * 0.16);
+      hudCtx.fillStyle = '#fff5dc';
+      for (const star of STARS) {
+        const sx = ((((star.angle - cam.yaw * 0.5) / (Math.PI * 2)) % 1) + 1) % 1;
+        const py = star.y * Math.max(100, horizonY);
+        if (py > horizonY - 24) continue;
+        hudCtx.globalAlpha = star.alpha * 0.85;
+        hudCtx.beginPath();
+        hudCtx.arc(sx * width, py, star.r * dpr, 0, Math.PI * 2);
+        hudCtx.fill();
+      }
+      hudCtx.globalAlpha = 1;
+
+      // 2. Render Architect's GLB Base in WebGL
+      if (gl && program) {
+        gl.viewport(0, 0, width, height);
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.useProgram(program);
+
+        const aPos = gl.getAttribLocation(program, 'aPos');
+        const aNorm = gl.getAttribLocation(program, 'aNorm');
+        const uViewProj = gl.getUniformLocation(program, 'uViewProj');
+        const uColor = gl.getUniformLocation(program, 'uColor');
+        const uCamPos = gl.getUniformLocation(program, 'uCamPos');
+        const uMetal = gl.getUniformLocation(program, 'uMetal');
+        const uRough = gl.getUniformLocation(program, 'uRoughness');
+        const uIsGlass = gl.getUniformLocation(program, 'uIsGlass');
+
+        gl.uniformMatrix4fv(uViewProj, false, mat);
+        gl.uniform3fv(uCamPos, camPos);
+        gl.enable(gl.DEPTH_TEST);
+        gl.enableVertexAttribArray(aPos);
+        gl.enableVertexAttribArray(aNorm);
+
+        // Draw Martian regolith ground apron
+        if (groundPosBuf && groundNormBuf && groundIdxBuf) {
+          gl.depthMask(true);
+          gl.disable(gl.BLEND);
+          gl.bindBuffer(gl.ARRAY_BUFFER, groundPosBuf);
+          gl.vertexAttribPointer(aPos, 3, gl.FLOAT, false, 0, 0);
+          gl.bindBuffer(gl.ARRAY_BUFFER, groundNormBuf);
+          gl.vertexAttribPointer(aNorm, 3, gl.FLOAT, false, 0, 0);
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, groundIdxBuf);
+          gl.uniform4f(uColor, 0.45, 0.19, 0.11, 1);
+          gl.uniform1f(uMetal, 0.0);
+          gl.uniform1f(uRough, 0.95);
+          gl.uniform1f(uIsGlass, 0.0);
+          gl.drawElements(gl.TRIANGLES, groundIdxCount, gl.UNSIGNED_INT, 0);
+        }
+
+        // Opaque base pass
+        for (const batch of gpuBatches) {
+          if (batch.isGlass) continue;
+          gl.depthMask(true);
+          gl.disable(gl.BLEND);
+          gl.bindBuffer(gl.ARRAY_BUFFER, batch.posBuf);
+          gl.vertexAttribPointer(aPos, 3, gl.FLOAT, false, 0, 0);
+          gl.bindBuffer(gl.ARRAY_BUFFER, batch.normBuf);
+          gl.vertexAttribPointer(aNorm, 3, gl.FLOAT, false, 0, 0);
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, batch.idxBuf);
+          gl.uniform4fv(uColor, batch.color);
+          gl.uniform1f(uMetal, batch.metalness);
+          gl.uniform1f(uRough, batch.roughness);
+          gl.uniform1f(uIsGlass, 0.0);
+          gl.drawElements(gl.TRIANGLES, batch.idxCount, gl.UNSIGNED_INT, 0);
+        }
+
+        // Translucent geodesic glass pass
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        gl.depthMask(false);
+        for (const batch of gpuBatches) {
+          if (!batch.isGlass) continue;
+          gl.bindBuffer(gl.ARRAY_BUFFER, batch.posBuf);
+          gl.vertexAttribPointer(aPos, 3, gl.FLOAT, false, 0, 0);
+          gl.bindBuffer(gl.ARRAY_BUFFER, batch.normBuf);
+          gl.vertexAttribPointer(aNorm, 3, gl.FLOAT, false, 0, 0);
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, batch.idxBuf);
+          gl.uniform4fv(uColor, batch.color);
+          gl.uniform1f(uMetal, batch.metalness);
+          gl.uniform1f(uRough, batch.roughness);
+          gl.uniform1f(uIsGlass, 1.0);
+          gl.drawElements(gl.TRIANGLES, batch.idxCount, gl.UNSIGNED_INT, 0);
+        }
+        gl.depthMask(true);
+      }
+
+      // 3. Draw Crew Astronauts & Labels synchronized in 3D space
       const currentGame = gameRef.current;
-      const { yaw, pitch } = cameraRef.current;
-      const fov = Math.min(width, height) * 1.12;
-      const horizonY = height * 0.56 - fov * Math.tan(pitch);
+      const crewEntries = currentGame.players.map((player, idx) => {
+        const slot = CREW_SLOTS[idx % CREW_SLOTS.length];
+        const proj = projectPoint(slot, mat, width, height);
+        return { player, idx, slot, depth: proj?.depth ?? 999 };
+      });
+      crewEntries.sort((a, b) => b.depth - a.depth);
 
-      // 1. Deep starry Mars night sky & distant mountains when horizon is visible
-      if (horizonY > 0) {
-        const sky = ctx.createLinearGradient(0, 0, 0, horizonY);
-        sky.addColorStop(0, '#05070c');
-        sky.addColorStop(0.58, '#171117');
-        sky.addColorStop(1, '#582c1a');
-        ctx.fillStyle = sky;
-        ctx.fillRect(0, 0, width, horizonY + 2);
-
-        // Stars rotating smoothly with camera yaw
-        for (const star of STARS) {
-          const relAngle = ((star.angle - yaw) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
-          if (Math.abs(relAngle) > 1.35) continue;
-          const sx = width * (0.5 + relAngle / 2.2);
-          const sy = star.y * horizonY * 1.85;
-          if (sy > horizonY) continue;
-          const twinkle = 0.65 + 0.35 * Math.sin(now * 0.002 + star.angle * 7);
-          ctx.fillStyle = `rgba(235, 242, 255, ${(star.alpha * twinkle).toFixed(2)})`;
-          ctx.beginPath();
-          ctx.arc(sx, sy, star.r * dpr, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        // 2. Distant Martian mountain ridge panning with yaw
-        ctx.beginPath();
-        ctx.moveTo(0, horizonY);
-        for (let px = 0; px <= width; px += Math.max(18, width / 40)) {
-          const worldAngle = yaw + (px / width - 0.5) * 2.1;
-          const ridgeH =
-            (Math.sin(worldAngle * 3.1) * 0.5 +
-              Math.cos(worldAngle * 6.7) * 0.3 +
-              Math.sin(worldAngle * 11.3) * 0.2 +
-              1) *
-            height *
-            0.036;
-          ctx.lineTo(px, horizonY - ridgeH);
-        }
-        ctx.lineTo(width, horizonY + 2);
-        ctx.closePath();
-        ctx.fillStyle = '#2d1610';
-        ctx.fill();
+      for (const entry of crewEntries) {
+        const isSelf = entry.player.id === currentGame.self.id;
+        const accent = resolvePlayerSuitColor(
+          entry.player,
+          currentGame.self.stats,
+          isSelf,
+          entry.idx,
+        );
+        const bob = entry.player.ready ? Math.sin(now * 0.005 + entry.idx) * 0.035 : 0;
+        drawAstronautOverlay(hudCtx, entry.player, entry.slot, mat, width, height, dpr, accent, bob);
       }
 
-      // 3. Full Martian ground plane from horizon to bottom
-      const groundTop = Math.max(0, horizonY);
-      const ground = ctx.createLinearGradient(0, horizonY, 0, height);
-      ground.addColorStop(0, '#5a2818');
-      ground.addColorStop(0.32, '#411b11');
-      ground.addColorStop(1, '#180b08');
-      ctx.fillStyle = ground;
-      ctx.fillRect(0, groundTop, width, height - groundTop);
-
-      // Warm atmospheric glow around the dome
-      const center = project({ x: 0, y: 0.4, z: 0 }, width, height);
-      if (center) {
-        const glowR = Math.max(width, height) * 0.42;
-        const domeGlow = ctx.createRadialGradient(center.x, center.y, 12, center.x, center.y, glowR);
-        domeGlow.addColorStop(0, 'rgba(255, 162, 68, 0.35)');
-        domeGlow.addColorStop(0.45, 'rgba(205, 92, 42, 0.14)');
-        domeGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = domeGlow;
-        ctx.fillRect(0, 0, width, height);
+      if (!model) {
+        hudCtx.font = `700 ${Math.round(12 * dpr)}px "IBM Plex Mono", monospace`;
+        hudCtx.fillStyle = 'rgba(245, 239, 224, 0.85)';
+        hudCtx.textAlign = 'center';
+        hudCtx.fillText('CARGANDO MODELO 3D DE LA BASE...', width * 0.5, height * 0.52);
       }
 
-      // Subtle wide terrain contour rings + craters on Mars surface
-      ctx.lineWidth = Math.max(1, dpr * 0.9);
-      for (const r of [3.2, 5.2, 7.6]) {
-        ctx.strokeStyle = 'rgba(255, 168, 108, 0.1)';
-        ctx.beginPath();
-        let started = false;
-        for (let i = 0; i <= 36; i++) {
-          const a = (i / 36) * Math.PI * 2;
-          const p = project({ x: Math.cos(a) * r, y: 0, z: Math.sin(a) * r }, width, height);
-          if (p) {
-            if (!started) {
-              ctx.moveTo(p.x, p.y);
-              started = true;
-            } else {
-              ctx.lineTo(p.x, p.y);
-            }
-          }
-        }
-        ctx.stroke();
-      }
-
-      for (const crater of CRATERS) {
-        ctx.strokeStyle = 'rgba(255, 152, 98, 0.16)';
-        ctx.fillStyle = 'rgba(26, 10, 8, 0.25)';
-        ctx.beginPath();
-        let started = false;
-        for (let i = 0; i <= 20; i++) {
-          const a = (i / 20) * Math.PI * 2;
-          const p = project({ x: crater.x + Math.cos(a) * crater.r, y: 0, z: crater.z + Math.sin(a) * crater.r }, width, height);
-          if (p) {
-            if (!started) {
-              ctx.moveTo(p.x, p.y);
-              started = true;
-            } else {
-              ctx.lineTo(p.x, p.y);
-            }
-          }
-        }
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-      }
-
-      // 4. Project & depth-sort 3D Mars Base faces
-      const projectedFaces: Array<{ pts: Projected[]; depth: number; face: Face }> = [];
-      for (const face of BASE_FACES) {
-        const pts: Projected[] = [];
-        let depthSum = 0;
-        let valid = true;
-        for (const v of face.points) {
-          const p = project(v, width, height);
-          if (!p) {
-            valid = false;
-            break;
-          }
-          pts.push(p);
-          depthSum += p.depth;
-        }
-        if (valid && pts.length >= 3) {
-          projectedFaces.push({ pts, depth: depthSum / pts.length, face });
-        }
-      }
-
-      projectedFaces.sort((a, b) => b.depth - a.depth);
-      for (const item of projectedFaces) {
-        ctx.beginPath();
-        ctx.moveTo(item.pts[0].x, item.pts[0].y);
-        for (let i = 1; i < item.pts.length; i++) {
-          ctx.lineTo(item.pts[i].x, item.pts[i].y);
-        }
-        ctx.closePath();
-        ctx.fillStyle = item.face.fill;
-        ctx.fill();
-        if (item.face.stroke) {
-          ctx.strokeStyle = item.face.stroke;
-          ctx.lineWidth = (item.face.lineWidth ?? 1) * dpr;
-          ctx.stroke();
-        }
-      }
-
-      // 5. Crew astronauts standing around the 3D base
-      const crewEntries = currentGame.players
-        .map((player, index) => {
-          const slot = CREW_SLOTS[index % CREW_SLOTS.length];
-          const base = project(slot, width, height);
-          const head = project({ x: slot.x, y: 0.65, z: slot.z }, width, height);
-          return { player, index, base, head };
-        })
-        .filter((entry): entry is { player: PublicPlayer; index: number; base: Projected; head: Projected } =>
-          Boolean(entry.base && entry.head),
-        )
-        .sort((a, b) => b.base.depth - a.base.depth);
-
-      for (const { player, index, base, head } of crewEntries) {
-        const isSelf = player.id === currentGame.self.id;
-        const suitColor = resolvePlayerSuitColor(player, currentGame.self.stats, isSelf, index);
-        const accent = !player.connected
-          ? '#7f8c9b'
-          : player.ready
-            ? '#73d4c2'
-            : '#f59c42';
-
-        const ringR = Math.max(10, base.scale * 0.25);
-        ctx.strokeStyle = isSelf ? '#ffda80' : accent;
-        ctx.lineWidth = (isSelf ? 2.4 : 1.6) * dpr;
-        ctx.beginPath();
-        ctx.ellipse(base.x, base.y, ringR, ringR * 0.42, 0, 0, Math.PI * 2);
-        ctx.stroke();
-
-        const bodyH = Math.max(16, base.y - head.y);
-        const bodyW = Math.max(7, bodyH * 0.34);
-        ctx.fillStyle = suitColor;
-        ctx.strokeStyle = '#1a1817';
-        ctx.lineWidth = Math.max(1, 1.4 * dpr);
-        ctx.fillRect(base.x - bodyW / 2, head.y + bodyH * 0.26, bodyW, bodyH * 0.62);
-        ctx.strokeRect(base.x - bodyW / 2, head.y + bodyH * 0.26, bodyW, bodyH * 0.62);
-
-        const helmR = Math.max(5, bodyH * 0.22);
-        ctx.fillStyle = '#eef4fc';
-        ctx.beginPath();
-        ctx.arc(head.x, head.y + helmR * 0.85, helmR, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = suitColor;
-        ctx.beginPath();
-        ctx.arc(head.x, head.y + helmR * 0.85, helmR * 0.58, 0, Math.PI * 2);
-        ctx.fill();
-
-        const label = `${player.name}${isSelf ? ' (You)' : ''}`;
-        const statusText = !player.connected ? 'OFF' : player.ready ? 'READY' : 'WAIT';
-        ctx.font = `600 ${Math.round(11 * dpr)}px Inter, system-ui, sans-serif`;
-        const textWidth = ctx.measureText(`${label} · ${statusText}`).width;
-        const padX = 8 * dpr;
-        const pillW = textWidth + padX * 2;
-        const pillH = 20 * dpr;
-        const pillX = head.x - pillW / 2;
-        const pillY = head.y - 26 * dpr;
-
-        ctx.fillStyle = 'rgba(10, 14, 22, 0.86)';
-        ctx.strokeStyle = accent;
-        ctx.lineWidth = 1.2 * dpr;
-        ctx.beginPath();
-        ctx.roundRect(pillX, pillY, pillW, pillH, 6 * dpr);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = '#edf3fa';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(`${label} · ${statusText}`, head.x, pillY + pillH / 2);
-      }
-
-      // Beacon pulses on comms mast and dome top
-      const domeTop = project({ x: 0, y: 1.5, z: 0 }, width, height);
-      const mastTop = project({ x: 2.55, y: 1.48, z: -0.25 }, width, height);
-      for (const beacon of [domeTop, mastTop]) {
-        if (!beacon) continue;
-        const pulse = (Math.sin(now * 0.005) + 1) / 2;
-        ctx.fillStyle = `rgba(145, 237, 201, ${(0.45 + pulse * 0.55).toFixed(2)})`;
-        ctx.beginPath();
-        ctx.arc(beacon.x, beacon.y, (3 + pulse * 2.5) * dpr, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      animId = requestAnimationFrame(draw);
+      animId = requestAnimationFrame(renderFrame);
     };
 
-    animId = requestAnimationFrame(draw);
+    animId = requestAnimationFrame(renderFrame);
     return () => {
       cancelAnimationFrame(animId);
       observer.disconnect();
+      if (gl) {
+        for (const batch of gpuBatches) {
+          gl.deleteBuffer(batch.posBuf);
+          gl.deleteBuffer(batch.normBuf);
+          gl.deleteBuffer(batch.idxBuf);
+        }
+        if (groundPosBuf) gl.deleteBuffer(groundPosBuf);
+        if (groundNormBuf) gl.deleteBuffer(groundNormBuf);
+        if (groundIdxBuf) gl.deleteBuffer(groundIdxBuf);
+        if (program) gl.deleteProgram(program);
+      }
     };
-  }, []);
+  }, [model]);
 
   const zoomBy = (delta: number) => {
-    cameraRef.current.distance = Math.max(3.5, Math.min(9.5, cameraRef.current.distance + delta));
+    cameraRef.current.distance = Math.max(3.6, Math.min(10.5, cameraRef.current.distance + delta));
   };
 
   return (
     <div className="mars-base-bg">
+      <div className="mars-base-bg__sky" aria-hidden="true" />
       <canvas
-        ref={canvasRef}
+        ref={glCanvasRef}
         className="mars-base-bg__canvas"
         aria-label="3D view of the Mars base"
         onPointerDown={event => {
@@ -534,8 +588,8 @@ export default function MarsBase3D({ game, autoOrbit = true }: { game: GameView;
           const dy = event.clientY - cameraRef.current.lastY;
           cameraRef.current.lastX = event.clientX;
           cameraRef.current.lastY = event.clientY;
-          cameraRef.current.yaw += dx * 0.007;
-          cameraRef.current.pitch = Math.max(0.12, Math.min(1.18, cameraRef.current.pitch + dy * 0.005));
+          cameraRef.current.yaw -= dx * 0.007;
+          cameraRef.current.pitch = Math.max(0.14, Math.min(1.12, cameraRef.current.pitch + dy * 0.005));
         }}
         onPointerUp={() => {
           cameraRef.current.dragging = false;
@@ -545,9 +599,10 @@ export default function MarsBase3D({ game, autoOrbit = true }: { game: GameView;
         }}
         onWheel={event => {
           event.preventDefault();
-          zoomBy(event.deltaY > 0 ? 0.5 : -0.5);
+          zoomBy(event.deltaY > 0 ? 0.55 : -0.55);
         }}
       />
+      <canvas ref={hudCanvasRef} className="mars-base-bg__hud" aria-hidden="true" />
     </div>
   );
 }
