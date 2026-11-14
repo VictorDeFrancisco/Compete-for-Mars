@@ -6,154 +6,88 @@ import './solarStorm.css';
 
 export { SolarStormGame, type SolarStormData };
 
-function SolarStormView({ engine, snapshot }: MinigameViewProps<SolarStormData>) {
+function SolarStormView({ snapshot }: MinigameViewProps<SolarStormData>) {
   const data = snapshot.data;
-  const isRunning = snapshot.status === 'running';
-  const episode = data.episode;
-  const defenses = data.defenses;
 
-  const bindAction = (actionId: string) => ({
-    onPointerDown: () => isRunning && engine.dispatch(actionId, 'press'),
-    onPointerUp: () => engine.dispatch(actionId, 'release'),
-    onPointerLeave: () => engine.dispatch(actionId, 'release'),
-  });
+  const alertWave = data.activeAlertWave;
+  const timeToImpact = alertWave
+    ? Math.max(0, alertWave.impactSec - data.currentSecond)
+    : 0;
 
-  const radClass =
-    data.totalRadiationDose < 1.0
-      ? 'rad-safe'
-      : data.totalRadiationDose < 3.0
-      ? 'rad-warning'
-      : 'rad-danger';
+  const integrityColor =
+    data.colonyIntegrity > 70
+      ? '#4ade80'
+      : data.colonyIntegrity > 35
+      ? '#facc15'
+      : '#f87171';
 
-  const noaaClass =
-    data.noaaScale === 'S0'
-      ? 'noaa-s0'
-      : data.noaaScale === 'S1' || data.noaaScale === 'S2'
-      ? 'noaa-s2'
-      : 'noaa-s4';
+  const timeLeftSec = Math.max(0, 60 - Math.floor(data.currentSecond));
 
   return (
     <div className="solar-storm-view">
-      {/* 1. Cabecera Estilo NASA DONKI Space Weather Monitor */}
-      <div className="solar-storm__header">
-        <div className="solar-storm__header-left">
-          <span className="solar-storm__nasa-badge">🛰️ NASA DONKI SPACE WEATHER</span>
-          <span className="solar-storm__epoch-title">{episode.name}</span>
-        </div>
-        <div className="solar-storm__time-readout">
-          <span className="solar-storm__time-label">⏱️ TIEMPO ACELERADO</span>
-          <span className="solar-storm__time-val">{data.simulatedDateTime}</span>
-        </div>
-      </div>
-
-      {/* 2. Visualizador Heliosférico Canvas */}
+      {/* Zona Jugable de la Base Marciana con HUD Integrado en el Interior */}
       <div className="solar-storm__screen-frame">
         <SolarStormCanvas data={data} />
 
-        {/* Alerta DONKI superpuesta en tiempo real */}
-        {data.activeAlert && !data.activeImpact && (
-          <div className="solar-storm__alert-box">
-            <span className="alert-badge pulse">⚠️ ALERTA NASA DONKI</span>
-            <div className="alert-content">
-              <strong>{data.activeAlert.type} ({data.activeAlert.intensity})</strong>
-              <span>Impacto estimado en Marte: {data.timeToImpactSec.toFixed(1)}s</span>
+        {/* Ticker de Alerta DONKI superpuesto en la parte superior del canvas */}
+        {alertWave && (
+          <div className="solar-storm__alert-ticker">
+            <span className="ticker-badge">⚠️ ALERTA DONKI</span>
+            <span className="ticker-desc">
+              <strong>{alertWave.type} ({alertWave.intensity})</strong> · Sector {alertWave.approachAngleDeg}°
+            </span>
+            <span className="ticker-time">Impacto en {timeToImpact.toFixed(1)}s</span>
+          </div>
+        )}
+
+        {/* HUD de Datos Mínimos Integrado DEBAJO dentro de la Zona Jugable */}
+        <div className="solar-storm__bottom-hud">
+          {/* Vida de la Base */}
+          <div className="hud-metric hud-metric--life">
+            <div className="hud-label-row">
+              <span className="hud-title">❤️ VIDA BASE</span>
+              <span className="hud-value" style={{ color: integrityColor }}>
+                {data.colonyIntegrity}%
+              </span>
+            </div>
+            <div className="hud-bar-track">
+              <div
+                className="hud-bar-fill"
+                style={{
+                  width: `${data.colonyIntegrity}%`,
+                  background: integrityColor,
+                  boxShadow: `0 0 8px ${integrityColor}`,
+                }}
+              />
             </div>
           </div>
-        )}
 
-        {/* Notificación de impacto activo */}
-        {data.activeImpact && (
-          <div className="solar-storm__impact-box">
-            <span className="impact-badge flash">⚡ IMPACTO DE RADIACIÓN EN CURSO</span>
-            <span className="impact-desc">{data.activeImpact.message}</span>
+          {/* Horas / Fecha Simulada NASA y Cuenta Atrás */}
+          <div className="hud-metric hud-metric--clock">
+            <span className="hud-clock-time">{data.simulatedDateTime}</span>
+            <span className="hud-clock-sub">⏱️ RESTANTE: {timeLeftSec}s</span>
           </div>
-        )}
-      </div>
 
-      {/* 3. Panel de Dosimetría y Telemetría Espacial */}
-      <div className="solar-storm__telemetry-grid">
-        <div className="telemetry-card">
-          <span className="card-label">DOSIS ACUMULADA</span>
-          <span className={`card-val ${radClass}`}>{data.totalRadiationDose.toFixed(2)} mSv</span>
-        </div>
-        <div className="telemetry-card">
-          <span className="card-label">TASA INSTANTÁNEA</span>
-          <span className="card-val">{data.currentRadiationRate.toFixed(1)} mSv/h</span>
-        </div>
-        <div className="telemetry-card">
-          <span className="card-label">ESCALA NOAA</span>
-          <span className={`card-val ${noaaClass}`}>{data.noaaScale}</span>
-        </div>
-        <div className="telemetry-card">
-          <span className="card-label">BATERÍA BASE</span>
-          <span className="card-val" style={{ color: data.baseEnergy > 30 ? '#4ade80' : '#f87171' }}>
-            {data.baseEnergy.toFixed(0)} %
-          </span>
-        </div>
-        <div className="telemetry-card">
-          <span className="card-label">TORMENTAS MITIGADAS</span>
-          <span className="card-val" style={{ color: '#38bdf8' }}>
-            {data.mitigatedEventsCount} / {data.totalEventsCount}
-          </span>
-        </div>
-      </div>
-
-      {/* 4. Banner de Evento / Feedback */}
-      <div className="solar-storm__banner">{data.lastEventMessage}</div>
-
-      {/* 5. Controles Táctiles y de Teclado */}
-      <div className="solar-storm__controls-cluster">
-        <button
-          type="button"
-          className={`control-btn shield-btn ${defenses.shield ? 'active' : ''}`}
-          disabled={!isRunning}
-          {...bindAction('shield')}
-        >
-          <span className="btn-icon">🛡️</span>
-          <div className="btn-text">
-            <strong>Deflector Magnético (W / ↑)</strong>
-            <small>Desvía plasma de CME</small>
+          {/* Potencia del Escudo */}
+          <div className="hud-metric hud-metric--shield">
+            <div className="hud-label-row">
+              <span className="hud-title">⚡ POTENCIA ESCUDO</span>
+              <span className="hud-value" style={{ color: data.isBoosting ? '#c084fc' : '#38bdf8' }}>
+                {Math.round(data.boostEnergy)}%
+              </span>
+            </div>
+            <div className="hud-bar-track">
+              <div
+                className={`hud-bar-fill ${data.isBoosting ? 'hud-bar-fill--boosting' : ''}`}
+                style={{
+                  width: `${data.boostEnergy}%`,
+                  background: data.isBoosting ? '#c084fc' : '#38bdf8',
+                  boxShadow: data.isBoosting ? '0 0 10px #c084fc' : '0 0 8px #38bdf8',
+                }}
+              />
+            </div>
           </div>
-        </button>
-
-        <button
-          type="button"
-          className={`control-btn shelter-btn ${defenses.shelter ? 'active' : ''}`}
-          disabled={!isRunning}
-          {...bindAction('shelter')}
-        >
-          <span className="btn-icon">🏰</span>
-          <div className="btn-text">
-            <strong>Búnker Regolito (S / ↓)</strong>
-            <small>Absorbe rayos X de llamaradas</small>
-          </div>
-        </button>
-
-        <button
-          type="button"
-          className={`control-btn panels-btn ${defenses.panelsProtected ? 'active' : ''}`}
-          disabled={!isRunning}
-          {...bindAction('panels')}
-        >
-          <span className="btn-icon">🔋</span>
-          <div className="btn-text">
-            <strong>Proteger Paneles (A / ←)</strong>
-            <small>Repliega fotovoltaica (protones)</small>
-          </div>
-        </button>
-
-        <button
-          type="button"
-          className={`control-btn purge-btn ${defenses.purge ? 'active' : ''}`}
-          disabled={!isRunning}
-          {...bindAction('purge')}
-        >
-          <span className="btn-icon">⚡</span>
-          <div className="btn-text">
-            <strong>Disipar Iones (D / Espacio)</strong>
-            <small>Purga sobretensión post-choque</small>
-          </div>
-        </button>
+        </div>
       </div>
     </div>
   );
