@@ -4,6 +4,7 @@ import './MinigamePresentation.css';
 
 // Phase 2: this component does not create sockets or change phases by itself.
 export default function MinigamePresentation({ game, onReady }: PresentationProps) {
+  if (game.self.health <= 0) return <section className="panel phase-presentation"><h2>Observando la partida</h2><p>Has sido eliminado. Los jugadores vivos están preparando la siguiente misión.</p></section>;
   return (
     <section className="panel phase-presentation">
       <p className="eyebrow">2 · Minigame Briefing</p>
@@ -13,7 +14,7 @@ export default function MinigamePresentation({ game, onReady }: PresentationProp
         {game.self.ready ? 'Waiting for crew…' : 'Got it'}
       </button>
       <p>
-        {game.players.filter(p => p.ready).length}/{game.players.length} ready. The phase also advances when time expires.
+        {game.players.filter(p => p.health > 0 && p.ready).length}/{game.players.filter(p => p.health > 0).length} ready. The phase also advances when time expires.
       </p>
     </section>
   );

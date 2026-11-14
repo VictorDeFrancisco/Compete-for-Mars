@@ -83,7 +83,7 @@ export function createGameServer() {
       requireRule(typeof input.code === 'string', 'Introduce un código de sala.');
       const room = rooms.get(input.code.trim().toUpperCase());
       requireRule(room, 'No existe esa sala.');
-      requireRule(room.phase === 'lobby', 'La ronda está en curso. Espera al lobby.');
+      requireRule(room.phase === 'lobby' && !room.matchFinished, 'La ronda está en curso o la partida ha terminado.');
       requireRule(room.players.length < MAX_PLAYERS, 'La sala está llena.');
       const player = makePlayer(entry, token, socket.id);
       room.players.push(player); room.lastActive = Date.now();
@@ -94,7 +94,7 @@ export function createGameServer() {
     }));
     socket.on('room:add-bots', reply => handle(reply, () => {
       const [room, player] = membership();
-      requireRule(room.phase === 'lobby' && room.hostId === player.id, 'Solo el anfitrión puede añadir bots en el lobby.');
+      requireRule(room.phase === 'lobby' && !room.matchFinished && room.hostId === player.id, 'Solo el anfitrión puede añadir bots en el lobby.');
       fillBots(room); broadcast(room);
     }));
     socket.on('room:remove-player', (id, reply) => handle(reply, () => {
@@ -105,7 +105,7 @@ export function createGameServer() {
     }));
     socket.on('player:ready', (ready, reply) => handle(reply, () => {
       const [room, player] = membership();
-      requireRule(room.phase === 'lobby' && typeof ready === 'boolean', 'Acción inválida en esta fase.');
+      requireRule(room.phase === 'lobby' && !room.matchFinished && player.health > 0 && typeof ready === 'boolean', 'Acción inválida en esta fase.');
       player.ready = ready; broadcast(room);
     }));
     socket.on('game:start', reply => handle(reply, () => {
@@ -113,11 +113,12 @@ export function createGameServer() {
     }));
     socket.on('phase:ready', (action, reply) => handle(reply, () => {
       const [room, player] = membership(); currentPhase(room, 'presentation', action?.phaseId);
+      requireRule(player.health > 0, 'Los jugadores eliminados no participan.');
       player.ready = true; advanceIfComplete(room); broadcast(room);
     }));
     socket.on('card:choose', (action, reply) => handle(reply, () => {
       const [room, player] = membership(); currentPhase(room, 'cards', action?.phaseId);
-      chooseCard(room, player, action?.cardId); advanceIfComplete(room); broadcast(room);
+      chooseCard(room, player, action?.cardId, action?.targetId); advanceIfComplete(room); broadcast(room);
     }));
     socket.on('minigame:submit', (action, reply) => handle(reply, () => {
       const [room, player] = membership(); currentPhase(room, 'playing', action?.phaseId);

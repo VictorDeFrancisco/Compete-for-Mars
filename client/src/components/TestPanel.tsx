@@ -1,3 +1,5 @@
+import previewCards from '../../../server/data/boardSlots.json';
+import type { Card } from '../../../shared/types';
 import { useState } from 'react';
 import { MINIGAMES } from '../../../shared/minigames/catalog';
 import type { GameView, Phase } from '../../../shared/types';
@@ -84,11 +86,7 @@ export function buildPreviewGame(
       score: null,
       result: null,
     },
-    cards: [
-      { id: 'rest', title: 'Rest', description: 'Recover 2 energy.', effect: { energy: 2 } },
-      { id: 'supplies', title: 'Gather Rations', description: 'Gain 2 food and spend 1 energy.', effect: { food: 2, energy: -1 } },
-      { id: 'expedition', title: 'Expedition', description: 'Gain 3 food, spend 2 energy, and gain 1 radiation.', effect: { food: 3, energy: -2, radiation: 1 } },
-    ],
+    cards: (previewCards as Card[]).filter(card => ['rest', 'sabotage', 'expedition'].includes(card.id)),
     minigame,
     lastResults: [
       {

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_STATS } from '../shared/constants';
-import { advanceIfComplete, chooseCard, currentPhase, makePlayer, makeRoom, startRound, submitResult, validateEntry, viewFor, RESULT_GRACE_MS } from './gameEngine';
+import { CARDS, advanceIfComplete, chooseCard, currentPhase, makePlayer, makeRoom, startRound, submitResult, validateEntry, viewFor, RESULT_GRACE_MS } from './gameEngine';
 import { timeoutResult } from '../shared/minigames/ranking';
 
 const player = (name: string) => makePlayer({ name, stats: { ...DEFAULT_STATS } }, `secret-token-${name}`, 'socket-' + name);
@@ -23,7 +23,9 @@ test('ciclo completo, acciones una sola vez y recursos privados', () => {
   a.ready = b.ready = true; advanceIfComplete(room, 1);
   assert.equal(room.phase, 'cards');
   assert.throws(() => currentPhase(room, 'cards', oldPhaseId));
-  chooseCard(room, a, 'expedition'); chooseCard(room, b, 'rest');
+  room.cards = ['eat', 'rest', 'expedition'].map(id => CARDS.find(c => c.id === id)!);
+  a.resources.food = 60; a.resources.energy = 50;
+  chooseCard(room, a, 'eat'); chooseCard(room, b, 'rest');
   assert.throws(() => chooseCard(room, a, 'rest'));
   const view = viewFor(room, a);
   assert.equal('token' in view.self, false);
@@ -33,8 +35,8 @@ test('ciclo completo, acciones una sola vez y recursos privados', () => {
   }
   advanceIfComplete(room, 2); assert.equal(room.phase, 'playing');
   assert.equal(a.resources.food, 100);
-  assert.equal(a.resources.energy, 98);
-  assert.equal(a.resources.radiation, 1);
+  assert.equal(a.resources.energy, 50);
+  assert.equal(a.resources.radiation, 0);
   const result = timeoutResult(room.minigame);
   assert.throws(() => submitResult(room, a, { ...result, score: Infinity }));
   assert.throws(() => submitResult(room, a, { ...result, score: 101 }));
@@ -44,35 +46,31 @@ test('ciclo completo, acciones una sola vez y recursos privados', () => {
   advanceIfComplete(room, 3);
   assert.equal(room.phase, 'lobby'); assert.equal(b.health, 90);
   assert.equal(a.resources.food, 100);
-  assert.equal(a.resources.energy, 100);
+  assert.equal(a.resources.energy, 52);
   assert.equal(room.lastResults.find(result => result.playerId === a.id)?.outcome, 'winner');
   assert.equal(a.ready, false); assert.equal(room.lastResults.length, 2);
   a.ready = b.ready = true; startRound(room, a, 4); assert.equal(room.round, 2);
 });
-test('radiation starts at 0 and has no upper limit', () => {
+test('radiation starts at 0, is uncapped and deals 5 health per unit at round end', () => {
   const a = player('Ana');
-  assert.equal(a.resources.energy, 100);
-  assert.equal(a.resources.food, 100);
-  assert.equal(a.resources.radiation, 0);
+  assert.equal(a.resources.energy, 100); assert.equal(a.resources.food, 100); assert.equal(a.resources.radiation, 0);
   const room = makeRoom('RAD001', a, 0);
-  for (let round = 0; round < 12; round++) {
-    a.ready = true;
-    startRound(room, a, round * 10);
-    a.ready = true;
-    advanceIfComplete(room, round * 10 + 1);
-    chooseCard(room, a, 'expedition');
-    advanceIfComplete(room, round * 10 + 2);
-    submitResult(room, a, timeoutResult(room.minigame));
-    advanceIfComplete(room, round * 10 + 3);
-  }
-  assert.equal(a.resources.radiation, 12);
+  a.ready = true; startRound(room, a, 0);
+  a.ready = true; advanceIfComplete(room, 1);
+  a.resources.radiation = 12;
+  room.cards = ['rest', 'eat', 'expedition'].map(id => CARDS.find(c => c.id === id)!);
+  chooseCard(room, a, 'rest'); advanceIfComplete(room, 2);
+  assert.equal(a.health, 100);
+  submitResult(room, a, timeoutResult(room.minigame)); advanceIfComplete(room, 3);
+  assert.equal(a.resources.radiation, 12); assert.equal(a.health, 40);
 });
+
 test('los tiempos límite completan elecciones y resultados ausentes', () => {
   const a = player('Ana'); const room = makeRoom('ABC123', a, 0);
   a.ready = true; startRound(room, a, 0);
   advanceIfComplete(room, room.deadline!); assert.equal(room.phase, 'cards');
   advanceIfComplete(room, room.deadline!); assert.equal(room.phase, 'playing');
-  assert.equal(a.selectedCardId, 'rest');
+  assert.ok(a.selectedCardId === 'rest' || a.selectedCardId === 'eat');
   advanceIfComplete(room, room.deadline!); assert.equal(room.phase, 'playing');
   advanceIfComplete(room, room.deadline! + RESULT_GRACE_MS); assert.equal(room.phase, 'lobby');
   assert.equal(room.lastResults[0].score, 0);

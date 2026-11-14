@@ -97,7 +97,7 @@ export default function App() {
               {phase === 'cards' && (
                 <CardSelection
                   game={game}
-                  onChoose={cardId => act(reply => socket.emit('card:choose', { phaseId: game.phaseId, cardId }, reply))}
+                  onChoose={(cardId, targetId) => act(reply => socket.emit('card:choose', { phaseId: game.phaseId, cardId, targetId }, reply))}
                 />
               )}
               {phase === 'playing' && (

@@ -1,5 +1,6 @@
+import { cardUnavailable } from './cards';
 import { CARDS_MS, DEFAULT_STATS, MAX_PLAYERS, PRESENTATION_MS } from '../shared/constants';
-import { CARDS, chooseCard, makePlayer, submitResult, type Room } from './gameEngine';
+import { chooseCard, makePlayer, submitResult, type Room } from './gameEngine';
 export function fillBots(room: Room) {
   while (room.players.length < MAX_PLAYERS) {
     room.players.push(makePlayer({ name: `Bot ${room.players.length}`, stats: { ...DEFAULT_STATS } }, '', null, true));
@@ -10,9 +11,12 @@ export function playBots(room: Room, now: number): boolean {
   const duration = room.phase === 'playing' ? room.minigame.durationMs : room.phase === 'cards' ? CARDS_MS : PRESENTATION_MS;
   if (now < room.deadline - duration + 1200) return false;
   let changed = false;
-  for (const player of room.players.filter(p => p.isBot)) {
+  for (const player of room.players.filter(p => p.isBot && p.health > 0)) {
     if (room.phase === 'cards' && !player.hasChosenCard) {
-      chooseCard(room, player, CARDS[Math.floor(Math.random() * CARDS.length)].id); changed = true;
+      const cards = room.cards.filter(card => !cardUnavailable(player, card));
+      const card = cards[Math.floor(Math.random() * cards.length)];
+      const targets = room.players.filter(p => p.id !== player.id && p.health > 0);
+      chooseCard(room, player, card.id, card.targetRequired ? targets[Math.floor(Math.random() * targets.length)].id : undefined); changed = true;
     }
     if (room.phase === 'playing' && !player.hasSubmitted) {
       const completed = room.minigame.mode === 'race' && Math.random() > 0.2;

@@ -60,8 +60,9 @@ export default function Lobby({
 
   const host = game.hostId === game.self.id;
   const nextLevel = game.round + 1;
-  const readyCount = game.players.filter(p => p.ready).length;
-  const allReady = game.players.every(p => p.ready && p.connected);
+  const alive = game.players.filter(p => p.health > 0);
+  const readyCount = alive.filter(p => p.ready).length;
+  const allReady = !game.matchFinished && alive.length > 0 && alive.every(p => p.ready && p.connected);
   const otherPlayers = game.players.filter(p => p.id !== game.self.id);
 
   return (
@@ -75,7 +76,7 @@ export default function Lobby({
             <div className="lobby-hud__title-row">
               <strong>Room {game.code}</strong>
               <span className={`lobby-hud__pill ${allReady ? 'lobby-hud__pill--all' : ''}`.trim()}>
-                {readyCount}/{game.players.length} ready
+                {readyCount}/{alive.length} ready
               </span>
             </div>
             <span className="lobby-hud__drag-hint">Drag background to orbit base · Scroll to zoom</span>
@@ -105,6 +106,11 @@ export default function Lobby({
               </span>
             </div>
 
+            {game.matchFinished && <p role="status">{game.winnerId ? `Partida terminada. Gana ${game.players.find(p => p.id === game.winnerId)?.name ?? 'el último superviviente'}.` : 'Partida terminada. No quedan supervivientes.'}</p>}
+            {game.self.health <= 0 && <p role="status">Has sido eliminado. Puedes observar la partida.</p>}
+            {game.self.cardOutcome && <p>{game.self.cardOutcome.summary}</p>}
+            {game.self.protection?.radiationShield && <p>Escudo antirradiación activo.</p>}
+            {game.self.protection?.reinforcedSuit && <p>Traje reforzado activo.</p>}
             <div className="lobby-stat-row">
               <div className="lobby-stat-row__label">
                 <span>Health</span>
@@ -207,10 +213,10 @@ export default function Lobby({
               <button
                 type="button"
                 className={`lobby-actions__ready ${game.self.ready ? 'secondary' : ''}`.trim()}
-                disabled={disabled}
+                disabled={disabled || game.self.health <= 0 || game.matchFinished}
                 onClick={onReady}
               >
-                {game.self.ready ? 'Cancel ready' : `Ready for Level ${nextLevel}`}
+                {game.self.health <= 0 ? 'Eliminado' : game.matchFinished ? 'Partida terminada' : game.self.ready ? 'Cancel ready' : `Ready for Level ${nextLevel}`}
               </button>
 
               {host ? (
@@ -218,7 +224,7 @@ export default function Lobby({
                   <button
                     type="button"
                     className="secondary"
-                    disabled={disabled || game.players.length >= 4}
+                    disabled={disabled || game.matchFinished || game.players.length >= 4}
                     onClick={onBots}
                   >
                     + Bots

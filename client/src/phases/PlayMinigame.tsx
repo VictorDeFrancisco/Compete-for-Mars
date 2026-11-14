@@ -17,6 +17,8 @@ export default function PlayMinigame({ game, onSubmit }: MinigameProps) {
     },
   };
 
+  if (game.self.health <= 0) return <section className="panel phase-playing"><h2>Has sido eliminado</h2><p>Observando a la tripulación. La ronda continúa para los jugadores vivos.</p></section>;
+
   if (game.minigame.id === 'pipes') return <section className="phase-playing">
     <PipesSceneProvider crew={game.players.map(player => ({ ...player, isSelf: player.id === game.self.id }))}>
       <MinigameWrapper definition={game.minigame} context={minigameContext} initialElapsedMs={initialElapsed.current} onResult={onSubmit} />
@@ -27,6 +29,7 @@ export default function PlayMinigame({ game, onSubmit }: MinigameProps) {
     <section className="panel phase-playing">
       <p className="eyebrow">4 · Play Minigame</p>
       <h2>{game.minigame.title}</h2>
+      {game.self.cardOutcome && <p role="status">{game.self.cardOutcome.summary}</p>}
       {game.self.hasSubmitted ? (
         <p>Result submitted: {game.self.score} points. Waiting for others…</p>
       ) : (
