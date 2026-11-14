@@ -61,14 +61,14 @@ El servidor envía `game:state` después de cada cambio relevante. Un desconecta
 
 ## Reglas provisionales, no diseño definitivo
 
-- Estadísticas: repartir 6 puntos enteros entre energía, comida y blindaje, de 0 a 4 por atributo. Blindaje todavía no tiene efecto.
-- Energía/comida iniciales: 100. Recursos limitados entre 0 y 100; la fase del minijuego los convierte al contexto local 0–10. Radiación inicial: 0, sin límite superior.
+- Estadísticas: 30 puntos entre energía, comida y vida, según las profesiones. Cada valor inicial y máximo es 100 más su bonificación de profesión. Se elimina el atributo blindaje conforme a `main`.
+- Comida y energía se limitan al máximo de cada profesión; la fase del minijuego los convierte al contexto local 0–10. Radiación inicial: 0, sin límite superior.
 - Tres cartas distintas por ronda procedentes de `server/data/boardSlots.json`, con resolución simultánea, objetivos, conflictos, azar y protecciones. Ver [reglas y valores provisionales de cartas](CARTAS.md).
 - Catálogo de minijuegos en `shared/minigames/catalog.ts`, con modo, controles, presentación y recompensas declarativas.
 - Prueba por puntos y carrera de secuencia como ejemplos; la clase base termina automáticamente al vencer el tiempo y el wrapper envía el resultado.
 - El servidor clasifica según puntos o tiempo/progreso, y aplica premio de recursos al ganador y daño al perdedor según cada definición. Los puestos intermedios son neutrales. Los empates y la prueba individual están descritos en `MINIJUEGOS.md`.
-- La vida queda entre 0 y 100. Al final de cada ronda la radiación quita 5 de vida por unidad, salvo protección de traje. A 0 de vida se pasa a observador. En multijugador gana el último superviviente. `GameView.matchFinished` y `winnerId` comunican el final; la elección, el objetivo, `protection` y `cardOutcome` solo aparecen en `self`. Comida y energía se entregan al minijuego mediante un contexto inmutable, con modificadores comunes; cada implementación aplica sus desventajas (ver MINIJUEGOS.md).
-- Se ha retirado el consumo fijo de energía y comida al terminar un minijuego; se aplican sus cambios configurados, sujetos a los límites globales.
+- La vida queda entre 0 y el máximo de profesión. Al final de cada ronda la radiación quita 5 de vida por unidad, salvo protección de traje. A 0 de vida se pasa a observador. En multijugador gana el último superviviente; si todos mueren al final del minijuego, se conserva el desempate de `main` por clasificación. `GameView.matchFinished` y `winnerId` comunican el final; la elección, el objetivo, `protection` y `cardOutcome` solo aparecen en `self`. Comida y energía se entregan al minijuego mediante un contexto inmutable, con modificadores comunes; cada implementación aplica sus desventajas (ver MINIJUEGOS.md).
+- Se conservan las reglas de supervivencia de `main`: gasto fijo de 5 de comida y 5 de energía, premio inicial de 20 del recurso principal con reducción de 2 por ronda posterior, daño del último de `ronda × (muertes previas + 1)` y 10 de daño por cada reserva vacía. El sorteo evita repetir minijuego sin al menos dos intermedios.
 - El resultado se comunica desde el cliente: el servidor valida ID, coherencia, límites, fase y entrega única, pero esto todavía no es un sistema contra trampas.
 
 La base permite organizar las tareas; no fija el lore ni sustituye las ideas de `Ideas.txt`.

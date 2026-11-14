@@ -1,5 +1,5 @@
 export type Phase = 'stats' | 'lobby' | 'presentation' | 'cards' | 'playing';
-export interface Stats { energy: number; food: number; shielding: number }
+export interface Stats { energy: number; food: number; health: number }
 export interface Resources { energy: number; food: number; radiation: number }
 export type CardKind = 'rest' | 'eat' | 'expedition' | 'decontamination' | 'radiation-shield' | 'reinforced-suit'
   | 'recycle-food' | 'recycle-energy' | 'sabotage' | 'supply-theft' | 'dust-storm' | 'ice-cave'
@@ -33,6 +33,7 @@ export interface PublicPlayer {
   id: string;
   name: string;
   health: number;
+  maxHealth: number;
   isBot: boolean;
   connected: boolean;
   ready: boolean;

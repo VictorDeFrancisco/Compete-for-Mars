@@ -205,3 +205,41 @@ test('a death from a card ends a duel immediately and eliminated observers never
   p.slice(1).forEach(q => chooseCard(room, q, fallback.id)); advanceIfComplete(room, 6);
   assert.equal(room.phase, 'playing'); assert.throws(() => submitResult(room, p[0], timeoutResult(room.minigame)));
 });
+
+test('card gains, recycling and theft respect profession caps above 100', () => {
+  const { room, players: p } = fixture(3, ['emergency-landing', 'recycle-food', 'supply-theft']);
+  p[0].stats = { energy: 30, food: 0, health: 0 }; p[0].resources.energy = 110;
+  p[1].stats = { energy: 0, food: 30, health: 0 }; p[1].resources.food = 110;
+  p[2].stats = { energy: 0, food: 30, health: 0 }; p[2].resources.food = 110;
+  chooseCard(room, p[0], 'emergency-landing'); chooseCard(room, p[1], 'recycle-food'); chooseCard(room, p[2], 'supply-theft');
+  resolveCards(room);
+  assert.equal(p[0].resources.energy, 130);
+  assert.equal(p[1].resources.food, 95); // 110 + 15 recycling - 30 stolen.
+  assert.equal(p[2].resources.food, 130); // 110 + 30 stolen, capped by profession.
+});
+
+test('exchange respects the recipient profession cap and cave damage preserves health above 100', () => {
+  const { room, players: p } = fixture(2, ['exchange', 'rest', 'eat']);
+  p[0].stats = { energy: 30, food: 0, health: 0 }; p[0].resources.energy = 130; p[0].resources.food = 40;
+  p[1].stats = { energy: 0, food: 30, health: 0 }; p[1].resources.energy = 40; p[1].resources.food = 130;
+  p.forEach(q => chooseCard(room, q, 'exchange')); resolveCards(room);
+  assert.deepEqual(p.map(q => [q.resources.energy, q.resources.food]), [[40, 100], [100, 40]]);
+  const cave = fixture(1, ['ice-cave', 'rest', 'eat']);
+  cave.players[0].stats = { energy: 0, food: 0, health: 30 }; cave.players[0].health = cave.players[0].maxHealth = 130;
+  chooseCard(cave.room, cave.players[0], 'ice-cave'); resolveCards(cave.room, () => .99);
+  assert.equal(cave.players[0].health, 110);
+});
+
+test('reinforced suit preserves the upkeep, empty-resource damage and last-place penalty from main', () => {
+  const { room, players: p } = fixture(2, ['reinforced-suit', 'rest', 'eat']);
+  room.minigame = { ...room.minigame, rewards: { ...room.minigame.rewards, winner: { resources: { energy: 20 } } } };
+  room.round = 5;
+  p[0].health = 100; p[0].resources = { energy: 0, food: 0, radiation: 2 };
+  chooseCard(room, p[0], 'reinforced-suit'); chooseCard(room, p[1], 'rest'); advanceIfComplete(room, 2);
+  const result = timeoutResult(room.minigame);
+  submitResult(room, p[0], { ...result, score: 0 }); submitResult(room, p[1], { ...result, score: room.minigame.maxScore }); advanceIfComplete(room, 3);
+  assert.equal(p[0].health, 75); // -5 last place, -10 empty food, -10 empty energy; radiation blocked.
+  assert.equal(p[0].protection.reinforcedSuit, false);
+  assert.equal(p[0].resources.radiation, 2);
+  assert.equal(p[1].resources.food, 35); // Main's -5 upkeep survives card integration.
+});

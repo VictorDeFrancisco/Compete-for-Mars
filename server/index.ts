@@ -105,7 +105,7 @@ export function createGameServer() {
     }));
     socket.on('player:ready', (ready, reply) => handle(reply, () => {
       const [room, player] = membership();
-      requireRule(room.phase === 'lobby' && !room.matchFinished && player.health > 0 && typeof ready === 'boolean', 'Acción inválida en esta fase.');
+      requireRule(room.phase === 'lobby' && !room.matchFinished && typeof ready === 'boolean' && player.health > 0, 'Acción inválida en esta fase.');
       player.ready = ready; broadcast(room);
     }));
     socket.on('game:start', reply => handle(reply, () => {
@@ -113,8 +113,8 @@ export function createGameServer() {
     }));
     socket.on('phase:ready', (action, reply) => handle(reply, () => {
       const [room, player] = membership(); currentPhase(room, 'presentation', action?.phaseId);
-      requireRule(player.health > 0, 'Los jugadores eliminados no participan.');
-      player.ready = true; advanceIfComplete(room); broadcast(room);
+      if (player.health > 0) player.ready = true;
+      advanceIfComplete(room); broadcast(room);
     }));
     socket.on('card:choose', (action, reply) => handle(reply, () => {
       const [room, player] = membership(); currentPhase(room, 'cards', action?.phaseId);

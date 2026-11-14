@@ -1,10 +1,10 @@
 import definitions from './data/boardSlots.json';
+import { clamp, clampPlayerResource, maxHealthFor } from './playerLimits';
 import type { Card, Resources } from '../shared/types';
 import type { Player, Room } from './gameEngine';
 
 export const CARD_CATALOG = definitions as Card[];
 const resourceKeys = ['food', 'energy', 'radiation'] as const;
-const bounded = (n: number) => Math.max(0, Math.min(100, n));
 const ordered = (players: readonly Player[]) => [...players].sort((a, b) => a.id.localeCompare(b.id));
 function shuffled<T>(items: readonly T[], random: () => number): T[] {
   const result = [...items];
@@ -40,13 +40,13 @@ export function applyResourceEffect(player: Player, effect: Partial<Resources>):
     if (key === 'radiation') {
       if (amount > 0) receiveRadiation(player, amount);
       else player.resources.radiation = Math.max(0, player.resources.radiation + amount);
-    } else player.resources[key] = bounded(player.resources[key] + amount);
+    } else player.resources[key] = clampPlayerResource(player, key, player.resources[key] + amount);
   }
 }
-export function radiationDamage(player: Player): number {
+export function radiationDamage(player: Player, damagePerUnit = 5): number {
   if (player.health <= 0 || player.resources.radiation <= 0) return 0;
   if (player.protection.reinforcedSuit) { player.protection.reinforcedSuit = false; return 0; }
-  const damage = Math.min(player.health, player.resources.radiation * 5);
+  const damage = Math.min(player.health, player.resources.radiation * damagePerUnit);
   player.health -= damage;
   return damage;
 }
@@ -75,7 +75,11 @@ export function resolveCards(room: Room, random = Math.random): void {
   const traders = shuffled(selected('exchange'), random);
   const inventories = traders.map(p => ({ food: p.resources.food, energy: p.resources.energy }));
   traders.forEach((p, i) => {
-    if (traders.length > 1) Object.assign(p.resources, inventories[(i + 1) % traders.length]);
+    if (traders.length > 1) {
+      const incoming = inventories[(i + 1) % traders.length];
+      p.resources.food = clampPlayerResource(p, 'food', incoming.food);
+      p.resources.energy = clampPlayerResource(p, 'energy', incoming.energy);
+    }
     note(p, traders.length > 1 ? 'Has intercambiado tus reservas.' : 'Nadie más ha elegido intercambiar.');
   });
   for (const p of players) {
@@ -98,7 +102,7 @@ export function resolveCards(room: Room, random = Math.random): void {
       if (random() < chance) { affect(p, card.effect); note(p, 'La misión ha tenido éxito.'); }
       else {
         const failure = kind === 'dust-storm' ? (random() < .5 ? { food: card.rules.failure?.food } : { energy: card.rules.failure?.energy }) : (card.rules.failure ?? {});
-        affect(p, failure); p.health = bounded(p.health + (card.rules.failureHealth ?? 0));
+        affect(p, failure); p.health = clamp(p.health + (card.rules.failureHealth ?? 0), 0, maxHealthFor(p));
         note(p, 'La misión ha fracasado.');
       }
     } else if (['recycle-food', 'recycle-energy', 'emergency-landing'].includes(kind)) {
@@ -148,7 +152,7 @@ export function resolveCards(room: Room, random = Math.random): void {
     });
   }
   for (const p of players) {
-    p.resources.food = bounded(p.resources.food + credits.get(p.id)!);
+    p.resources.food = clampPlayerResource(p, 'food', p.resources.food + credits.get(p.id)!);
     const old = before.get(p.id)!;
     p.cardOutcome = { round: room.round, cardId: p.selectedCardId!, summary: notes.get(p.id)!.join(' '),
       healthDelta: p.health - old.health,

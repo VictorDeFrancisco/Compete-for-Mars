@@ -9,6 +9,7 @@ import {
 } from './MarsRoverEngine';
 import { MAP_SIZE, calculateMarsCoordinates } from './jezeroMapData';
 import { fetchNasaMarsTelemetry } from './nasaMarsApi';
+import { ROVER_GLB_GEOMETRY } from './roverModelData';
 import './MarsRoverGame.css';
 
 export { MarsRoverGame, type MarsRoverData };
@@ -80,10 +81,12 @@ attribute vec3 a_position;
 attribute vec3 a_normal;
 attribute float a_elevation;
 attribute vec2 a_texCoord;
+attribute vec3 a_color;
 
 uniform mat4 u_matrix;
 uniform vec3 u_customColor;
 uniform float u_useCustomColor;
+uniform float u_useVertexColor;
 
 varying vec3 v_normal;
 varying float v_elevation;
@@ -98,7 +101,9 @@ void main() {
   v_worldPos = a_position;
   v_texCoord = a_texCoord;
 
-  if (u_useCustomColor > 0.5) {
+  if (u_useVertexColor > 0.5) {
+    v_color = a_color;
+  } else if (u_useCustomColor > 0.5) {
     v_color = u_customColor;
   } else {
     v_color = vec3(0.0);
@@ -117,41 +122,59 @@ varying float v_elevation;
 uniform vec3 u_camPos;
 uniform sampler2D u_nasaTexture;
 uniform float u_useCustomColor;
+uniform float u_useVertexColor;
 
 void main() {
-  vec3 sunDir = normalize(vec3(0.42, 0.84, -0.36));
-  float diff = max(0.28, dot(v_normal, sunDir));
-  vec3 ambient = vec3(0.18, 0.09, 0.05);
+  vec3 sunDir = normalize(vec3(0.42, 0.82, -0.38));
+  vec3 ambient = vec3(0.19, 0.11, 0.07);
 
   vec3 surfaceColor;
-  if (u_useCustomColor > 0.5) {
+  vec3 norm = normalize(v_normal);
+
+  if (u_useVertexColor > 0.5 || u_useCustomColor > 0.5) {
     surfaceColor = v_color;
   } else {
     // 1. Textura satelital real de la NASA (Mosaico Viking MDIM 2.1 / Mars Trek)
     vec4 satColor = texture2D(u_nasaTexture, v_texCoord);
-    vec3 baseMars = vec3(0.74, 0.38, 0.18);
-    if (satColor.a > 0.05) {
-      baseMars = satColor.rgb;
-    }
+    vec3 baseMars = satColor.a > 0.05 ? satColor.rgb : vec3(0.74, 0.38, 0.18);
 
-    // 2. Micro-textura añadida: Grano fino de regolito marciano y ondas eólicas de arena
-    float grain1 = sin(v_worldPos.x * 3.4 + v_worldPos.z * 2.2) * cos(v_worldPos.x * 1.9 - v_worldPos.z * 2.8);
-    float grain2 = sin(v_worldPos.x * 8.2 + v_worldPos.z * 7.5) * 0.5 + 0.5;
-    float ripples = sin((v_worldPos.x * 0.55 + v_worldPos.z * 0.45) * 3.8) * 0.08;
-    float regolithGrain = 1.0 + (grain1 * 0.08) + (grain2 * 0.06) + ripples;
+    // 2. Micro-relieve y ondas eólicas de arena (normal perturbation dinámica)
+    float rippleFreq = 3.6;
+    float rx = v_worldPos.x * 0.82 + v_worldPos.z * 0.58;
+    float rippleWave = sin(rx * rippleFreq);
+    float rippleSlope = cos(rx * rippleFreq) * 0.15;
+    
+    // Perturbar suavemente la normal para crear sombras físicas en las ondulaciones del suelo
+    norm = normalize(v_normal + vec3(rippleSlope * 0.82, 0.0, rippleSlope * 0.58));
 
-    // 3. Matiz mineral geológico sutil por cota (SIN líneas blancas de ningún tipo)
-    float elevNorm = clamp((v_elevation + 5.0) / 20.0, 0.0, 1.0);
-    vec3 mineralTint = mix(vec3(0.80, 0.60, 0.48), vec3(1.18, 0.98, 0.88), elevNorm);
-    surfaceColor = baseMars * regolithGrain * mineralTint;
+    // 3. Textura procedural multicapa de grano de regolito marciano
+    float grain1 = sin(v_worldPos.x * 3.4 + v_worldPos.z * 2.2) * cos(v_worldPos.x * 2.1 - v_worldPos.z * 2.9);
+    float grain2 = sin(v_worldPos.x * 9.5 + v_worldPos.z * 8.8) * 0.5 + 0.5;
+    float regolithGrain = 1.0 + (grain1 * 0.07) + (grain2 * 0.05) + (rippleWave * 0.06);
+
+    // 4. Matiz mineral geológico enriquecido por cota y composición ferruginosa
+    float elevNorm = clamp((v_elevation + 6.0) / 22.0, 0.0, 1.0);
+    vec3 ferricRust = vec3(0.78, 0.36, 0.17);
+    vec3 ochreDunes = vec3(0.88, 0.52, 0.25);
+    vec3 basaltRock = vec3(0.48, 0.26, 0.18);
+    vec3 mineralTint = mix(basaltRock, mix(ferricRust, ochreDunes, elevNorm), elevNorm * 0.8 + 0.2);
+
+    surfaceColor = baseMars * regolithGrain * mineralTint * 1.35;
   }
 
-  vec3 finalColor = surfaceColor * diff + ambient;
+  float diff = max(0.24, dot(norm, sunDir));
+
+  // Brillo especular mineral para arena y regolito marciano
+  vec3 viewDir = normalize(u_camPos - v_worldPos);
+  vec3 halfDir = normalize(sunDir + viewDir);
+  float spec = pow(max(0.0, dot(norm, halfDir)), 18.0) * 0.12;
+
+  vec3 finalColor = surfaceColor * diff + ambient + vec3(spec);
 
   // Bruma atmosférica de polvo de Marte en la distancia
-  vec3 marsAtmosphere = vec3(0.84, 0.54, 0.38);
+  vec3 marsAtmosphere = vec3(0.82, 0.50, 0.35);
   float distToCam = length(v_worldPos - u_camPos);
-  float fogFactor = clamp((distToCam - 28.0) / 145.0, 0.0, 0.82);
+  float fogFactor = clamp((distToCam - 32.0) / 140.0, 0.0, 0.80);
 
   gl_FragColor = vec4(mix(finalColor, marsAtmosphere, fogFactor), 1.0);
 }
@@ -202,12 +225,27 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
   const rover = engine as MarsRoverGame;
   const { data, status } = snapshot;
   const isRunning = status === 'running';
+  const isGameOver = status === 'finished' || snapshot.result !== null;
+  const isMissionCompleted = snapshot.result?.completed ?? false;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const programRef = useRef<WebGLProgram | null>(null);
   const glTextureRef = useRef<WebGLTexture | null>(null);
   const textureImgRef = useRef<HTMLImageElement | null>(null);
   const [textureVersion, setTextureVersion] = useState(0);
+
+  // Animación continua de la cámara orbital cenital al finalizar la misión
+  const [animTick, setAnimTick] = useState(0);
+  useEffect(() => {
+    if (!isGameOver) return;
+    let frameId: number;
+    const loop = () => {
+      setAnimTick(t => (t + 1) % 100000);
+      frameId = requestAnimationFrame(loop);
+    };
+    frameId = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(frameId);
+  }, [isGameOver]);
 
   // Carga de la imagen satelital real de la NASA desde assets locales
   useEffect(() => {
@@ -330,11 +368,13 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
     const aNormLoc = gl.getAttribLocation(program, 'a_normal');
     const aElevLoc = gl.getAttribLocation(program, 'a_elevation');
     const aTexCoordLoc = gl.getAttribLocation(program, 'a_texCoord');
+    const aColorLoc = gl.getAttribLocation(program, 'a_color');
 
     const uMatrixLoc = gl.getUniformLocation(program, 'u_matrix');
     const uCamPosLoc = gl.getUniformLocation(program, 'u_camPos');
     const uCustomColorLoc = gl.getUniformLocation(program, 'u_customColor');
     const uUseCustomColorLoc = gl.getUniformLocation(program, 'u_useCustomColor');
+    const uUseVertexColorLoc = gl.getUniformLocation(program, 'u_useVertexColor');
     const uNasaTexLoc = gl.getUniformLocation(program, 'u_nasaTexture');
 
     // Gestión segura de la textura WebGL
@@ -366,7 +406,7 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
     gl.bindTexture(gl.TEXTURE_2D, glTextureRef.current);
     gl.uniform1i(uNasaTexLoc, 0);
 
-    // 2. Cámara Orbital de Seguimiento Dinámico
+    // 2. Cámara Orbital de Seguimiento Dinámico (con elevación cenital en 360° al terminar la partida)
     const aspect = canvas.width / canvas.height;
     const projMat = mat4Perspective(mat4Create(), (48 * Math.PI) / 180, aspect, 1.0, 600.0);
 
@@ -377,23 +417,41 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
     const ufX = Math.sin(headingRad);
     const ufZ = -Math.cos(headingRad);
 
-    const camDist = 26.0;
-    const camHeight = 22.0;
-    const eyeX = roverX - ufX * camDist;
-    const eyeY = groundZ + camHeight;
-    const eyeZ = roverY - ufZ * camDist;
-    const targetX = roverX + ufX * 10.0;
-    const targetY = groundZ + 1.5;
-    const targetZ = roverY + ufZ * 10.0;
+    const isGameOver = status === 'finished' || snapshot.result !== null;
+    let camDist = 26.0;
+    let camHeight = 22.0;
+    let lookTargetX = roverX + ufX * 10.0;
+    let lookTargetY = groundZ + 1.5;
+    let lookTargetZ = roverY + ufZ * 10.0;
+
+    let eyeX = roverX - ufX * camDist;
+    let eyeY = groundZ + camHeight;
+    let eyeZ = roverY - ufZ * camDist;
+
+    if (isGameOver) {
+      // Cámara elevada cinematográfica en 360° orbitando sobre el rover
+      const orbitSpeed = 0.0007;
+      const angle = headingRad + (Date.now() * orbitSpeed) % (Math.PI * 2);
+      camDist = 26.0;
+      camHeight = 24.0;
+      eyeX = roverX - Math.sin(angle) * camDist;
+      eyeY = groundZ + camHeight;
+      eyeZ = roverY + Math.cos(angle) * camDist;
+      lookTargetX = roverX;
+      lookTargetY = groundZ + 1.2;
+      lookTargetZ = roverY;
+    }
 
     const viewMat = mat4Create();
-    mat4LookAt(viewMat, [eyeX, eyeY, eyeZ], [targetX, targetY, targetZ], [0, 1, 0]);
+    mat4LookAt(viewMat, [eyeX, eyeY, eyeZ], [lookTargetX, lookTargetY, lookTargetZ], [0, 1, 0]);
     const vpMat = mat4Multiply(mat4Create(), projMat, viewMat);
 
     // Renderizar Terreno Marciano con textura satelital y micro-relieve
     gl.uniformMatrix4fv(uMatrixLoc, false, vpMat);
     gl.uniform3f(uCamPosLoc, eyeX, eyeY, eyeZ);
     gl.uniform1f(uUseCustomColorLoc, 0.0);
+    gl.uniform1f(uUseVertexColorLoc, 0.0);
+    gl.disableVertexAttribArray(aColorLoc);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
     gl.vertexAttribPointer(aPosLoc, 3, gl.FLOAT, false, 0, 0);
@@ -414,25 +472,124 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
 
-    // 3. Renderizar Baliza Objetivo B (Pilar holográfico verde fluorescente)
+    // 3. Renderizar Rocas y Peñascos Marcianos (Obstáculos Físicos 3D con sombreado faceted)
     gl.disableVertexAttribArray(aTexCoordLoc);
     gl.vertexAttrib2f(aTexCoordLoc, 0, 0);
     gl.disableVertexAttribArray(aElevLoc);
     gl.vertexAttrib1f(aElevLoc, 0);
-    gl.disableVertexAttribArray(aNormLoc);
-    gl.vertexAttrib3f(aNormLoc, 0, 1, 0);
+
+    const rockVerts: number[] = [];
+    const rockNorms: number[] = [];
+    const rockColors: number[] = [];
+
+    for (const rock of sector.rocks) {
+      const zBase = sector.elevationAt(rock.x, rock.y);
+      const N = 8;
+      const ringVerts: Array<[number, number, number]> = [];
+
+      for (let k = 0; k < N; k++) {
+        const angle = rock.rotation + (k * Math.PI * 2) / N;
+        const rDist = rock.radius * (0.82 + 0.36 * Math.sin(k * 2.7 + rock.shapeSeed * 5.0));
+        const hOffset = rock.height * 0.42 * (0.75 + 0.35 * Math.cos(k * 2.1));
+        const px = rock.x + Math.cos(angle) * rDist;
+        const py = rock.y + Math.sin(angle) * rDist;
+        const pz = sector.elevationAt(px, py) + hOffset;
+        ringVerts.push([px, pz, py]);
+      }
+
+      const topVert: [number, number, number] = [
+        rock.x + Math.cos(rock.rotation) * (rock.radius * 0.15),
+        zBase + rock.height,
+        rock.y + Math.sin(rock.rotation) * (rock.radius * 0.15),
+      ];
+      const botVert: [number, number, number] = [rock.x, zBase - 0.4, rock.y];
+      const baseCol = [0.38 * rock.colorSeed, 0.23 * rock.colorSeed, 0.17 * rock.colorSeed];
+
+      // Facetas superiores
+      for (let k = 0; k < N; k++) {
+        const v0 = topVert;
+        const v1 = ringVerts[k];
+        const v2 = ringVerts[(k + 1) % N];
+
+        const e1 = [v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2]];
+        const e2 = [v2[0] - v0[0], v2[1] - v0[1], v2[2] - v0[2]];
+        const nx = e1[1] * e2[2] - e1[2] * e2[1];
+        const ny = e1[2] * e2[0] - e1[0] * e2[2];
+        const nz = e1[0] * e2[1] - e1[1] * e2[0];
+        const len = Math.hypot(nx, ny, nz) || 1;
+        const norm = [nx / len, ny / len, nz / len];
+
+        const varC = 0.88 + 0.22 * Math.sin(k * 2.3 + rock.shapeSeed * 3.0);
+        const col = [baseCol[0] * varC, baseCol[1] * varC, baseCol[2] * varC];
+
+        rockVerts.push(...v0, ...v1, ...v2);
+        rockNorms.push(...norm, ...norm, ...norm);
+        rockColors.push(...col, ...col, ...col);
+      }
+
+      // Facetas inferiores
+      for (let k = 0; k < N; k++) {
+        const v0 = botVert;
+        const v1 = ringVerts[(k + 1) % N];
+        const v2 = ringVerts[k];
+
+        const e1 = [v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2]];
+        const e2 = [v2[0] - v0[0], v2[1] - v0[1], v2[2] - v0[2]];
+        const nx = e1[1] * e2[2] - e1[2] * e2[1];
+        const ny = e1[2] * e2[0] - e1[0] * e2[2];
+        const nz = e1[0] * e2[1] - e1[1] * e2[0];
+        const len = Math.hypot(nx, ny, nz) || 1;
+        const norm = [nx / len, ny / len, nz / len];
+
+        const varC = 0.72 + 0.18 * Math.cos(k * 1.9);
+        const col = [baseCol[0] * varC, baseCol[1] * varC, baseCol[2] * varC];
+
+        rockVerts.push(...v0, ...v1, ...v2);
+        rockNorms.push(...norm, ...norm, ...norm);
+        rockColors.push(...col, ...col, ...col);
+      }
+    }
+
+    const rockVBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, rockVBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(rockVerts), gl.STATIC_DRAW);
+    gl.vertexAttribPointer(aPosLoc, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(aPosLoc);
+
+    const rockNBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, rockNBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(rockNorms), gl.STATIC_DRAW);
+    gl.vertexAttribPointer(aNormLoc, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(aNormLoc);
+
+    const rockCBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, rockCBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(rockColors), gl.STATIC_DRAW);
+    gl.vertexAttribPointer(aColorLoc, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(aColorLoc);
+
+    gl.uniform1f(uUseVertexColorLoc, 1.0);
+    gl.uniform1f(uUseCustomColorLoc, 0.0);
+    gl.drawArrays(gl.TRIANGLES, 0, rockVerts.length / 3);
+
+    gl.disableVertexAttribArray(aColorLoc);
+
+    // 4. Renderizar Baliza Objetivo B (Pilar holográfico verde fluorescente y plataforma)
+    gl.uniform1f(uUseVertexColorLoc, 0.0);
+    gl.uniform1f(uUseCustomColorLoc, 1.0);
+    gl.uniform3f(uCustomColorLoc, 0.22, 1.0, 0.40); // Verde esmeralda brillante
 
     const targetB = sector.targetPos;
     const bElev = sector.elevationAt(targetB.x, targetB.y);
     const beaconVerts: number[] = [
-      targetB.x - 1.8, bElev, targetB.y - 1.8,
-      targetB.x + 1.8, bElev, targetB.y - 1.8,
-      targetB.x + 1.8, bElev, targetB.y + 1.8,
-      targetB.x - 1.8, bElev, targetB.y + 1.8,
-      targetB.x - 0.8, bElev + 32.0, targetB.y - 0.8,
-      targetB.x + 0.8, bElev + 32.0, targetB.y - 0.8,
-      targetB.x + 0.8, bElev + 32.0, targetB.y + 0.8,
-      targetB.x - 0.8, bElev + 32.0, targetB.y + 0.8,
+      targetB.x - 2.2, bElev, targetB.y - 2.2,
+      targetB.x + 2.2, bElev, targetB.y - 2.2,
+      targetB.x + 2.2, bElev, targetB.y + 2.2,
+      targetB.x - 2.2, bElev, targetB.y + 2.2,
+      targetB.x - 0.7, bElev + 38.0, targetB.y - 0.7,
+      targetB.x + 0.7, bElev + 38.0, targetB.y - 0.7,
+      targetB.x + 0.7, bElev + 38.0, targetB.y + 0.7,
+      targetB.x - 0.7, bElev + 38.0, targetB.y + 0.7,
     ];
     const beaconIndices = [
       0, 1, 5, 0, 5, 4,
@@ -450,13 +607,9 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
     const bIBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bIBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(beaconIndices), gl.STATIC_DRAW);
-
-    gl.uniform1f(uUseCustomColorLoc, 1.0);
-    gl.uniform3f(uCustomColorLoc, 0.2, 1.0, 0.35); // Verde lima
     gl.drawElements(gl.TRIANGLES, beaconIndices.length, gl.UNSIGNED_SHORT, 0);
 
-    // 4. Renderizar Rover 3D con Pitch, Roll e Inclinación por Pendiente + Suspensión
-    const rL = 3.4, rW = 2.4, rH = 1.3;
+    // 5. Renderizar Rover 3D Low-Poly desde el modelo GLB real (rover modelo.glb)
     const cosH = Math.cos(headingRad);
     const sinH = Math.sin(headingRad);
     const pitchRad = (data.pitchDeg * Math.PI) / 180;
@@ -466,67 +619,66 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
     const cosR = Math.cos(rollRad);
     const sinR = Math.sin(rollRad);
 
-    const chassisBaseY = groundZ + 0.45 + data.suspensionOffset;
+    const chassisBaseY = groundZ + 0.05 + data.suspensionOffset;
 
-    const roverLocalVerts = [
-      -rW / 2, 0.0, -rL / 2,
-       rW / 2, 0.0, -rL / 2,
-       rW / 2, 0.0,  rL / 2,
-      -rW / 2, 0.0,  rL / 2,
-      -rW / 2, rH,  -rL / 2,
-       rW / 2, rH,  -rL / 2,
-       rW / 2, rH,   rL / 2,
-      -rW / 2, rH,   rL / 2,
-    ];
+    const vCount = ROVER_GLB_GEOMETRY.vertexCount;
+    const rawP = ROVER_GLB_GEOMETRY.positions;
+    const rawN = ROVER_GLB_GEOMETRY.normals;
+    const roverVerts = new Float32Array(rawP.length);
+    const roverNorms = new Float32Array(rawN.length);
 
-    const roverWorldVerts: number[] = [];
-    for (let k = 0; k < 8; k++) {
-      let lx = roverLocalVerts[k * 3];
-      let ly = roverLocalVerts[k * 3 + 1];
-      let lz = roverLocalVerts[k * 3 + 2];
+    for (let i = 0; i < vCount; i++) {
+      const idx3 = i * 3;
+      const lx = rawP[idx3];
+      const ly = rawP[idx3 + 1];
+      const lz = rawP[idx3 + 2];
 
       const rlx = lx * cosR - ly * sinR;
       const rly = lx * sinR + ly * cosR;
-      lx = rlx; ly = rly;
+      const ply = rly * cosP - lz * sinP;
+      const plz = rly * sinP + lz * cosP;
 
-      const ply = ly * cosP - lz * sinP;
-      const plz = ly * sinP + lz * cosP;
-      ly = ply; lz = plz;
+      roverVerts[idx3] = roverX + (rlx * cosH - plz * sinH);
+      roverVerts[idx3 + 1] = chassisBaseY + ply;
+      roverVerts[idx3 + 2] = roverY + (rlx * sinH + plz * cosH);
 
-      const rx = roverX + (lx * cosH - lz * sinH);
-      const ry = chassisBaseY + ly;
-      const rz = roverY + (lx * sinH + lz * cosH);
-      roverWorldVerts.push(rx, ry, rz);
+      const nx = rawN[idx3];
+      const ny = rawN[idx3 + 1];
+      const nz = rawN[idx3 + 2];
+
+      const rnx = nx * cosR - ny * sinR;
+      const rny = nx * sinR + ny * cosR;
+      const pny = rny * cosP - nz * sinP;
+      const pnz = rny * sinP + nz * cosP;
+
+      roverNorms[idx3] = rnx * cosH - pnz * sinH;
+      roverNorms[idx3 + 1] = pny;
+      roverNorms[idx3 + 2] = rnx * sinH + pnz * cosH;
     }
 
     const rVBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, rVBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(roverWorldVerts), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, roverVerts, gl.STATIC_DRAW);
     gl.vertexAttribPointer(aPosLoc, 3, gl.FLOAT, false, 0, 0);
 
-    // Chasis de alto contraste (Blanco NASA brillante)
-    gl.uniform1f(uUseCustomColorLoc, 1.0);
-    gl.uniform3f(uCustomColorLoc, 0.98, 0.98, 1.0);
-    gl.drawElements(gl.TRIANGLES, beaconIndices.length, gl.UNSIGNED_SHORT, 0);
+    const rNBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, rNBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, roverNorms, gl.STATIC_DRAW);
+    gl.vertexAttribPointer(aNormLoc, 3, gl.FLOAT, false, 0, 0);
 
-    // 5. Faros del rover iluminando el terreno
-    const lightBeamVerts = [
-      roverX, chassisBaseY + 0.4, roverY,
-      roverX + ufX * 22.0 - (cosH * 7.0), groundZ + 0.3, roverY + ufZ * 22.0 - (sinH * 7.0),
-      roverX + ufX * 22.0 + (cosH * 7.0), groundZ + 0.3, roverY + ufZ * 22.0 + (sinH * 7.0),
-    ];
-    const lightIBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, rVBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(lightBeamVerts), gl.STATIC_DRAW);
-    gl.vertexAttribPointer(aPosLoc, 3, gl.FLOAT, false, 0, 0);
+    const rCBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, rCBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, ROVER_GLB_GEOMETRY.colors, gl.STATIC_DRAW);
+    gl.vertexAttribPointer(aColorLoc, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(aColorLoc);
 
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, lightIBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0, 1, 2]), gl.STATIC_DRAW);
+    gl.uniform1f(uUseVertexColorLoc, 1.0);
+    gl.uniform1f(uUseCustomColorLoc, 0.0);
+    gl.drawArrays(gl.TRIANGLES, 0, vCount);
 
-    gl.uniform3f(uCustomColorLoc, 1.0, 0.94, 0.6); // Luz dorada
-    gl.drawElements(gl.TRIANGLES, 3, gl.UNSIGNED_SHORT, 0);
+    gl.disableVertexAttribArray(aColorLoc);
 
-    // Limpieza de buffers temporales
+    // Limpieza de buffers WebGL
     gl.deleteBuffer(posBuffer);
     gl.deleteBuffer(normBuffer);
     gl.deleteBuffer(elevBuffer);
@@ -534,9 +686,13 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
     gl.deleteBuffer(indexBuffer);
     gl.deleteBuffer(bVBuffer);
     gl.deleteBuffer(bIBuffer);
+    gl.deleteBuffer(rockVBuffer);
+    gl.deleteBuffer(rockNBuffer);
+    gl.deleteBuffer(rockCBuffer);
     gl.deleteBuffer(rVBuffer);
-    gl.deleteBuffer(lightIBuffer);
-  }, [data, rover.sector, textureVersion]);
+    gl.deleteBuffer(rNBuffer);
+    gl.deleteBuffer(rCBuffer);
+  }, [data, rover.sector, textureVersion, status, animTick]);
 
   const energyClass =
     data.energy > 55 ? 'energy-high' : data.energy > 20 ? 'energy-med' : 'energy-low';
@@ -617,6 +773,44 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
 
       <div className="canvas-map-wrapper">
         <canvas ref={canvasRef} width={520} height={420} className="mars-canvas" />
+
+        {isGameOver && (
+          <div className="mission-debrief-card">
+            <div className="debrief-header">
+              <span className="debrief-icon">{isMissionCompleted ? '🏆' : '⚠️'}</span>
+              <div>
+                <h3>{isMissionCompleted ? '¡MISIÓN CUMPLIDA · OBJETIVO ALCANZADO!' : 'MISIÓN FINALIZADA'}</h3>
+                <p>{isMissionCompleted ? 'El rover ha asegurado la posición en la Baliza B.' : 'Operación concluida en el sector marciano.'}</p>
+              </div>
+            </div>
+            <div className="debrief-grid">
+              <div className="debrief-metric">
+                <span className="debrief-label">⚡ BATERÍA FINAL</span>
+                <span className="debrief-val" style={{ color: data.energy > 30 ? '#4ade80' : '#f87171' }}>
+                  {data.energy.toFixed(1)} %
+                </span>
+              </div>
+              <div className="debrief-metric">
+                <span className="debrief-label">⏱️ TIEMPO</span>
+                <span className="debrief-val">{(snapshot.elapsedMs / 1000).toFixed(1)} s</span>
+              </div>
+              <div className="debrief-metric">
+                <span className="debrief-label">🎯 PROGRESO</span>
+                <span className="debrief-val">{(snapshot.progress * 100).toFixed(0)} %</span>
+              </div>
+              <div className="debrief-metric">
+                <span className="debrief-label">⭐ PUNTUACIÓN</span>
+                <span className="debrief-val" style={{ color: '#fbbf24' }}>
+                  {snapshot.score} pts
+                </span>
+              </div>
+            </div>
+            <div className="debrief-footer">
+              <span>📍 {data.sector.sectorName}</span>
+              <span className="debrief-coords">{roverCoords.formatted}</span>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="legend-bar">

@@ -60,10 +60,16 @@ export default function Lobby({
 
   const host = game.hostId === game.self.id;
   const nextLevel = game.round + 1;
-  const alive = game.players.filter(p => p.health > 0);
-  const readyCount = alive.filter(p => p.ready).length;
-  const allReady = !game.matchFinished && alive.length > 0 && alive.every(p => p.ready && p.connected);
+  const alivePlayers = game.players.filter(p => p.health > 0);
+  const readyCount = alivePlayers.filter(p => p.ready).length;
+  const allReady = !game.matchFinished && alivePlayers.length > 0 && alivePlayers.every(p => p.ready && p.connected);
   const otherPlayers = game.players.filter(p => p.id !== game.self.id);
+  const matchWinner = game.winnerId ? game.players.find(p => p.id === game.winnerId) ?? null : null;
+  const gameOver = Boolean(game.matchFinished || matchWinner);
+  const selfDead = game.self.health <= 0;
+  const maxHealth = game.self.maxHealth || 100 + (game.self.stats.health ?? 0);
+  const maxEnergy = 100 + game.self.stats.energy;
+  const maxFood = 100 + game.self.stats.food;
 
   return (
     <div className="lobby-world" aria-label="3D Mars Base">
@@ -76,7 +82,7 @@ export default function Lobby({
             <div className="lobby-hud__title-row">
               <strong>Room {game.code}</strong>
               <span className={`lobby-hud__pill ${allReady ? 'lobby-hud__pill--all' : ''}`.trim()}>
-                {readyCount}/{alive.length} ready
+                {gameOver ? (matchWinner ? `Winner: ${matchWinner.name}` : 'Mission ended') : `${readyCount}/${alivePlayers.length} ready`}
               </span>
             </div>
             <span className="lobby-hud__drag-hint">Drag background to orbit base · Scroll to zoom</span>
@@ -101,35 +107,33 @@ export default function Lobby({
           <section className="lobby-glass lobby-hud__self" aria-label="Your status">
             <div className="lobby-glass__head">
               <h3>{game.self.name}</h3>
-              <span className={`lobby-ready-badge ${game.self.ready ? 'lobby-ready-badge--yes' : 'lobby-ready-badge--no'}`}>
-                {game.self.ready ? '✓ Ready' : 'Waiting'}
+              <span className={`lobby-ready-badge ${selfDead ? 'lobby-ready-badge--off' : game.self.ready ? 'lobby-ready-badge--yes' : 'lobby-ready-badge--no'}`}>
+                {selfDead ? 'Eliminated' : game.self.ready ? '✓ Ready' : 'Waiting'}
               </span>
             </div>
 
-            {game.matchFinished && <p role="status">{game.winnerId ? `Partida terminada. Gana ${game.players.find(p => p.id === game.winnerId)?.name ?? 'el último superviviente'}.` : 'Partida terminada. No quedan supervivientes.'}</p>}
-            {game.self.health <= 0 && <p role="status">Has sido eliminado. Puedes observar la partida.</p>}
-            {game.self.cardOutcome && <p>{game.self.cardOutcome.summary}</p>}
-            {game.self.protection?.radiationShield && <p>Escudo antirradiación activo.</p>}
-            {game.self.protection?.reinforcedSuit && <p>Traje reforzado activo.</p>}
+            {game.self.cardOutcome && <p className="lobby-card-result">{game.self.cardOutcome.summary}</p>}
+            {game.self.protection?.radiationShield && <p className="lobby-card-result">Radiation shield ready.</p>}
+            {game.self.protection?.reinforcedSuit && <p className="lobby-card-result">Reinforced suit ready.</p>}
             <div className="lobby-stat-row">
               <div className="lobby-stat-row__label">
                 <span>Health</span>
-                <strong>{game.self.health} / 100</strong>
+                <strong>{game.self.health} / {maxHealth}</strong>
               </div>
               <div className="lobby-bar">
-                <div className="lobby-bar__fill" style={{ width: `${game.self.health}%` }} />
+                <div className="lobby-bar__fill" style={{ width: `${Math.min(100, (game.self.health / maxHealth) * 100)}%` }} />
               </div>
             </div>
 
             <div className="lobby-stat-row">
               <div className="lobby-stat-row__label">
                 <span>Energy</span>
-                <strong>{game.self.resources.energy} / 100</strong>
+                <strong>{game.self.resources.energy} / {maxEnergy}</strong>
               </div>
               <div className="lobby-bar">
                 <div
                   className="lobby-bar__fill lobby-bar__fill--energy"
-                  style={{ width: `${Math.min(100, game.self.resources.energy)}%` }}
+                  style={{ width: `${Math.min(100, (game.self.resources.energy / maxEnergy) * 100)}%` }}
                 />
               </div>
             </div>
@@ -137,12 +141,12 @@ export default function Lobby({
             <div className="lobby-stat-row">
               <div className="lobby-stat-row__label">
                 <span>Food</span>
-                <strong>{game.self.resources.food} / 100</strong>
+                <strong>{game.self.resources.food} / {maxFood}</strong>
               </div>
               <div className="lobby-bar">
                 <div
                   className="lobby-bar__fill lobby-bar__fill--food"
-                  style={{ width: `${Math.min(100, game.self.resources.food)}%` }}
+                  style={{ width: `${Math.min(100, (game.self.resources.food / maxFood) * 100)}%` }}
                 />
               </div>
             </div>
@@ -156,9 +160,18 @@ export default function Lobby({
             </div>
 
             <div className="lobby-traits">
-              <span className="lobby-trait">Energy +{game.self.stats.energy}</span>
-              <span className="lobby-trait">Food +{game.self.stats.food}</span>
-              <span className="lobby-trait">Shielding +{game.self.stats.shielding}</span>
+              {game.self.stats.energy > 0 && <span className="lobby-trait">Max Energy +{game.self.stats.energy}</span>}
+              {game.self.stats.food > 0 && <span className="lobby-trait">Max Food +{game.self.stats.food}</span>}
+              {game.self.stats.health > 0 && <span className="lobby-trait">Max Health +{game.self.stats.health}</span>}
+              {(game.self.resources.energy <= 30 || game.self.resources.food <= 30 || game.self.resources.radiation > 0) && (
+                <span className="lobby-trait">
+                  {game.self.resources.energy === 0 || game.self.resources.food === 0
+                    ? '0 resource: -10 HP/minigame'
+                    : game.self.resources.radiation > 0
+                      ? game.self.protection?.reinforcedSuit ? 'Radiation: next damage blocked' : `Rad: -${game.self.resources.radiation * 5} HP/minigame`
+                      : 'Low reserves debuff active'}
+                </span>
+              )}
             </div>
 
             {game.lastResults.length > 0 && (
@@ -187,10 +200,12 @@ export default function Lobby({
                         <span className="lobby-crew__name">
                           {player.name} {player.isBot ? '(bot)' : ''} {player.id === game.hostId ? '★' : ''}
                         </span>
-                        <span className="lobby-crew__meta">Health: {player.health}/100</span>
+                        <span className="lobby-crew__meta">Health: {player.health}/{player.maxHealth}</span>
                       </div>
                       <div className="lobby-crew__status">
-                        {!player.connected ? (
+                        {player.health <= 0 ? (
+                          <span className="lobby-ready-badge lobby-ready-badge--off">Eliminated</span>
+                        ) : !player.connected ? (
                           <span className="lobby-ready-badge lobby-ready-badge--off">Offline</span>
                         ) : player.ready ? (
                           <span className="lobby-ready-badge lobby-ready-badge--yes">✓ Ready</span>
@@ -210,35 +225,43 @@ export default function Lobby({
             </section>
 
             <section className="lobby-glass lobby-hud__actions" aria-label="Level actions">
-              <button
-                type="button"
-                className={`lobby-actions__ready ${game.self.ready ? 'secondary' : ''}`.trim()}
-                disabled={disabled || game.self.health <= 0 || game.matchFinished}
-                onClick={onReady}
-              >
-                {game.self.health <= 0 ? 'Eliminado' : game.matchFinished ? 'Partida terminada' : game.self.ready ? 'Cancel ready' : `Ready for Level ${nextLevel}`}
-              </button>
-
-              {host ? (
-                <div className="lobby-actions__host">
-                  <button
-                    type="button"
-                    className="secondary"
-                    disabled={disabled || game.matchFinished || game.players.length >= 4}
-                    onClick={onBots}
-                  >
-                    + Bots
-                  </button>
-                  <button
-                    type="button"
-                    disabled={disabled || !allReady}
-                    onClick={onStart}
-                  >
-                    Start Level {nextLevel}
-                  </button>
-                </div>
+              {gameOver ? (
+                <p className="lobby-crew-note">
+                  {matchWinner ? <><strong>{matchWinner.name}</strong> wins the mission.</> : 'Mission ended. No survivors remain.'}
+                </p>
               ) : (
-                <p className="lobby-crew-note">Host will start Level {nextLevel} once everyone is ready.</p>
+                <>
+                  <button
+                    type="button"
+                    className={`lobby-actions__ready ${game.self.ready ? 'secondary' : ''}`.trim()}
+                    disabled={disabled || selfDead}
+                    onClick={onReady}
+                  >
+                    {selfDead ? 'Eliminated' : game.self.ready ? 'Cancel ready' : `Ready for Level ${nextLevel}`}
+                  </button>
+
+                  {host ? (
+                    <div className="lobby-actions__host">
+                      <button
+                        type="button"
+                        className="secondary"
+                        disabled={disabled || gameOver || game.players.length >= 4}
+                        onClick={onBots}
+                      >
+                        + Bots
+                      </button>
+                      <button
+                        type="button"
+                        disabled={disabled || !allReady}
+                        onClick={onStart}
+                      >
+                        Start Level {nextLevel}
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="lobby-crew-note">Host will start Level {nextLevel} once all survivors are ready.</p>
+                  )}
+                </>
               )}
             </section>
           </div>

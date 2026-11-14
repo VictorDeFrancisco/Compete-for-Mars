@@ -63,8 +63,8 @@ export const marsRoverDefinition = defineMinigame({
     },
   ],
   rewards: {
-    winner: { resources: { energy: 2 } },
-    loser: { health: -15 },
+    winner: { resources: { energy: 20 } },
+    loser: {},
     ties: 'share',
   },
 });

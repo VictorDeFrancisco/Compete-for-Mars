@@ -6,11 +6,12 @@ const categoryLabels = { supply: 'Suministros', risk: 'Expedición / riesgo', de
 export default function CardSelection({ game, onChoose }: CardSelectionProps) {
   const [targets, setTargets] = useState<Record<string, string>>({});
   const alive = game.players.filter(p => p.health > 0), opponents = alive.filter(p => p.id !== game.self.id);
+  const maxEnergy = 100 + game.self.stats.energy, maxFood = 100 + game.self.stats.food;
   const dead = game.self.health <= 0;
   return <section className="panel phase-cards">
     <header className="cards-heading"><div><p className="eyebrow">03 / Preparación de misión</p><h2>Elige tu siguiente movimiento</h2></div><span>RONDA {String(game.round).padStart(2, '0')}</span></header>
     <div className="cards-resources" aria-label="Tus recursos privados">
-      <span>Vida <b>{game.self.health}</b></span><span>Comida <b>{game.self.resources.food}</b></span><span>Energía <b>{game.self.resources.energy}</b></span><span>Radiación <b>{game.self.resources.radiation}</b></span>
+      <span>Vida <b>{game.self.health}/{game.self.maxHealth}</b></span><span>Comida <b>{game.self.resources.food}/{maxFood}</b></span><span>Energía <b>{game.self.resources.energy}/{maxEnergy}</b></span><span>Radiación <b>{game.self.resources.radiation}</b></span>
     </div>
     <p className="cards-intro">{dead ? 'Has sido eliminado. Puedes observar la partida.' : 'Una carta por persona. Las elecciones son privadas y se resuelven cuando todos hayan elegido.'}</p>
     <div className="cards-options">

@@ -44,7 +44,7 @@ export default function RoleSelect({
               <strong>{profession.name}</strong>
               <br />
               <small>
-                Energy +{profession.stats.energy} · Food +{profession.stats.food} · Shielding +{profession.stats.shielding}
+                Max Energy +{profession.stats.energy} · Max Food +{profession.stats.food}
               </small>
             </button>
           );

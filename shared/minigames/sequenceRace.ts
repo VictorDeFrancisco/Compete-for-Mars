@@ -8,5 +8,5 @@ export const sequenceRaceDefinition = defineMinigame({
     bindings: [{ device: 'keyboard' as const, code: `Digit${index + 1}`, label: `${index + 1}` },
       { device: 'touch' as const, label: `Clic o toque en cierre ${index + 1}` }],
   })),
-  rewards: { winner: { resources: { food: 2 } }, loser: { health: -15 }, ties: 'share' },
+  rewards: { winner: { resources: { food: 20 } }, loser: {}, ties: 'share' },
 });

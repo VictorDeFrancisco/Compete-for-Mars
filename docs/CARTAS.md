@@ -7,7 +7,7 @@ Reglas iniciales implementadas a partir de las propuestas del equipo. Las cantid
 - Tres opciones comunes, distintas y aleatorias por ronda. Al menos una es Comer o Descansar. Pueden salir ambas.
 - La elección y su objetivo son privados. Solo se publica si una persona ha elegido.
 - Al finalizar los 25 segundos, quien no haya elegido recibe la primera carta de Comer o Descansar del tablero.
-- Todos parten con 100 de vida, comida y energía, y 0 de radiación. Comida y energía: 0–100. Radiación: sin límite superior.
+- Se conservan las profesiones de `main`: los valores iniciales y máximos son `100 + stats.health`, `100 + stats.food` y `100 + stats.energy`. Radiación inicial: 0, sin límite superior. Las cartas, incluido Intercambio, respetan los topes del destinatario.
 - Descontaminación, Traje reforzado y Contagio solo salen si al generar la ronda hay algún jugador vivo contaminado. Contagio, además, solo se puede elegir si tú tienes radiación.
 - Sabotaje, Robo, Intercambio y Contagio no salen en la prueba de un único jugador.
 - Los objetivos deben ser otros jugadores vivos de la misma sala. Un objetivo que abandona antes de resolver cancela esa acción.
@@ -43,17 +43,19 @@ Las siguientes convenciones completan las propuestas ambiguas y pueden ajustarse
 2. Se activan las defensas y se cobran los costes. Después se resuelven los intercambios.
 3. Se aplican suministros, descontaminación, contagio y azar. Cada expedición tiene una tirada independiente.
 4. Sabotajes y robos usan un presupuesto único de comida por víctima. Si no alcanza para todos, se reparte proporcionalmente entre las acciones; así nunca se roba comida inexistente.
-5. Se aplican los abonos del robo, respetando el máximo de 100.
+5. Se aplican los abonos del robo, respetando el máximo de comida de la profesión de cada destinatario.
 
-Para Robo se elige al jugador con más comida **entre los que no estén robando**, después de los efectos anteriores. Los empates se deshacen al azar. Si todos roban, no hay víctima y no ocurre nada. El botín se divide en enteros; los restos se asignan en un orden estable de jugadores. En Comer/Descansar, cada persona recibe `floor(40 / participantes)` y se descarta el sobrante. Alcanzar el límite de 100 no redistribuye el excedente a otros jugadores.
+Para Robo se elige al jugador con más comida **entre los que no estén robando**, después de los efectos anteriores. Los empates se deshacen al azar. Si todos roban, no hay víctima y no ocurre nada. El botín se divide en enteros; los restos se asignan en un orden estable de jugadores. En Comer/Descansar, cada persona recibe `floor(40 / participantes)` y se descarta el sobrante. Alcanzar el tope de la profesión no redistribuye el excedente a otros jugadores. Lo mismo sucede cuando un intercambio entrega reservas superiores al tope del receptor.
 
 Las defensas son cargas booleanas: repetir la misma carta no acumula varias. Persisten entre rondas hasta consumirse. El escudo también puede impedir la contaminación de un visitante limpio. El traje no se consume en una ronda sin daño de radiación.
 
 ## Radiación, eliminación y final de partida
 
-Al terminar el minijuego se aplican los premios y después se pierden **5 puntos de vida por cada unidad de radiación**. El traje reforzado cancela una sola aplicación de este daño. Un escudo no protege de radiación que ya se tenía.
+Se conserva el orden de supervivencia de `main`: al terminar el minijuego se gastan 5 de comida y 5 de energía, el ganador recibe el premio del recurso principal (20 inicial, reducido en 2 por cada ronda posterior) y el último pierde `ronda × (muertes previas + 1)` de vida. Cada reserva que quede a cero añade 10 de daño. La radiación quita **5 puntos de vida por unidad**. El traje reforzado cancela una sola aplicación del daño de radiación; no evita el gasto, el hambre, el agotamiento ni la penalización de clasificación. Un escudo no protege de radiación que ya se tenía.
 
-La vida puede llegar a 0. Los eliminados permanecen como observadores: no eligen, no reciben premios y no bloquean la preparación ni las entregas del resto. Si una carta mata antes del minijuego, esa persona tampoco participa. Una partida iniciada con varios jugadores termina al quedar uno (ganador) o ninguno (sin supervivientes); la prueba individual continúa hasta que su único participante muera. Para volver a competir se crea una sala nueva.
+La vida puede llegar a 0. Los eliminados permanecen como observadores: no eligen, no reciben premios y no bloquean la preparación ni las entregas del resto. Si una carta mata antes del minijuego, esa persona tampoco participa. Una partida iniciada con varios jugadores termina al quedar uno (ganador). Si todos mueren al final de un minijuego, se conserva el desempate de `main`: gana el primero de la clasificación final. Si no hay clasificación (todos mueren por cartas), termina sin ganador. La prueba individual continúa hasta que su único participante muera. Para volver a competir se crea una sala nueva.
+
+También se mantiene el sorteo de minijuegos de `main`, con al menos dos minijuegos distintos entre repeticiones. El catálogo de 17 cartas sustituye las tres cartas temporales ligadas a un solo recurso: Comer y Descansar siguen siendo fondos independientes y el resto conserva los efectos definidos por el equipo.
 
 El resultado de la carta, las reservas y las cargas defensivas solo se envían al propio jugador. El servidor publica la vida y el resultado final de la partida, sin revelar los recursos o elecciones de los rivales.
 

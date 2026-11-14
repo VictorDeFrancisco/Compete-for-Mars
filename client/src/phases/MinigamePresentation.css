@@ -1,1 +1,20 @@
 /* Estilos de fase 2: usar selectores que empiecen por .phase-presentation. */
+.phase-presentation h2 {
+  color: #f4f1ea;
+  margin-bottom: 10px;
+}
+
+.phase-presentation ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.phase-presentation li {
+  padding: 8px 12px;
+  background: rgba(18, 24, 34, 0.78);
+  border-left: 2px solid #22d3ee;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.82rem;
+}
