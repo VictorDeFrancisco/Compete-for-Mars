@@ -64,8 +64,8 @@ export const suitUpDefinition = defineMinigame({
     },
   ],
   rewards: {
-    winner: { resources: { energy: 1, food: 1 } },
-    loser: { health: -15 },
+    winner: { resources: { food: 20 } },
+    loser: {},
     ties: 'share',
   },
 });
