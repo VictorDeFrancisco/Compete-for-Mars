@@ -97,20 +97,42 @@ export function buildPreviewGame(
       {
         playerId: 'preview-self',
         name: 'Tester',
-        score: 80,
+        score: 300,
         healthDelta: 0,
-        resourcesDelta: { energy: 1, food: 1, radiation: 0 },
+        resourcesDelta: { energy: 6, food: -18, radiation: 0 },
         rank: 1,
         outcome: 'winner',
         elapsedMs: 18_420,
         completed: true,
       },
       {
+        playerId: 'preview-bot-1',
+        name: 'Ares (Bot)',
+        score: 200,
+        healthDelta: 0,
+        resourcesDelta: { energy: -18, food: -18, radiation: 0 },
+        rank: 2,
+        outcome: 'neutral',
+        elapsedMs: 22_150,
+        completed: true,
+      },
+      {
+        playerId: 'preview-bot-2',
+        name: 'Selene (Bot)',
+        score: 100,
+        healthDelta: 0,
+        resourcesDelta: { energy: -18, food: -18, radiation: 0 },
+        rank: 3,
+        outcome: 'neutral',
+        elapsedMs: 25_000,
+        completed: false,
+      },
+      {
         playerId: 'preview-bot-3',
         name: 'Orion (Bot)',
         score: 40,
-        healthDelta: -10,
-        resourcesDelta: { energy: 0, food: 0, radiation: 0 },
+        healthDelta: -8,
+        resourcesDelta: { energy: -18, food: -18, radiation: 0 },
         rank: 4,
         outcome: 'loser',
         elapsedMs: 25_000,
@@ -189,6 +211,9 @@ export default function TestPanel({
             </button>
             <button type="button" className="secondary" onClick={() => onPreviewPhase('playing', minigameId)}>
               4 · Play Minigame
+            </button>
+            <button type="button" className="secondary" onClick={() => onPreviewPhase('results', minigameId)}>
+              5 · Leaderboard
             </button>
           </div>
         </section>

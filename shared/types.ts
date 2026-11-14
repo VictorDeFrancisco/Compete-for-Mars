@@ -1,4 +1,4 @@
-export type Phase = 'stats' | 'lobby' | 'presentation' | 'cards' | 'playing';
+export type Phase = 'stats' | 'lobby' | 'presentation' | 'cards' | 'playing' | 'results';
 export interface Stats { energy: number; food: number; health: number }
 export interface Resources { energy: number; food: number; radiation: number }
 export type CardKind = 'rest' | 'eat' | 'expedition' | 'decontamination' | 'radiation-shield' | 'reinforced-suit'
@@ -39,6 +39,7 @@ export interface PublicPlayer {
   ready: boolean;
   hasChosenCard: boolean;
   hasSubmitted: boolean;
+  liveScore?: number | null;
 }
 export interface SelfPlayer extends PublicPlayer {
   stats: Stats;
@@ -84,6 +85,7 @@ export interface ClientToServerEvents {
   'player:ready': (ready: boolean, reply: Reply) => void;
   'phase:ready': (action: PhaseAction, reply: Reply) => void;
   'card:choose': (action: PhaseAction & { cardId: string; targetId?: string }, reply: Reply) => void;
+  'minigame:progress': (action: PhaseAction & { score: number }) => void;
   'minigame:submit': (action: PhaseAction & { result: MinigameResult }, reply: Reply) => void;
 }
 export interface ServerToClientEvents { 'game:state': (state: GameView) => void }

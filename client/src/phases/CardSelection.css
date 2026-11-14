@@ -1,80 +1,65 @@
-/* Fase 3: Cartas tácticas centradas sobre el paisaje de Marte */
+/* Fase 3: Cartas tácticas grandes y centradas */
 .phase-cards {
   position: relative;
   width: 100%;
-  max-width: 920px;
+  max-width: 1120px;
   margin: 0 auto;
   color: var(--ink-black);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .phase-cards .cards-heading {
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
+  flex-direction: column;
   align-items: center;
-  flex-wrap: wrap;
-  padding: 10px 16px;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  padding: 12px 24px;
   background: var(--paper-cream);
   border: 3px solid var(--ink-black);
   border-radius: 12px;
-  box-shadow: 0 4px 0 var(--ink-black);
+  box-shadow: 0 5px 0 var(--ink-black);
 }
 
 .phase-cards .cards-heading h2 {
   font-family: 'Archivo', sans-serif;
   font-weight: 900;
-  font-size: clamp(1.15rem, 2vw, 1.5rem);
+  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   margin: 0;
   color: var(--ink-black);
 }
 
-.phase-cards .cards-resources {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  padding: 8px 12px;
-  margin-top: 10px;
-  background: var(--paper-cream);
-  border: 2.5px solid var(--ink-black);
-  border-radius: 3px;
-  box-shadow: 0 3px 0 var(--ink-black);
-}
-
-.phase-cards .cards-resources span {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 8px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: #4a4136;
-}
-
-.phase-cards .cards-resources b {
-  color: var(--nasa-blue);
+.phase-cards .cards-heading__explain {
+  margin: 3px 0 0;
   font-family: 'Courier Prime', monospace;
-  font-size: 1rem;
+  font-size: clamp(0.92rem, 1.3vw, 1.06rem);
   font-weight: 700;
+  color: #362f28;
+  max-width: 780px;
 }
 
-.phase-cards .cards-intro {
+.phase-cards .cards-protection {
+  padding: 5px 14px;
+  margin: 0;
+  background: #d2eedd;
+  border: 2px solid #1d6b41;
+  border-radius: 6px;
+  color: #144d2e;
   font-size: 0.84rem;
-  font-weight: 700;
-  color: #363028;
-  margin: 8px 0 10px;
+  font-weight: 800;
 }
 
 .phase-cards .cards-options {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 18px;
   align-items: stretch;
-  padding: 2px 2px 4px;
+  padding: 4px 2px 6px;
 }
 
 .phase-cards .action-card {
@@ -82,27 +67,28 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 11px 12px 10px;
+  padding: 16px 18px 16px;
   min-width: 0;
+  min-height: 365px;
   background: var(--paper-cream);
   border: 3px solid var(--ink-black);
-  border-top: 6px solid var(--card-accent);
-  border-radius: 3px;
+  border-top: 8px solid var(--card-accent);
+  border-radius: 8px;
   color: var(--ink-black);
-  box-shadow: 0 4px 0 var(--ink-black);
+  box-shadow: 0 6px 0 var(--ink-black);
   transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
 }
 
 .phase-cards .action-card:nth-child(3n + 1) {
-  transform: rotate(-1.15deg);
+  transform: rotate(-0.75deg);
 }
 
 .phase-cards .action-card:nth-child(3n + 2) {
-  transform: rotate(0.9deg);
+  transform: rotate(0.55deg);
 }
 
 .phase-cards .action-card:nth-child(3n) {
-  transform: rotate(-0.75deg);
+  transform: rotate(-0.45deg);
 }
 
 .phase-cards .action-card[data-category='risk'] {
@@ -118,48 +104,36 @@
 }
 
 .phase-cards .action-card:hover {
-  transform: translateY(-4px) rotate(0deg);
-  box-shadow: 0 8px 0 var(--ink-black);
+  transform: translateY(-5px) rotate(0deg);
+  box-shadow: 0 10px 0 var(--ink-black);
   background: #fffaf0;
   z-index: 3;
 }
 
 .phase-cards .action-card--selected {
-  transform: translateY(-3px) rotate(0deg) scale(1.015) !important;
+  transform: translateY(-4px) rotate(0deg) scale(1.015) !important;
   background: #fff9eb;
-  box-shadow: 0 6px 0 var(--ink-black), 0 0 0 2px var(--nasa-orange) inset;
+  box-shadow: 0 8px 0 var(--ink-black), 0 0 0 3px var(--nasa-orange) inset;
   z-index: 4;
 }
 
 .phase-cards .action-card__stamp {
   position: absolute;
-  top: 28px;
-  right: 8px;
-  padding: 2px 7px;
+  top: 34px;
+  right: 12px;
+  padding: 3px 9px;
   border: 2.5px solid var(--stamp-red);
-  border-radius: 3px;
+  border-radius: 4px;
   color: var(--stamp-red);
-  background: rgba(245, 239, 224, 0.92);
+  background: rgba(245, 239, 224, 0.94);
   font-family: 'Archivo', sans-serif;
-  font-weight: 800;
-  font-size: 0.68rem;
-  letter-spacing: 0.14em;
+  font-weight: 900;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  transform: rotate(-10deg);
+  transform: rotate(-8deg);
   pointer-events: none;
   z-index: 5;
-  animation: card-stamp-slam 0.2s cubic-bezier(0.22, 1.3, 0.36, 1) forwards;
-}
-
-@keyframes card-stamp-slam {
-  0% {
-    opacity: 0;
-    transform: rotate(-15deg) scale(1.4);
-  }
-  100% {
-    opacity: 0.94;
-    transform: rotate(-10deg) scale(1);
-  }
 }
 
 .phase-cards .action-card-top {
@@ -169,85 +143,145 @@
   gap: 8px;
   color: var(--card-accent);
   font-family: 'Archivo', sans-serif;
-  font-weight: 800;
+  font-weight: 900;
   text-transform: uppercase;
-  font-size: 0.68rem;
+  font-size: 0.78rem;
   letter-spacing: 0.08em;
 }
 
 .phase-cards .action-card__patch {
   display: flex;
   justify-content: center;
-  margin: 6px 0 4px;
+  margin: 8px 0 6px;
 }
 
 .phase-cards .action-card__svg {
-  width: 48px;
-  height: 48px;
+  width: 58px;
+  height: 58px;
   display: block;
 }
 
 .phase-cards .action-card h3 {
   font-family: 'Archivo', sans-serif;
-  font-weight: 800;
+  font-weight: 900;
   text-transform: uppercase;
   text-align: center;
-  margin: 2px 0 6px;
-  padding-bottom: 5px;
-  border-bottom: 2px solid var(--ink-black);
+  margin: 4px 0 8px;
+  padding-bottom: 7px;
+  border-bottom: 2.5px solid var(--ink-black);
   color: var(--ink-black);
-  font-size: 0.94rem;
+  font-size: 1.2rem;
   line-height: 1.2;
 }
 
-.phase-cards .action-card-description {
-  margin: 0 0 8px;
-  color: #2f2a23;
-  font-size: 0.8rem;
-  line-height: 1.38;
-}
-
-.phase-cards .action-card-detail {
-  margin: 3px 0 6px;
-  padding: 4px 8px;
-  background: #e8dcc5;
-  border: 1.5px solid var(--ink-black);
-  border-radius: 2px;
-  color: #3a332b;
-  font-size: 0.78rem;
+/* Badges visuales destacando recursos, costes y riesgos */
+.phase-cards .action-card__badges {
   display: flex;
-  justify-content: space-between;
-  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 10px;
 }
 
-.phase-cards .action-card-detail b {
-  color: var(--ink-black);
-  font-weight: 700;
+.phase-cards .action-badge {
+  padding: 4px 9px;
+  border-radius: 5px;
+  border: 2px solid var(--ink-black);
+  font-family: 'Archivo', sans-serif;
+  font-weight: 900;
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 0 var(--ink-black);
+}
+
+.phase-cards .action-badge--gain {
+  background: #2e8b57;
+  color: #f5efe0;
+}
+
+.phase-cards .action-badge--cost {
+  background: #f5c242;
+  color: #1a1817;
+}
+
+.phase-cards .action-badge--danger {
+  background: #fc3d21;
+  color: #f5efe0;
+}
+
+.phase-cards .action-badge--rad {
+  background: #7c3aed;
+  color: #f5efe0;
+}
+
+.phase-cards .action-badge--info {
+  background: #0b3d91;
+  color: #f5efe0;
+}
+
+.phase-cards .action-card-description {
+  margin: 0 0 12px;
+  color: #2c261f;
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.phase-cards .card-kw {
+  padding: 0 4px;
+  border-radius: 3px;
+  font-weight: 900;
+  background: transparent;
+}
+
+.phase-cards .card-kw--food {
+  background: #d2eedd;
+  color: #14532d;
+}
+
+.phase-cards .card-kw--energy {
+  background: #fef08a;
+  color: #713f12;
+}
+
+.phase-cards .card-kw--rad {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.phase-cards .card-kw--hp {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.phase-cards .card-kw--num {
+  background: #e5dcc7;
+  color: #1a1817;
 }
 
 .phase-cards .action-card-target {
   color: var(--nasa-blue);
   font-family: 'Archivo', sans-serif;
-  font-weight: 800;
+  font-weight: 900;
   text-transform: uppercase;
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   letter-spacing: 0.08em;
-  margin: 10px 0 0;
+  margin: 4px 0 6px;
 }
 
 .phase-cards .action-card-target select {
   display: block;
-  max-width: 100%;
   width: 100%;
   margin-top: 5px;
-  padding: 8px 6px;
+  padding: 9px 8px;
   background: #fffaf0;
-  border: 2px solid var(--ink-black);
-  border-radius: 2px;
+  border: 2.5px solid var(--ink-black);
+  border-radius: 5px;
   color: var(--ink-black);
   font-family: 'Courier Prime', monospace;
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.92rem;
 }
 
 .phase-cards .action-card-bottom {
@@ -255,49 +289,49 @@
 }
 
 .phase-cards .action-card-warning {
-  font-size: 0.74rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: #8c1c0f;
-  margin: 6px 0 4px;
-  min-height: 16px;
+  margin: 4px 0 6px;
+  min-height: 18px;
+  text-align: center;
 }
 
 .phase-cards .action-card button {
   width: 100%;
+  padding: 12px 16px;
+  font-size: 0.98rem;
+  font-weight: 900;
 }
 
 .phase-cards .cards-status {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 8px 14px;
+  gap: 10px 18px;
+  padding: 10px 18px;
   background: var(--paper-cream);
-  border: 2.5px solid var(--ink-black);
+  border: 3px solid var(--ink-black);
   border-radius: 10px;
   box-shadow: 0 4px 0 var(--ink-black);
-  color: #4a4136;
-  font-size: 0.8rem;
+  color: #3a332b;
+  font-size: 0.92rem;
   font-weight: 700;
+  text-align: center;
 }
 
-.phase-cards .cards-status > :first-child {
-  color: var(--ink-black);
+.phase-cards .cards-status strong {
+  color: var(--nasa-blue);
+  font-family: 'Archivo', sans-serif;
+  font-weight: 900;
 }
 
-.phase-cards .cards-protection {
-  padding: 5px 10px;
-  margin: 0;
-  background: #d2eedd;
-  border: 2px solid #1d6b41;
-  border-radius: 6px;
-  color: #144d2e;
-  font-size: 0.78rem;
-  font-weight: 800;
-}
-
-@media (max-width: 780px) {
+@media (max-width: 860px) {
   .phase-cards .cards-options {
     grid-template-columns: 1fr;
+  }
+  .phase-cards .action-card {
+    min-height: auto;
   }
 }

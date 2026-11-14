@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { PHASE_LABELS } from '../../shared/constants';
+import { CARDS_MS, PHASE_LABELS, RESULTS_MS } from '../../shared/constants';
 import type { Phase, Stats } from '../../shared/types';
 import { socket, useGame } from './hooks/useGame';
 import { useCountdown } from './hooks/useCountdown';
 import RoleSelect from './components/RoleSelect';
 import Lobby from './components/Lobby';
 import Hud from './components/Hud';
+import CrewSidebar from './components/CrewSidebar';
 import StartScreen from './components/StartScreen';
 import RoomEntryScreen from './components/RoomEntryScreen';
 import MarsBackdrop from './components/MarsBackdrop';
@@ -14,6 +15,7 @@ import TestPanel, { buildPreviewGame } from './components/TestPanel';
 import MinigamePresentation from './phases/MinigamePresentation';
 import CardSelection from './phases/CardSelection';
 import PlayMinigame from './phases/PlayMinigame';
+import RoundLeaderboard from './phases/RoundLeaderboard';
 
 type AppView = 'start' | 'create' | 'join' | 'classic' | 'test-panel' | 'preview';
 
@@ -71,28 +73,38 @@ export default function App() {
         <main className="mars-stage__main">
           <Hud game={game} seconds={seconds} onLeave={leave} disabled={!connected} />
           {error && <p className="error stage-error" role="alert">{error}</p>}
-          <div className="stage-center">
-            <fieldset disabled={!connected}>
-              {phase === 'presentation' && (
-                <MinigamePresentation
-                  game={game}
-                  onReady={() => act(reply => socket.emit('phase:ready', { phaseId: game.phaseId }, reply))}
-                />
-              )}
-              {phase === 'cards' && (
-                <CardSelection
-                  game={game}
-                  onChoose={(cardId, targetId) => act(reply => socket.emit('card:choose', { phaseId: game.phaseId, cardId, targetId }, reply))}
-                />
-              )}
-              {phase === 'playing' && (
-                <PlayMinigame
-                  key={game.phaseId}
-                  game={game}
-                  onSubmit={result => act(reply => socket.emit('minigame:submit', { phaseId: game.phaseId, result }, reply))}
-                />
-              )}
-            </fieldset>
+          <div className="stage-workspace">
+            <div className="stage-center">
+              <fieldset disabled={!connected}>
+                {phase === 'presentation' && (
+                  <MinigamePresentation
+                    game={game}
+                    onReady={() => act(reply => socket.emit('phase:ready', { phaseId: game.phaseId }, reply))}
+                  />
+                )}
+                {phase === 'cards' && (
+                  <CardSelection
+                    game={game}
+                    onChoose={(cardId, targetId) => act(reply => socket.emit('card:choose', { phaseId: game.phaseId, cardId, targetId }, reply))}
+                  />
+                )}
+                {phase === 'playing' && (
+                  <PlayMinigame
+                    key={game.phaseId}
+                    game={game}
+                    onProgress={score => socket.emit('minigame:progress', { phaseId: game.phaseId, score })}
+                    onSubmit={result => act(reply => socket.emit('minigame:submit', { phaseId: game.phaseId, result }, reply))}
+                  />
+                )}
+                {phase === 'results' && (
+                  <RoundLeaderboard
+                    game={game}
+                    onContinue={() => act(reply => socket.emit('phase:ready', { phaseId: game.phaseId }, reply))}
+                  />
+                )}
+              </fieldset>
+            </div>
+            {phase !== 'results' && <CrewSidebar game={game} />}
           </div>
         </main>
       </div>
@@ -125,7 +137,7 @@ export default function App() {
             onCreate={() => {}}
             onJoin={() => {}}
             onReady={() => setPreviewReady(value => !value)}
-            onStart={() => setPreviewPhase('cards')}
+            onStart={() => setPreviewPhase('presentation')}
             onBots={() => {}}
             onRemove={() => {}}
           />
@@ -136,10 +148,12 @@ export default function App() {
 
     const previewSeconds =
       previewPhase === 'cards'
-        ? 25
-        : previewPhase === 'playing'
-          ? Math.ceil(previewGame.minigame.durationMs / 1000)
-          : null;
+        ? Math.ceil(CARDS_MS / 1000)
+        : previewPhase === 'results'
+          ? Math.ceil(RESULTS_MS / 1000)
+          : previewPhase === 'playing'
+            ? Math.ceil(previewGame.minigame.durationMs / 1000)
+            : null;
 
     return (
       <div className="mars-stage">
@@ -151,20 +165,29 @@ export default function App() {
             onLeave={() => setView('test-panel')}
             leaveLabel="BACK TO PANEL"
           />
-          <div className="stage-center">
-            {previewPhase === 'presentation' && (
-              <MinigamePresentation game={previewGame} onReady={() => setPreviewPhase('playing')} />
-            )}
-            {previewPhase === 'cards' && (
-              <CardSelection game={previewGame} onChoose={() => setPreviewPhase('presentation')} />
-            )}
-            {previewPhase === 'playing' && (
-              <PlayMinigame
-                key={previewGame.phaseId}
-                game={previewGame}
-                onSubmit={() => setPreviewPhase('lobby')}
-              />
-            )}
+          <div className="stage-workspace">
+            <div className="stage-center">
+              {previewPhase === 'presentation' && (
+                <MinigamePresentation game={previewGame} onReady={() => setPreviewPhase('playing')} />
+              )}
+              {previewPhase === 'cards' && (
+                <CardSelection game={previewGame} onChoose={() => setPreviewPhase('presentation')} />
+              )}
+              {previewPhase === 'playing' && (
+                <PlayMinigame
+                  key={previewGame.phaseId}
+                  game={previewGame}
+                  onSubmit={() => setPreviewPhase('results')}
+                />
+              )}
+              {previewPhase === 'results' && (
+                <RoundLeaderboard
+                  game={previewGame}
+                  onContinue={() => setPreviewPhase('lobby')}
+                />
+              )}
+            </div>
+            {previewPhase !== 'results' && <CrewSidebar game={previewGame} />}
           </div>
           {previewBanner}
         </main>

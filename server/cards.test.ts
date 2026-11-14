@@ -77,13 +77,14 @@ test('shield blocks precisely the next radiation reception; suit blocks precisel
   assert.equal(radiationDamage(p[0]), 0); assert.equal(p[0].protection.reinforcedSuit, true);
   p[0].resources.radiation = 2;
   assert.equal(radiationDamage(p[0]), 0); assert.equal(p[0].protection.reinforcedSuit, false);
-  assert.equal(radiationDamage(p[0]), 10); assert.equal(p[0].health, 90);
+  assert.equal(radiationDamage(p[0]), 20); assert.equal(p[0].health, 80);
 });
 
 test('protection persists across rounds and does not stack when reselected', () => {
   const { room, players: [p] } = fixture(1, ['rest', 'radiation-shield', 'reinforced-suit']);
   chooseCard(room, p, 'radiation-shield'); resolveCards(room);
   room.phase = 'playing'; submitResult(room, p, timeoutResult(room.minigame)); advanceIfComplete(room, 2);
+  p.ready = true; advanceIfComplete(room, 2.5);
   p.ready = true; startRound(room, p, 3);
   assert.equal(p.protection.radiationShield, true);
   receiveRadiation(p, 3); assert.equal(p.resources.radiation, 0); assert.equal(p.protection.radiationShield, false);
@@ -182,9 +183,9 @@ test('resolution is independent of seating order and the suit is consumed only b
     assert.equal(p[0].protection.reinforcedSuit, true); assert.equal(p[0].health, 100);
     p.forEach(q => { q.ready = true; }); advanceIfComplete(room, 2);
     p.forEach(q => submitResult(room, q, timeoutResult(room.minigame))); advanceIfComplete(room, 3);
-    assert.equal(p[0].health, 100); assert.equal(p[0].protection.reinforcedSuit, false); assert.equal(p[2].health, 95);
+    assert.equal(p[0].health, 100); assert.equal(p[0].protection.reinforcedSuit, false); assert.equal(p[2].health, 90);
     const state = p.map(q => ({ health: q.health, resources: { ...q.resources }, protection: { ...q.protection } }));
-    advanceIfComplete(room, 4); assert.deepEqual(p.map(q => q.health), state.map(q => q.health));
+    p.forEach(q => { q.ready = true; }); advanceIfComplete(room, 4); assert.deepEqual(p.map(q => q.health), state.map(q => q.health));
     return state;
   };
   assert.deepEqual(run(false), run(true));
@@ -197,13 +198,15 @@ test('a death from a card ends a duel immediately and eliminated observers never
   resolveCards(duel.room, () => .99); advanceIfComplete(duel.room, 2);
   assert.equal(duel.room.phase, 'lobby'); assert.equal(duel.room.winnerId, duel.players[1].id);
   const { room, players: p } = fixture(3);
-  p.forEach(q => chooseCard(room, q, 'rest')); p[0].health = 5; p[0].resources.radiation = 1;
+  p.forEach(q => chooseCard(room, q, 'rest')); p[0].health = 10; p[0].resources.radiation = 1;
   advanceIfComplete(room, 2);
   assert.equal(room.phase, 'presentation');
   p.forEach(q => { q.ready = true; }); advanceIfComplete(room, 2);
   assert.equal(room.phase, 'playing');
   p.forEach(q => submitResult(room, q, timeoutResult(room.minigame))); advanceIfComplete(room, 3);
   assert.equal(p[0].health, 0); assert.equal(room.matchFinished, false);
+  p.slice(1).forEach(q => { q.ready = true; }); advanceIfComplete(room, 3.5);
+  assert.equal(room.phase, 'lobby');
   p.slice(1).forEach(q => { q.ready = true; }); startRound(room, p[0], 4);
   assert.equal(room.phase, 'cards');
   assert.equal(p[0].hasChosenCard, true); assert.equal(p[0].hasSubmitted, true);
@@ -247,8 +250,8 @@ test('reinforced suit preserves the upkeep, empty-resource damage and last-place
   p.forEach(q => { q.ready = true; }); advanceIfComplete(room, 2);
   const result = timeoutResult(room.minigame);
   submitResult(room, p[0], { ...result, score: 0 }); submitResult(room, p[1], { ...result, score: room.minigame.maxScore }); advanceIfComplete(room, 3);
-  assert.equal(p[0].health, 75); // -5 last place, -10 empty food, -10 empty energy; radiation blocked.
+  assert.equal(p[0].health, 30); // -40 last place (round 5 * 8), -15 empty food, -15 empty energy; radiation blocked.
   assert.equal(p[0].protection.reinforcedSuit, false);
   assert.equal(p[0].resources.radiation, 2);
-  assert.equal(p[1].resources.food, 35); // Main's -5 upkeep survives card integration.
+  assert.equal(p[1].resources.food, 22); // 40 - 18 upkeep.
 });

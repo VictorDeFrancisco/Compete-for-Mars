@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import type { Card, CardSelectionProps } from '../../../shared/types';
-import { TopoWatermarkSvg } from '../components/NasaMarks';
 import { playUiClick } from '../utils/uiAudio';
 import './CardSelection.css';
 
@@ -10,6 +9,84 @@ const categoryLabels = {
   defense: 'Protección',
   interaction: 'Tripulación',
 } as const;
+
+interface CardHighlight {
+  label: string;
+  tone: 'gain' | 'cost' | 'danger' | 'rad' | 'info';
+}
+
+function getCardHighlights(card: Card, aliveCount: number): CardHighlight[] {
+  const tags: CardHighlight[] = [];
+  const kind = card.rules?.kind ?? card.id;
+
+  if (kind === 'rest') {
+    tags.push({ label: `+${card.rules?.amount ?? 40} ENERGÍA (A REPARTIR)`, tone: 'gain' });
+  } else if (kind === 'eat') {
+    tags.push({ label: `+${card.rules?.amount ?? 40} COMIDA (A REPARTIR)`, tone: 'gain' });
+  } else if (kind === 'decontamination') {
+    tags.push({ label: 'CURA TODA RADIACIÓN (SOLO SI VAS TÚ)', tone: 'gain' });
+    tags.push({ label: '+1 RADIACIÓN SI ESTÁS LIMPIO', tone: 'rad' });
+  } else if (kind === 'radiation-shield') {
+    tags.push({ label: 'BLOQUEA PRÓXIMA RADIACIÓN', tone: 'info' });
+  } else if (kind === 'reinforced-suit') {
+    tags.push({ label: 'ANULA PRÓXIMO DAÑO DE RADIACIÓN', tone: 'info' });
+  } else if (kind === 'sabotage') {
+    tags.push({ label: `QUITA -${card.rules?.amount ?? 20} COMIDA AL OBJETIVO`, tone: 'danger' });
+  } else if (kind === 'supply-theft') {
+    tags.push({ label: `ROBA +${card.rules?.amount ?? 30} COMIDA AL LÍDER`, tone: 'gain' });
+  } else if (kind === 'exchange') {
+    tags.push({ label: 'ROTA COMIDA Y ENERGÍA', tone: 'info' });
+  } else if (kind === 'contagion') {
+    tags.push({ label: '+1 RADIACIÓN AL OBJETIVO', tone: 'rad' });
+  }
+
+  if (card.cost?.energy) tags.push({ label: `COSTE -${card.cost.energy} ENERGÍA`, tone: 'cost' });
+  if (card.cost?.food) tags.push({ label: `COSTE -${card.cost.food} COMIDA`, tone: 'cost' });
+
+  if (card.effect.food) tags.push({ label: `+${card.effect.food} COMIDA`, tone: 'gain' });
+  if (card.effect.energy) tags.push({ label: `+${card.effect.energy} ENERGÍA`, tone: 'gain' });
+  if (card.effect.radiation) tags.push({ label: `+${card.effect.radiation} RADIACIÓN`, tone: 'rad' });
+
+  if (card.rules?.chance !== undefined) {
+    const chance = card.rules.chance === 'alive/5' ? Math.min(1, aliveCount / 5) : card.rules.chance;
+    tags.push({ label: `${Math.round(chance * 100)}% ÉXITO`, tone: 'info' });
+  }
+  if (card.rules?.failureHealth) {
+    tags.push({ label: `${card.rules.failureHealth} VIDA SI FALLA`, tone: 'danger' });
+  }
+  if (card.rules?.failure?.radiation) {
+    tags.push({ label: `+${card.rules.failure.radiation} RADIACIÓN SI FALLA`, tone: 'rad' });
+  }
+  if (card.rules?.failure?.food || card.rules?.failure?.energy) {
+    tags.push({ label: '-15 COMIDA/ENERGÍA SI FALLA', tone: 'danger' });
+  }
+
+  return tags;
+}
+
+const HIGHLIGHT_REGEX =
+  /([+-]?\d+(?:\s*\/\s*\d+)?(?:\s*%|\s+de\s+(?:energía|comida|vida|radiación))?|\bradiación\b|\bcomida\b|\benergía\b|\bvida\b)/gi;
+
+function renderHighlightedText(text: string) {
+  const parts = text.split(HIGHLIGHT_REGEX);
+  return parts.map((part, idx) => {
+    if (!part) return null;
+    if (idx % 2 === 1) {
+      const lower = part.toLowerCase();
+      let cls = 'card-kw--num';
+      if (lower.includes('radiación')) cls = 'card-kw--rad';
+      else if (lower.includes('comida')) cls = 'card-kw--food';
+      else if (lower.includes('energía')) cls = 'card-kw--energy';
+      else if (lower.includes('vida')) cls = 'card-kw--hp';
+      return (
+        <mark key={idx} className={`card-kw ${cls}`}>
+          {part}
+        </mark>
+      );
+    }
+    return <Fragment key={idx}>{part}</Fragment>;
+  });
+}
 
 function CardCategoryPatchSvg({ category }: { category: Card['category'] }) {
   switch (category) {
@@ -65,17 +142,21 @@ export default function CardSelection({ game, onChoose }: CardSelectionProps) {
   return (
     <section className="phase-cards" aria-label="Card selection">
       <header className="cards-heading">
-        <div>
-          <p className="eyebrow">TACTICAL DIRECTIVE</p>
-          <h2>{dead ? 'Spectating tactical phase' : 'Choose your card'}</h2>
+        <div className="cards-heading__copy">
+          <h2>{dead ? 'OBSERVANDO FASE TÁCTICA' : 'ELIGE UNA CARTA TÁCTICA'}</h2>
+          <p className="cards-heading__explain">
+            {dead
+              ? 'Los tripulantes vivos están decidiendo su acción antes del siguiente reto.'
+              : 'Todas las cartas se eligen en secreto y se resuelven antes del minijuego.'}
+          </p>
         </div>
 
         {(game.self.protection?.radiationShield || game.self.protection?.reinforcedSuit) && (
           <p className="cards-protection">
-            Active:{' '}
+            PROTECCIÓN ACTIVA:{' '}
             {[
-              game.self.protection.radiationShield && 'Radiation shield',
-              game.self.protection.reinforcedSuit && 'Reinforced suit',
+              game.self.protection.radiationShield && 'Escudo antirradiación',
+              game.self.protection.reinforcedSuit && 'Traje reforzado',
             ]
               .filter(Boolean)
               .join(' · ')}
@@ -85,16 +166,13 @@ export default function CardSelection({ game, onChoose }: CardSelectionProps) {
 
       <div className="cards-options">
         {game.cards.map((card, index) => {
-          const cost = Object.entries(card.cost ?? {})
-            .map(([key, value]) => `${value} de ${key === 'food' ? 'comida' : 'energía'}`)
-            .join(' + ');
           const cannotPay = Object.entries(card.cost ?? {}).some(
             ([key, value]) => game.self.resources[key as keyof typeof game.self.resources] < value!,
           );
           const noRadiation = card.requiresRadiation && game.self.resources.radiation === 0;
           const needsTarget = card.targetRequired && !targets[card.id];
           const selected = game.self.selectedCardId === card.id;
-          const chance = card.rules?.chance === 'alive/5' ? alive.length / 5 : card.rules?.chance;
+          const highlights = getCardHighlights(card, alive.length);
 
           return (
             <article
@@ -102,11 +180,11 @@ export default function CardSelection({ game, onChoose }: CardSelectionProps) {
               data-category={card.category ?? 'supply'}
               key={card.id}
             >
-              {selected && <span className="action-card__stamp" aria-hidden="true">SELECTED</span>}
+              {selected && <span className="action-card__stamp" aria-hidden="true">SELECCIONADA</span>}
 
               <div className="action-card-top">
                 <span>{card.category ? categoryLabels[card.category] : 'Acción'}</span>
-                <span>{String(index + 1).padStart(2, '0')}</span>
+                <span>0{index + 1}</span>
               </div>
 
               <div className="action-card__patch">
@@ -114,22 +192,20 @@ export default function CardSelection({ game, onChoose }: CardSelectionProps) {
               </div>
 
               <h3>{card.title}</h3>
-              <p className="action-card-description">{card.description}</p>
 
-              {chance !== undefined && (
-                <p className="action-card-detail">
-                  Éxito <b>{Math.round(chance * 100)} %</b>
-                </p>
-              )}
-              {cost && (
-                <p className="action-card-detail">
-                  Coste <b>{cost}</b>
-                </p>
-              )}
+              <div className="action-card__badges" aria-label="Efectos principales">
+                {highlights.map((item, i) => (
+                  <span key={i} className={`action-badge action-badge--${item.tone}`}>
+                    {item.label}
+                  </span>
+                ))}
+              </div>
+
+              <p className="action-card-description">{renderHighlightedText(card.description)}</p>
 
               {card.targetRequired && (
                 <label className="action-card-target">
-                  Objetivo
+                  OBJETIVO
                   <select
                     aria-label={`Objetivo de ${card.title}`}
                     value={targets[card.id] ?? ''}
@@ -151,7 +227,7 @@ export default function CardSelection({ game, onChoose }: CardSelectionProps) {
                   {cannotPay
                     ? 'No tienes recursos suficientes.'
                     : noRadiation
-                      ? 'Necesitas estar contaminado.'
+                      ? 'Necesitas tener radiación activa.'
                       : '\u00a0'}
                 </p>
                 <button
@@ -162,7 +238,7 @@ export default function CardSelection({ game, onChoose }: CardSelectionProps) {
                     onChoose(card.id, card.targetRequired ? targets[card.id] : undefined);
                   }}
                 >
-                  {selected ? 'Elegida ✓' : 'Elegir carta'}
+                  {selected ? 'CARTA ELEGIDA ✓' : 'ELEGIR CARTA'}
                 </button>
               </div>
             </article>
@@ -171,11 +247,11 @@ export default function CardSelection({ game, onChoose }: CardSelectionProps) {
       </div>
 
       <div className="cards-status" role="status">
-        <span>{alive.filter(p => p.hasChosenCard).length} / {alive.length} crew ready</span>
+        <strong>{alive.filter(p => p.hasChosenCard).length} / {alive.length} LISTOS</strong>
         <span>
           {game.self.hasChosenCard && !dead
-            ? 'Selection locked. Waiting for crew…'
-            : 'Cards resolve privately before the mission briefing.'}
+            ? 'Selección bloqueada. Esperando al resto de la tripulación…'
+            : 'Haz clic en una carta para confirmar tu jugada de esta ronda.'}
         </span>
       </div>
     </section>

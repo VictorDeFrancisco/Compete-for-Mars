@@ -50,9 +50,17 @@ test('dos clientes reales: sala, autorizaciones, ronda, reconexión y segunda ro
   const intro1 = await state(a, view => view.phase === 'presentation' && view.round === 1);
   for (const client of [a, b]) assert.equal((await action(client, 'phase:ready', { phaseId: intro1.phaseId })).ok, true);
   const playing1 = await state(a, view => view.phase === 'playing' && view.round === 1);
+  // Real-time live score broadcast during playing phase.
+  a.emit('minigame:progress', { phaseId: playing1.phaseId, score: 200 });
+  const liveSeen = await state(b, view => view.players.some(p => p.id === playing1.self.id && p.liveScore === 200));
+  assert.equal(liveSeen.players.find(p => p.id === playing1.self.id)?.liveScore, 200);
+
   const r1Result = timeoutResult(playing1.minigame);
   assert.equal((await action(a, 'minigame:submit', { phaseId: playing1.phaseId, result: { ...r1Result, score: playing1.minigame.maxScore } })).ok, true);
   assert.equal((await action(b, 'minigame:submit', { phaseId: playing1.phaseId, result: { ...r1Result, score: 0 } })).ok, true);
+  const results1 = await state(a, view => view.phase === 'results' && view.round === 1);
+  assert.equal(results1.lastResults.length, 2);
+  for (const client of [a, b]) assert.equal((await action(client, 'phase:ready', { phaseId: results1.phaseId })).ok, true);
   const lobby = await state(a, view => view.phase === 'lobby' && view.round === 1);
   assert.equal(lobby.lastResults.length, 2);
 
@@ -62,7 +70,7 @@ test('dos clientes reales: sala, autorizaciones, ronda, reconexión y segunda ro
   const resumed = await connect('token-astronauta-a-123456');
   const restored = await state(resumed, view => view.phase === 'lobby');
   assert.equal(restored.self.id, id);
-  assert.ok(restored.self.resources.food >= 90);
+  assert.ok(restored.self.resources.food >= 80);
 
   // Round 2 starts with cards BEFORE presentation.
   for (const client of [resumed, b]) assert.equal((await action(client, 'player:ready', true)).ok, true);

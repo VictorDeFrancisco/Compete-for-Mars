@@ -5,17 +5,17 @@ export { BASE_STAT_CAP, clamp, clampResource, clampPlayerResource, maxHealthFor,
 import { MINIGAMES } from '../shared/minigames/catalog';
 import { rankResults, timeoutResult, validateResult } from '../shared/minigames/ranking';
 import type { MinigameResult } from '../shared/minigames/types';
-import { CARDS_MS, MAX_PLAYERS, STAT_BUDGET } from '../shared/constants';
+import { CARDS_MS, MAX_PLAYERS, RESULTS_MS, STAT_BUDGET } from '../shared/constants';
 import type { Card, Entry, GameView, MinigameDefinition, PublicPlayer, Resources, RoundResult, Stats, CardOutcome, PlayerProtection } from '../shared/types';
 
 export const CARDS: Card[] = CARD_CATALOG;
 export { MINIGAMES };
 export const RESULT_GRACE_MS = 1500;
-export const ROUND_RESOURCE_UPKEEP = 5;
-export const BASE_WIN_RESOURCE_BONUS = 20;
+export const ROUND_RESOURCE_UPKEEP = 18;
+export const BASE_WIN_RESOURCE_BONUS = 24;
 export const WIN_BONUS_ROUND_DECAY = 2;
-export const RADIATION_HEALTH_DAMAGE = 5;
-export const EMPTY_RESOURCE_HEALTH_DAMAGE = 10;
+export const RADIATION_HEALTH_DAMAGE = 10;
+export const EMPTY_RESOURCE_HEALTH_DAMAGE = 15;
 
 export interface Player extends PublicPlayer {
   token: string;
@@ -24,6 +24,7 @@ export interface Player extends PublicPlayer {
   resources: Resources;
   selectedCardId: string | null;
   score: number | null;
+  liveScore: number | null;
   result: MinigameResult | null;
   selectedTargetId: string | null;
   protection: PlayerProtection;
@@ -53,7 +54,7 @@ export function roundWinBonus(round: number, baseBonus = BASE_WIN_RESOURCE_BONUS
 }
 
 export function roundLoserDamage(round: number, deaths: number): number {
-  return Math.max(1, round) * (Math.max(0, deaths) + 1);
+  return Math.max(1, round) * 8 * (Math.max(0, deaths) + 1);
 }
 
 export function pickNextMinigame(room: Room, random: () => number = Math.random): MinigameDefinition {
@@ -97,6 +98,7 @@ export function makePlayer(entry: Entry, token: string, socketId: string | null,
     hasSubmitted: false,
     selectedCardId: null,
     score: null,
+    liveScore: null,
     result: null,
     selectedTargetId: null, protection: { radiationShield: false, reinforcedSuit: false }, cardOutcome: null,
     resources: {
@@ -128,8 +130,8 @@ export function makeRoom(code: string, player: Player, now = Date.now()): Room {
 }
 
 export function publicPlayer(player: Player): PublicPlayer {
-  const { id, name, health, isBot, connected, ready, hasChosenCard, hasSubmitted } = player;
-  return { id, name, health, maxHealth: maxHealthFor(player), isBot, connected, ready, hasChosenCard, hasSubmitted };
+  const { id, name, health, isBot, connected, ready, hasChosenCard, hasSubmitted, liveScore } = player;
+  return { id, name, health, maxHealth: maxHealthFor(player), isBot, connected, ready, hasChosenCard, hasSubmitted, liveScore };
 }
 
 export function viewFor(room: Room, player: Player, now = Date.now()): GameView {
@@ -184,6 +186,7 @@ export function startRound(room: Room, actor: Player, now = Date.now(), random: 
     player.hasSubmitted = player.health <= 0;
     player.selectedCardId = null; player.selectedTargetId = null; player.cardOutcome = null;
     player.score = null;
+    player.liveScore = null;
     player.result = null;
   }
   transition(room, hasCardsPhase ? 'cards' : 'presentation', hasCardsPhase ? CARDS_MS : null, now);
@@ -205,12 +208,21 @@ export function chooseCard(room: Room, player: Player, cardId: unknown, targetId
   } else requireRule(targetId === undefined || targetId === null, 'Esta carta no admite objetivo.');
   player.selectedCardId = card.id; player.selectedTargetId = card.targetRequired ? targetId as string : null; player.hasChosenCard = true;
 }
+export function updateLiveProgress(room: Room, player: Player, rawScore: unknown): boolean {
+  if (room.phase !== 'playing' || player.health <= 0 || player.hasSubmitted) return false;
+  if (typeof rawScore !== 'number' || !Number.isFinite(rawScore)) return false;
+  const clamped = clamp(Math.round(rawScore), 0, room.minigame.maxScore);
+  if (player.liveScore === clamped) return false;
+  player.liveScore = clamped;
+  return true;
+}
+
 export function submitResult(room: Room, player: Player, input: unknown) {
   requireRule(player.health > 0 && room.phase === 'playing', 'Los jugadores eliminados no pueden enviar resultado.');
   requireRule(!player.hasSubmitted, 'Ya has enviado tu resultado.');
   const result = validateResult(room.minigame, input);
   requireRule(result.reason !== 'aborted', 'Un intento abortado no se puede enviar.');
-  player.result = result; player.score = result.score; player.hasSubmitted = true;
+  player.result = result; player.score = result.score; player.liveScore = result.score; player.hasSubmitted = true;
 }
 
 export function advanceIfComplete(room: Room, now = Date.now()): boolean {
@@ -230,6 +242,7 @@ export function advanceIfComplete(room: Room, now = Date.now()): boolean {
   }
 
   if (room.phase === 'presentation' && (timedOut || alivePlayers.every(p => p.ready))) {
+    for (const player of room.players) player.liveScore = player.health > 0 ? 0 : null;
     transition(room, 'playing', room.minigame.durationMs, now);
     return true;
   }
@@ -291,6 +304,12 @@ export function advanceIfComplete(room: Room, now = Date.now()): boolean {
 
     finishMatchIfNeeded(room, ranking[0]?.playerId ?? null);
 
+    transition(room, 'results', RESULTS_MS, now);
+    return true;
+  }
+
+  if (room.phase === 'results' && (timedOut || alivePlayers.length === 0 || alivePlayers.every(p => p.ready))) {
+    for (const player of room.players) player.ready = player.isBot && player.health > 0;
     transition(room, 'lobby', null, now);
     return true;
   }

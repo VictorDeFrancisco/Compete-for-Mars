@@ -19,8 +19,12 @@ function CornerScrewSvg({ className }: { className: string }) {
   );
 }
 
+export interface PlayMinigameProps extends MinigameProps {
+  onProgress?: (score: number) => void;
+}
+
 // Local runner sends a single result without managing rewards or damage here.
-export default function PlayMinigame({ game, onSubmit }: MinigameProps) {
+export default function PlayMinigame({ game, onSubmit, onProgress }: PlayMinigameProps) {
   const initialElapsed = useRef(
     Math.max(0, game.minigame.durationMs - ((game.deadline ?? game.serverNow) - game.serverNow)),
   );
@@ -43,12 +47,18 @@ export default function PlayMinigame({ game, onSubmit }: MinigameProps) {
   if (game.minigame.id === 'pipes' && game.self.health > 0) {
     return (
       <section className={`phase-playing ${debuffClasses}`.trim()}>
-        <PipesSceneProvider crew={game.players.map(player => ({ ...player, isSelf: player.id === game.self.id }))}>
+        <PipesSceneProvider
+          crew={game.players.map(player => ({
+            ...player,
+            isSelf: player.id === game.self.id,
+          }))}
+        >
           <MinigameWrapper
             definition={game.minigame}
             context={minigameContext}
             initialElapsedMs={initialElapsed.current}
             onResult={onSubmit}
+            onScoreChange={onProgress}
             showChrome={false}
           />
         </PipesSceneProvider>
@@ -100,6 +110,7 @@ export default function PlayMinigame({ game, onSubmit }: MinigameProps) {
               context={minigameContext}
               initialElapsedMs={initialElapsed.current}
               onResult={onSubmit}
+              onScoreChange={onProgress}
               showChrome={false}
             />
           )}

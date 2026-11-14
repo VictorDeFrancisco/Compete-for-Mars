@@ -43,7 +43,7 @@ export function applyResourceEffect(player: Player, effect: Partial<Resources>):
     } else player.resources[key] = clampPlayerResource(player, key, player.resources[key] + amount);
   }
 }
-export function radiationDamage(player: Player, damagePerUnit = 5): number {
+export function radiationDamage(player: Player, damagePerUnit = 10): number {
   if (player.health <= 0 || player.resources.radiation <= 0) return 0;
   if (player.protection.reinforcedSuit) { player.protection.reinforcedSuit = false; return 0; }
   const damage = Math.min(player.health, player.resources.radiation * damagePerUnit);

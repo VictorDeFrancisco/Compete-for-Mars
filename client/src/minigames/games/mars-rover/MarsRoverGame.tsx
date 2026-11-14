@@ -700,7 +700,6 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
     data.slopeDeg > 22 ? 'slope-danger' : data.slopeDeg > 12 ? 'slope-warning' : 'slope-safe';
 
   const speedKmh = (data.speed * 3.6).toFixed(1);
-  const currentElevation = rover.sector.elevationAt(data.posX, data.posY);
   const roverCoords = calculateMarsCoordinates(
     data.posX,
     data.posY,
@@ -728,149 +727,113 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
 
   return (
     <div className="mars-rover-container">
-      <div className="mars-rover-header">
-        <div className="header-main-info">
-          <div className="sector-title">
-            <strong>{data.sector.sectorName}</strong>
+      <div className="rover-cockpit">
+        <div className="canvas-map-wrapper">
+          <canvas ref={canvasRef} width={600} height={390} className="mars-canvas" />
+
+          <div className="rover-hud-overlay">
+            <span className={`rover-hud-pill ${energyClass}`}>BAT {data.energy.toFixed(0)}%</span>
+            <span className="rover-hud-pill">{speedKmh} KM/H</span>
+            <span className="rover-hud-pill rover-hud-pill--target">BALIZA {targetDist} M</span>
           </div>
-          <div className="rover-coords-display" title="Coordenadas orbitales de Marte y métricas locales">
-            <span className="coords-icon">📍 Coordenadas:</span>
-            <span className="coords-latlon">{roverCoords.formatted}</span>
-            <span className="coords-grid">
-              (X: {data.posX.toFixed(1)}m, Y: {data.posY.toFixed(1)}m, Z: {currentElevation >= 0 ? `+${currentElevation.toFixed(1)}m` : `${currentElevation.toFixed(1)}m`})
-            </span>
-          </div>
-        </div>
-        <div className="mars-api-badge live">
-          🛰️ Mosaico Satelital NASA Mars Trek
-        </div>
-      </div>
 
-      <div className="mars-telemetry-strip">
-        <div className="telemetry-card">
-          <span className="telemetry-label">Batería (Consumo Real)</span>
-          <span className={`telemetry-value ${energyClass}`}>{data.energy.toFixed(1)} %</span>
-        </div>
-        <div className="telemetry-card">
-          <span className="telemetry-label">Velocidad</span>
-          <span className="telemetry-value">{speedKmh} km/h</span>
-        </div>
-        <div className="telemetry-card">
-          <span className="telemetry-label">Cabeceo / Inclinación</span>
-          <span className={`telemetry-value ${slopeClass}`}>
-            {data.pitchDeg > 0 ? `▲ +${data.pitchDeg}°` : `▼ ${data.pitchDeg}°`}
-          </span>
-        </div>
-        <div className="telemetry-card">
-          <span className="telemetry-label">Balanceo Lateral</span>
-          <span className="telemetry-value">{data.rollDeg}°</span>
-        </div>
-        <div className="telemetry-card">
-          <span className="telemetry-label">Distancia a Baliza B</span>
-          <span className="telemetry-value" style={{ color: '#4ade80' }}>{targetDist} m</span>
-        </div>
-      </div>
-
-      <div className="canvas-map-wrapper">
-        <canvas ref={canvasRef} width={520} height={420} className="mars-canvas" />
-
-        {isGameOver && (
-          <div className="mission-debrief-card">
-            <div className="debrief-header">
-              <span className="debrief-icon">{isMissionCompleted ? '🏆' : '⚠️'}</span>
-              <div>
-                <h3>{isMissionCompleted ? '¡MISIÓN CUMPLIDA · OBJETIVO ALCANZADO!' : 'MISIÓN FINALIZADA'}</h3>
-                <p>{isMissionCompleted ? 'El rover ha asegurado la posición en la Baliza B.' : 'Operación concluida en el sector marciano.'}</p>
+          {isGameOver && (
+            <div className="mission-debrief-card">
+              <div className="debrief-header">
+                <h3>{isMissionCompleted ? 'OBJETIVO ALCANZADO' : 'MISIÓN FINALIZADA'}</h3>
+                <p>{isMissionCompleted ? 'Posición asegurada en la Baliza B.' : 'Operación concluida.'}</p>
+              </div>
+              <div className="debrief-grid">
+                <div className="debrief-metric">
+                  <span className="debrief-label">BATERÍA</span>
+                  <span className="debrief-val">{data.energy.toFixed(0)}%</span>
+                </div>
+                <div className="debrief-metric">
+                  <span className="debrief-label">TIEMPO</span>
+                  <span className="debrief-val">{(snapshot.elapsedMs / 1000).toFixed(1)}s</span>
+                </div>
+                <div className="debrief-metric">
+                  <span className="debrief-label">SCORE</span>
+                  <span className="debrief-val">{snapshot.score} PTS</span>
+                </div>
               </div>
             </div>
-            <div className="debrief-grid">
-              <div className="debrief-metric">
-                <span className="debrief-label">⚡ BATERÍA FINAL</span>
-                <span className="debrief-val" style={{ color: data.energy > 30 ? '#4ade80' : '#f87171' }}>
-                  {data.energy.toFixed(1)} %
-                </span>
-              </div>
-              <div className="debrief-metric">
-                <span className="debrief-label">⏱️ TIEMPO</span>
-                <span className="debrief-val">{(snapshot.elapsedMs / 1000).toFixed(1)} s</span>
-              </div>
-              <div className="debrief-metric">
-                <span className="debrief-label">🎯 PROGRESO</span>
-                <span className="debrief-val">{(snapshot.progress * 100).toFixed(0)} %</span>
-              </div>
-              <div className="debrief-metric">
-                <span className="debrief-label">⭐ PUNTUACIÓN</span>
-                <span className="debrief-val" style={{ color: '#fbbf24' }}>
-                  {snapshot.score} pts
-                </span>
-              </div>
+          )}
+        </div>
+
+        <aside className="rover-side-panel">
+          <div className="rover-sector-box">
+            <span className="rover-sector-tag">JEZERO TELEMETRY</span>
+            <strong className="rover-sector-name">{data.sector.sectorName}</strong>
+            <span className="rover-sector-coords">{roverCoords.formatted}</span>
+          </div>
+
+          <div className="mars-telemetry-strip">
+            <div className="telemetry-card">
+              <span className="telemetry-label">RUMBO</span>
+              <span className="telemetry-value">{getHeadingCompass(data.heading)}</span>
             </div>
-            <div className="debrief-footer">
-              <span>📍 {data.sector.sectorName}</span>
-              <span className="debrief-coords">{roverCoords.formatted}</span>
+            <div className="telemetry-card">
+              <span className="telemetry-label">GUÍA BALIZA</span>
+              <span className="telemetry-value">{targetNavHint}</span>
+            </div>
+            <div className="telemetry-card">
+              <span className="telemetry-label">INCLINACIÓN</span>
+              <span className={`telemetry-value ${slopeClass}`}>
+                {data.pitchDeg > 0 ? `+${data.pitchDeg}°` : `${data.pitchDeg}°`}
+              </span>
+            </div>
+            <div className="telemetry-card">
+              <span className="telemetry-label">SCORE</span>
+              <span className="telemetry-value telemetry-value--pts">{snapshot.score} PTS</span>
             </div>
           </div>
-        )}
-      </div>
 
-      <div className="legend-bar">
-        <span>Capa Satelital:</span>
-        <div className="legend-gradient">
-          <span>Basalto (-6m)</span>
-          <div className="gradient-box gradient-mars-satellite" />
-          <span>Hematita (+18m)</span>
-        </div>
-        <span style={{ opacity: 0.85, fontSize: '0.72rem' }}>
-          Fotografía Satelital NASA Viking / MRO + Textura Regolito
-        </span>
-      </div>
+          <div className="rover-status-banner">{data.lastEventMessage}</div>
 
-      <div className="rover-status-banner">{data.lastEventMessage}</div>
-
-      <div className="compass-heading">
-        Rumbo: <strong>{getHeadingCompass(data.heading)}</strong> · Baliza B: <strong>{getHeadingCompass(targetBearingDeg)} ({targetNavHint})</strong> · Suspensión: <strong>{(data.suspensionOffset * 100).toFixed(0)} cm</strong> · Tiempo: <strong>{Math.ceil(snapshot.remainingMs / 1000)}s</strong>
-      </div>
-
-      {/* Controles de conducción */}
-      <div className="tank-controls-cluster">
-        <button
-          type="button"
-          className="tank-btn forward"
-          disabled={!isRunning}
-          {...bindTouch('forward')}
-          aria-label="Acelerar hacia adelante"
-        >
-          ▲ Acelerar (W)
-        </button>
-        <div className="tank-controls-row">
-          <button
-            type="button"
-            className="tank-btn"
-            disabled={!isRunning}
-            {...bindTouch('turn-left')}
-            aria-label="Girar izquierda"
-          >
-            ◀ Girar Izq (A)
-          </button>
-          <button
-            type="button"
-            className="tank-btn"
-            disabled={!isRunning}
-            {...bindTouch('turn-right')}
-            aria-label="Girar derecha"
-          >
-            ▶ Girar Der (D)
-          </button>
-        </div>
-        <button
-          type="button"
-          className="tank-btn reverse"
-          disabled={!isRunning}
-          {...bindTouch('reverse')}
-          aria-label="Marcha atrás"
-        >
-          ▼ Reversa (S)
-        </button>
+          <div className="tank-controls-cluster" aria-label="Controles del rover">
+            <button
+              type="button"
+              className="tank-btn tank-btn--w"
+              disabled={!isRunning}
+              {...bindTouch('forward')}
+              aria-label="Acelerar hacia adelante"
+            >
+              <kbd>W</kbd>
+              <span>▲</span>
+            </button>
+            <button
+              type="button"
+              className="tank-btn tank-btn--a"
+              disabled={!isRunning}
+              {...bindTouch('turn-left')}
+              aria-label="Girar izquierda"
+            >
+              <kbd>A</kbd>
+              <span>◀</span>
+            </button>
+            <button
+              type="button"
+              className="tank-btn tank-btn--s"
+              disabled={!isRunning}
+              {...bindTouch('reverse')}
+              aria-label="Marcha atrás"
+            >
+              <kbd>S</kbd>
+              <span>▼</span>
+            </button>
+            <button
+              type="button"
+              className="tank-btn tank-btn--d"
+              disabled={!isRunning}
+              {...bindTouch('turn-right')}
+              aria-label="Girar derecha"
+            >
+              <kbd>D</kbd>
+              <span>▶</span>
+            </button>
+          </div>
+        </aside>
       </div>
     </div>
   );

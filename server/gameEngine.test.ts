@@ -73,6 +73,9 @@ test('ciclo completo, coste -5, topes dinámicos de profesión, cartas simultán
   submitResult(room, a, { ...r1Result, score: room.minigame.maxScore });
   submitResult(room, b, { ...r1Result, score: 0 });
   advanceIfComplete(room, 2);
+  assert.equal(room.phase, 'results');
+  a.ready = b.ready = true;
+  advanceIfComplete(room, 3);
   assert.equal(room.phase, 'lobby');
 
   // Round 2: cards phase happens BEFORE presentation.
@@ -123,23 +126,28 @@ test('ciclo completo, coste -5, topes dinámicos de profesión, cartas simultán
   assert.throws(() => submitResult(room, a, result));
 
   advanceIfComplete(room, 7);
-  assert.equal(room.phase, 'lobby');
-  // a (Medic) started at 130 HP -> 1 radiation (-5 HP) -> 125 HP.
-  assert.equal(a.health, 125);
+  assert.equal(room.phase, 'results');
+  // a (Medic) started at 130 HP -> 1 radiation (-10 HP) -> 120 HP.
+  assert.equal(a.health, 120);
   assert.equal(a.maxHealth, 130);
-  assert.equal(a.resources[otherResource], 95);
+  assert.equal(a.resources[otherResource], 100 - 18);
+  // Winner gained 25 - 18 = +7? No, BASE_WIN_RESOURCE_BONUS 24, R2 decay -2 => +22; net +22 - 18 = +4, capped at 100 for Medic!
   assert.equal(a.resources[roundResource], 100);
-  // b (Pilot) started at 110 HP -> lost round 2 with 0 deaths (-2 HP) -> 108 HP.
-  assert.equal(b.health, 108);
+  // b (Pilot) started at 110 HP -> lost round 2 with 0 deaths (-16 HP) -> 94 HP.
+  assert.equal(b.health, 94);
   assert.equal(b.maxHealth, 110);
-  const expectedBResource = (roundResource === 'energy' ? 120 : 100) - 5;
+  const expectedBResource = (roundResource === 'energy' ? 120 : 100) - 18;
   assert.equal(b.resources[roundResource], expectedBResource);
   assert.equal(room.lastResults.find(r => r.playerId === a.id)?.outcome, 'winner');
   assert.equal(a.ready, false);
   assert.equal(room.lastResults.length, 2);
 
   a.ready = b.ready = true;
-  startRound(room, a, 8, () => 0);
+  advanceIfComplete(room, 8);
+  assert.equal(room.phase, 'lobby');
+
+  a.ready = b.ready = true;
+  startRound(room, a, 9, () => 0);
   assert.equal(room.round, 3);
 });
 
@@ -175,17 +183,21 @@ test('orden aleatorio controlado: mínimo 2 minijuegos distintos entre repeticio
     assert.equal(room.phase, 'playing');
     submitResult(room, a, timeoutResult(room.minigame));
     advanceIfComplete(room, i * 10 + 3);
+    assert.equal(room.phase, 'results');
+    a.ready = true;
+    advanceIfComplete(room, i * 10 + 4);
+    assert.equal(room.phase, 'lobby');
   }
   assert.equal(new Set(seenOrder).size >= 4, true);
 });
 
-test('radiación sin límite superior, daño por 0 comida/energía, decaimiento del +20 y fórmula de último puesto', () => {
+test('radiación sin límite superior, daño por 0 comida/energía, decaimiento del +24 y fórmula de último puesto', () => {
   assert.equal(clampResource('radiation', 25), 25);
-  assert.equal(roundWinBonus(1), 20);
-  assert.equal(roundWinBonus(6), 10);
-  assert.equal(roundWinBonus(11), 0);
-  assert.equal(roundLoserDamage(5, 0), 5);
-  assert.equal(roundLoserDamage(5, 2), 15);
+  assert.equal(roundWinBonus(1), 24);
+  assert.equal(roundWinBonus(6), 14);
+  assert.equal(roundWinBonus(13), 0);
+  assert.equal(roundLoserDamage(5, 0), 40);
+  assert.equal(roundLoserDamage(5, 2), 120);
 
   const a = player('Ana', { energy: 30, food: 0, health: 0 });
   const b = player('Luis', { energy: 0, food: 0, health: 30 }); // maxHealth 130
@@ -214,28 +226,10 @@ test('radiación sin límite superior, daño por 0 comida/energía, decaimiento 
   advanceIfComplete(room, 3);
 
   // Round 5 with 1 prior death:
-  // loser b takes 5*(1+1)=10 (last) + 2*5=10 (radiation) + 10 (0 energy) + 10 (0 food) = -40 HP -> 130 - 40 = 90 HP.
-  assert.equal(b.health, 90);
-  assert.equal(b.resources.energy, 0);
-  assert.equal(b.resources.food, 0);
-
-  b.health = 15;
-  a.ready = b.ready = true;
-  startRound(room, a, 10, () => 0);
-  assert.equal(room.phase, 'cards');
-  room.cards = ['exchange', 'rest', 'eat'].map(id => CARDS.find(card => card.id === id)!);
-  chooseCard(room, a, 'rest');
-  chooseCard(room, b, 'exchange');
-  advanceIfComplete(room, 11);
-  assert.equal(room.phase, 'presentation');
-  a.ready = b.ready = true;
-  advanceIfComplete(room, 12);
-  submitResult(room, a, { ...timeoutResult(room.minigame), score: room.minigame.maxScore });
-  submitResult(room, b, { ...timeoutResult(room.minigame), score: 0 });
-  advanceIfComplete(room, 13);
-
+  // loser b takes 5*8*(1+1)=80 (last) + 15 (0 energy) + 15 (0 food) + 2*10=20 (radiation) = -130 HP -> 130 - 130 = 0 HP.
   assert.equal(b.health, 0);
   assert.equal(room.winnerId, a.id);
+  assert.equal(room.phase, 'results');
   assert.throws(() => startRound(room, a, 20));
 });
 
@@ -257,6 +251,8 @@ test('los tiempos límite completan elecciones y resultados ausentes', () => {
   advanceIfComplete(room, room.deadline!);
   assert.equal(room.phase, 'playing');
   advanceIfComplete(room, room.deadline! + RESULT_GRACE_MS);
-  assert.equal(room.phase, 'lobby');
+  assert.equal(room.phase, 'results');
   assert.equal(room.lastResults[0].score, 0);
+  advanceIfComplete(room, room.deadline!);
+  assert.equal(room.phase, 'lobby');
 });

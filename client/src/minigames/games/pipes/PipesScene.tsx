@@ -1,6 +1,12 @@
 import { createContext, useContext, type ReactNode } from 'react';
 
-export interface PipesCrewMember { id: string; name: string; isSelf?: boolean; hasSubmitted?: boolean }
+export interface PipesCrewMember {
+  id: string;
+  name: string;
+  isSelf?: boolean;
+  hasSubmitted?: boolean;
+  liveScore?: number | null;
+}
 interface PipesSceneContext {
   crew: readonly PipesCrewMember[];
   onExit?: () => void;

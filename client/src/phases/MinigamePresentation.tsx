@@ -88,10 +88,10 @@ export default function MinigamePresentation({ game, onReady }: PresentationProp
   const rewardFood = game.minigame.rewards.winner.resources?.food ?? 0;
   const rewardEnergy = game.minigame.rewards.winner.resources?.energy ?? 0;
   const resourceLabel = rewardFood > rewardEnergy ? 'Food' : 'Energy';
-  const baseBonus = (rewardFood > rewardEnergy ? rewardFood : rewardEnergy) || 20;
+  const baseBonus = (rewardFood > rewardEnergy ? rewardFood : rewardEnergy) || 24;
   const roundBonus = Math.max(0, baseBonus - Math.max(0, game.round - 1) * 2);
   const deaths = game.players.filter(p => p.health <= 0).length;
-  const loserPenalty = Math.max(1, game.round) * (deaths + 1);
+  const loserPenalty = Math.max(1, game.round) * 8 * (deaths + 1);
   const keycaps = extractKeycaps(game.minigame.controls);
 
   if (game.self.health <= 0) {
@@ -131,7 +131,7 @@ export default function MinigamePresentation({ game, onReady }: PresentationProp
           <p className="briefing-card__objective">{game.minigame.objective}</p>
 
           <div className="briefing-stakes-strip" aria-label="Round rewards and penalties">
-            <span className="briefing-stake briefing-stake--cost">-5 Energy · -5 Food</span>
+            <span className="briefing-stake briefing-stake--cost">-18 Energy · -18 Food</span>
             <span className="briefing-stake briefing-stake--win">+{roundBonus} {resourceLabel} Winner</span>
             <span className="briefing-stake briefing-stake--loss">-{loserPenalty} HP Last</span>
           </div>

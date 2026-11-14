@@ -75,11 +75,11 @@ body {
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 1240px;
+  max-width: 1480px;
   margin: 0 auto;
   height: 100%;
   min-height: 0;
-  padding: 12px 20px 14px;
+  padding: 10px 22px 14px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -92,14 +92,32 @@ body {
   flex-shrink: 0;
 }
 
-.stage-center {
+.stage-workspace {
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
   display: flex;
   align-items: center;
+  gap: 18px;
+  overflow: hidden;
+}
+
+.stage-center {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
   justify-content: center;
   overflow: hidden;
+}
+
+@media (max-width: 1060px) {
+  .stage-workspace {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
 
 .stage-center > fieldset {

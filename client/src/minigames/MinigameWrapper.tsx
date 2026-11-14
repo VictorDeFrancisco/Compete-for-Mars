@@ -8,6 +8,7 @@ export interface MinigameWrapperProps {
   context: MinigameContext;
   initialElapsedMs?: number;
   onResult: (result: MinigameResult) => void;
+  onScoreChange?: (score: number) => void;
   showChrome?: boolean;
 }
 export default function MinigameWrapper(props: MinigameWrapperProps) {
@@ -15,15 +16,24 @@ export default function MinigameWrapper(props: MinigameWrapperProps) {
   if (!module) return <p role="alert">No está registrado el minijuego «{props.definition.id}».</p>;
   return <Runner {...props} module={module} />;
 }
-function Runner({ definition, context, initialElapsedMs = 0, onResult, showChrome = true, module }: MinigameWrapperProps & { module: NonNullable<ReturnType<typeof getMinigameModule>> }) {
+function Runner({ definition, context, initialElapsedMs = 0, onResult, onScoreChange, showChrome = true, module }: MinigameWrapperProps & { module: NonNullable<ReturnType<typeof getMinigameModule>> }) {
   // El padre debe cambiar key cuando comienza un intento nuevo.
   const [run] = useState(() => module.createRun(definition, context));
   const { engine } = run;
   const snapshot = useSyncExternalStore(engine.subscribe, engine.getSnapshot);
   const callback = useRef(onResult); callback.current = onResult;
+  const scoreCallback = useRef(onScoreChange); scoreCallback.current = onScoreChange;
+  const lastReportedScore = useRef<number | null>(null);
   const container = useRef<HTMLDivElement>(null);
   const sent = useRef(false);
   const lifecycle = useRef(0);
+  useEffect(() => {
+    if (!scoreCallback.current) return;
+    if (lastReportedScore.current !== snapshot.score) {
+      lastReportedScore.current = snapshot.score;
+      scoreCallback.current(snapshot.score);
+    }
+  }, [snapshot.score]);
   useEffect(() => {
     const generation = ++lifecycle.current;
     engine.start(initialElapsedMs); container.current?.focus();

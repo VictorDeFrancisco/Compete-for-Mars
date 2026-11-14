@@ -8,7 +8,7 @@
 
 .nasa-console {
   position: relative;
-  width: min(860px, 100%);
+  width: min(1080px, 100%);
   background: var(--paper-cream, #f5efe0);
   border: 4px solid var(--ink-black, #1a1817);
   border-radius: 10px;

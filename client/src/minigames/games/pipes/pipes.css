@@ -1,113 +1,531 @@
-body:has(.pipes-game) { overflow: hidden; }
+body:has(.pipes-game) {
+  overflow: hidden;
+}
+
 .pipes-game {
-  --water: #7dceee; --gold: #e9c589;
-  --board-edge: min(52vh, 416px, calc(100vw - 120px));
-  position: fixed; inset: 0; z-index: 50; overflow: auto;
-  background: #151925; color: #cbd2dc; font-family: 'Segoe UI', Arial, sans-serif; isolation: isolate;
+  --water: #5ed4f3;
+  --gold: #f5c242;
+  --board-edge: min(50dvh, 430px, calc(100vw - 380px));
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow: hidden;
+  background: #0b192c;
+  color: #f5efe0;
+  font-family: 'Archivo', system-ui, sans-serif;
+  isolation: isolate;
 }
-.pipes-game *, .pipes-game *::before, .pipes-game *::after { box-sizing: border-box; }
-.pipes-landscape { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: -2; }
-.pipes-game::after { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: -1; background: radial-gradient(ellipse at 50% 40%, transparent 20%, #080b1440 100%); }
-.pipes-screen { position: relative; min-height: 100svh; padding: 6.7vh 6.7vw 26px; }
-.pipes-heading { display: block; position: relative; z-index: 3; width: 100%; height: clamp(100px, 16vh, 128px); }
-.pipes-title-text { position: relative; text-align: center; padding-top: 17px; }
-.pipes-kicker { display: block; color: #8997a6; font-size: clamp(12px, 1.3vw, 18px); text-transform: uppercase; letter-spacing: .065em; }
-.pipes-heading h2 { margin: 6px 0 0; font-size: clamp(25px, 3.2vw, 44px); line-height: 1.23; letter-spacing: .01em; text-transform: uppercase; font-weight: 600; color: #c9d1dc; }
-.pipes-counter { position: absolute; left: 7vw; top: calc(6.7vh + 81px); z-index: 4; display: flex; align-items: center; gap: 9px; }
-.pipes-counter > b { font-size: 38px; font-weight: 600; line-height: 1; letter-spacing: -.05em; text-shadow: 0 2px 2px #0008; }
-.pipes-counter > span { text-transform: uppercase; font-size: 13px; line-height: 1.15; color: #c2cad5; }
-.pipes-timer-panel { position: absolute; top: calc(6.7vh + 81px); right: 7vw; z-index: 4; width: 143px; }
-.pipes-clock { display: flex; justify-content: flex-end; align-items: center; gap: 9px; }
-.pipes-clock b { font: 500 37px/1 'Segoe UI', sans-serif; font-variant-numeric: tabular-nums; color: #bacbd7; letter-spacing: -.05em; }
-.pipes-clock span { color: #8c9baa; font-size: 10px; text-transform: uppercase; line-height: 1.4; letter-spacing: .03em; }
-.pipes-time-track { height: 2px; margin-top: 9px; background: #5a6e7c32; overflow: hidden; }
-.pipes-time-track > span { display: block; height: 100%; background: #8bc0d2; transition: width .1s linear; box-shadow: 0 0 8px #6ad8ff80; }
-.pipes-console { position: relative; width: calc(var(--board-edge) + 132px); max-width: 100%; margin: -7px auto 0; padding: 29px 14px 13px; border: 0; border-radius: 0; background: #11152150; }
-.pipes-game .pipes-instruction { margin: 0 0 23px; text-align: center; color: #c9cbd5; font-size: clamp(12px, 1.22vw, 16px); line-height: 1.5; white-space: nowrap; letter-spacing: -.035em; }
-.pipes-instruction strong { font-weight: 700; }
-.pipes-instruction strong:first-child { color: #7cbce8; }
-.pipes-instruction strong:last-child { color: #e0b785; }
-.pipes-machine { --port-width: 36px; --frame-inset: 9px; display: grid; grid-template-columns: var(--port-width) minmax(0, 1fr) var(--port-width); align-items: start; width: calc(var(--board-edge) + 2 * var(--port-width) + 2 * var(--frame-inset)); max-width: 100%; margin: 0 auto; container-type: inline-size; }
-.pipes-board-frame { position: relative; padding: var(--frame-inset); border: 1px solid #52636c; border-radius: 0; background: #151d25; }
-.pipes-board { display: grid; grid-template-columns: repeat(var(--pipe-size), minmax(0, 1fr)); background: #1d292f; border: 1px solid #4d5a60; }
-.pipes-game .pipes-cell { position: relative; display: block; width: 100%; aspect-ratio: 1; padding: 0; margin: 0; border: 0; border-radius: 0; background: transparent; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-.pipes-game .pipes-cell:hover:not(:disabled) { background-color: #81b8c12b; }
-.pipes-game .pipes-cell:focus-visible { outline: 2px solid #f2d397; outline-offset: -4px; z-index: 2; }
-.pipes-game .pipes-cell:disabled { opacity: 1; cursor: default; }
-.pipes-texture { display: block; width: 100%; height: 100%; pointer-events: none; user-select: none; }
-/* Preserve the supplied RGB texture; clip its white backdrop to the pipe silhouette. */
-.pipes-texture--opaque { clip-path: polygon(29.8% 0, 70.2% 0, 70.2% 5.3%, 65.3% 5.3%, 65.3% 94.7%, 70.2% 94.7%, 70.2% 100%, 29.8% 100%, 29.8% 94.7%, 34.7% 94.7%, 34.7% 5.3%, 29.8% 5.3%); }
-.pipes-port { height: calc((100cqw - 2 * var(--port-width) - 2 * var(--frame-inset) - 8px) / var(--pipe-size)); display: flex; align-items: center; justify-content: center; position: relative; color: var(--water); }
-.pipes-port--entry { margin-top: calc(var(--frame-inset) + 4px + (100cqw - 2 * var(--port-width) - 2 * var(--frame-inset) - 8px) / var(--pipe-size) * var(--entry-row)); }
-.pipes-port--exit { margin-top: calc(var(--frame-inset) + 4px + (100cqw - 2 * var(--port-width) - 2 * var(--frame-inset) - 8px) / var(--pipe-size) * var(--exit-row)); color: var(--gold); }
-.pipes-port b { width: 34px; height: 36px; display: flex; align-items: center; justify-content: center; border: 1px solid currentColor; border-radius: 0; background: #132838c9; font: 400 30px/1 'Segoe UI', sans-serif; }
-.pipes-port span { position: absolute; bottom: calc(50% + 21px); left: 50%; transform: translateX(-50%); font-size: 9px; line-height: 1; text-transform: uppercase; }
-.pipes-port--exit span { top: calc(50% + 23px); bottom: auto; }
-.pipes-port--exit b { background: #302a1dc9; }
-.pipes-port--flowing b { background: #574527; }
-.pipes-feedback { display: flex; align-items: center; justify-content: center; min-height: 39px; margin-top: 2px; text-align: center; color: #9fcfc1; font-size: 12px; }
-.pipes-game .pipes-resource-note { color: #c7b08b; font-size: 10px; text-align: center; margin: 5px 0 0; }
-.pipes-crew { position: absolute; left: 9vw; bottom: 7.5vh; display: flex; gap: 6px; align-items: flex-end; }
-.pipes-astronaut { --suit: #599bb3; --suit-dark: #204658; --visor: #244e60; position: relative; width: clamp(40px, 4.1vw, 62px); }
-.pipes-astronaut--1 { --suit: #b27b50; --suit-dark: #634024; --visor: #6a462c; }
-.pipes-astronaut--2 { --suit: #6fa174; --suit-dark: #305a38; --visor: #335e3c; }
-.pipes-astronaut--3 { --suit: #9572b3; --suit-dark: #4b315f; --visor: #513966; }
-.pipes-astronaut svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 3px 3px #0004); }
-.pipes-astronaut-score { position: absolute; top: 21%; right: -1px; min-width: 22px; height: 25px; padding: 0 5px; border-radius: 50%; display: grid; place-items: center; background: var(--suit-dark); color: #d2d8de; border: 1px solid color-mix(in srgb, var(--suit), transparent 45%); font-size: 16px; box-shadow: 1px 2px 2px #0004; }
-.pipes-astronaut-name { display: block; max-width: 70px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #8fa0ae; font-size: 9px; margin-top: 5px; }
-.pipes-game .pipes-back { background: transparent; color: #8b9caa; border: 0; border-radius: 3px; font-size: 11px; font-weight: 400; padding: 7px 10px; }
-.pipes-screen > .pipes-back { position: absolute; left: 6.7vw; bottom: 18px; }
-.pipes-back:hover { color: #e5eaf1; }
-.pipes-end-actions { display: flex; justify-content: center; align-items: center; gap: 14px; margin: 15px auto 0; }
-.pipes-game .pipes-restart { background: #273c45; border: 1px solid #6f909a; border-radius: 0; color: #e0e9ee; font-size: 12px; padding: 10px 18px; }
-.pipes-restart span { margin-left: 16px; }
-.pipes-game--connected .pipes-board-frame { border-color: #80b5ac; }
-.pipes-game--urgent .pipes-clock b { color: #e8ae94; }
-.pipes-game--urgent .pipes-time-track > span { background: #e8ae94; }
-.pipes-game--finished .pipes-feedback { color: #d3c9b9; }
-@media (max-width: 1050px) {
-  .pipes-crew { left: 3vw; gap: 1px; }
-  .pipes-counter { left: 4vw; }
-  .pipes-timer-panel { right: 4vw; width: 110px; }
-  .pipes-counter > b, .pipes-clock b { font-size: 31px; }
-  .pipes-counter > span { font-size: 10px; }
+
+.pipes-game *,
+.pipes-game *::before,
+.pipes-game *::after {
+  box-sizing: border-box;
 }
-@media (max-width: 760px) {
-  .pipes-game { --board-edge: min(48vh, 390px, calc(100vw - 104px)); }
-  .pipes-screen { padding: 25px 14px 25px; }
-  .pipes-heading { height: 99px; }
-  .pipes-title-text { padding-top: 15px; }
-  .pipes-heading h2 { font-size: clamp(20px, 5vw, 32px); }
-  .pipes-kicker { font-size: 11px; }
-  .pipes-counter { position: relative; left: auto; top: auto; margin: 6px auto 0; width: calc(var(--board-edge) + 74px); height: 47px; }
-  .pipes-counter > b { font-size: 29px; }
-  .pipes-timer-panel { top: 130px; right: max(30px, calc((100vw - var(--board-edge) - 74px) / 2)); width: 105px; }
-  .pipes-clock b { font-size: 27px; }
-  .pipes-clock span { font-size: 8px; }
-  .pipes-time-track { margin-top: 4px; }
-  .pipes-console { width: calc(var(--board-edge) + 94px); margin-top: 7px; padding: 20px 5px 12px; }
-  .pipes-game .pipes-instruction { font-size: 11px; white-space: normal; margin: 0 10px 20px; }
-  .pipes-machine { --port-width: 28px; --frame-inset: 6px; }
-  .pipes-port b { width: 25px; height: 29px; font-size: 24px; }
-  .pipes-port span { font-size: 6px; bottom: calc(50% + 18px); }
-  .pipes-port--exit span { top: calc(50% + 19px); bottom: auto; }
-  .pipes-crew { position: relative; left: auto; bottom: auto; justify-content: center; margin: 18px auto 20px; gap: 9px; }
-  .pipes-astronaut { width: 43px; }
-  .pipes-astronaut-score { font-size: 12px; min-width: 19px; height: 21px; }
-  .pipes-feedback { min-height: 34px; font-size: 11px; }
-  .pipes-screen > .pipes-back { position: relative; left: auto; bottom: auto; display: block; margin: 0 auto; }
-  .pipes-end-actions { flex-wrap: wrap; margin-top: 8px; }
+
+.pipes-landscape {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -2;
+  opacity: 0.72;
 }
-@media (max-height: 680px) and (min-width: 761px) {
-  .pipes-game { --board-edge: min(48vh, 350px); }
-  .pipes-screen { padding-top: 20px; }
-  .pipes-heading { height: 90px; }
-  .pipes-title-text { padding-top: 9px; }
-  .pipes-heading h2 { font-size: 32px; }
-  .pipes-kicker { font-size: 12px; }
-  .pipes-counter, .pipes-timer-panel { top: 95px; }
-  .pipes-console { padding-top: 20px; }
-  .pipes-game .pipes-instruction { font-size: 12px; margin-bottom: 17px; }
-  .pipes-feedback { min-height: 26px; }
+
+.pipes-game::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(ellipse at 50% 45%, transparent 25%, rgba(8, 12, 22, 0.72) 100%);
 }
-@media (prefers-reduced-motion: reduce) { .pipes-time-track > span { transition: none; } }
+
+.pipes-screen {
+  position: relative;
+  height: 100dvh;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 16px 24px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pipes-topbar {
+  display: grid;
+  grid-template-columns: minmax(180px, auto) 1fr minmax(180px, auto);
+  align-items: center;
+  gap: 16px;
+}
+
+.pipes-plaque {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 9px 16px;
+  background: #f5efe0;
+  color: #1a1817;
+  border: 3px solid #1a1817;
+  border-radius: 10px;
+  box-shadow: 0 5px 0 #1a1817;
+}
+
+.pipes-counter {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.pipes-counter > b {
+  font-family: 'Courier Prime', monospace;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #0b3d91;
+}
+
+.pipes-counter > span {
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  color: #3f3830;
+}
+
+.pipes-title-text {
+  text-align: center;
+}
+
+.pipes-kicker {
+  display: inline-block;
+  padding: 3px 10px;
+  background: #0b3d91;
+  color: #f5efe0;
+  border: 2px solid #1a1817;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.pipes-title-text h2 {
+  margin: 4px 0 0;
+  font-size: clamp(1.35rem, 2.5vw, 2rem);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #f5efe0;
+  text-shadow: 0 3px 0 #1a1817;
+}
+
+.pipes-timer-panel {
+  gap: 6px;
+}
+
+.pipes-clock {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.pipes-clock b {
+  font-family: 'Courier Prime', monospace;
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: #1a1817;
+}
+
+.pipes-clock span {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #5b5247;
+}
+
+.pipes-time-track {
+  height: 7px;
+  background: #d7ccb6;
+  border: 2px solid #1a1817;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.pipes-time-track > span {
+  display: block;
+  height: 100%;
+  background: #0b3d91;
+  transition: width 0.1s linear;
+}
+
+.pipes-workspace {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 270px;
+  align-items: center;
+  gap: 24px;
+}
+
+.pipes-console {
+  justify-self: center;
+  width: min(100%, calc(var(--board-edge) + 170px));
+  background: #f5efe0;
+  color: #1a1817;
+  border: 4px solid #1a1817;
+  border-radius: 12px;
+  padding: 16px 20px 14px;
+  box-shadow: 0 6px 0 #1a1817;
+}
+
+.pipes-game .pipes-instruction {
+  margin: 0 0 12px;
+  text-align: center;
+  color: #2b2622;
+  font-size: 0.94rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.pipes-instruction strong:first-child {
+  color: #0b3d91;
+}
+
+.pipes-instruction strong:last-child {
+  color: #c1440e;
+}
+
+.pipes-machine {
+  --port-width: 44px;
+  --frame-inset: 9px;
+  display: grid;
+  grid-template-columns: var(--port-width) minmax(0, 1fr) var(--port-width);
+  align-items: start;
+  width: calc(var(--board-edge) + 2 * var(--port-width) + 2 * var(--frame-inset));
+  max-width: 100%;
+  margin: 0 auto;
+  container-type: inline-size;
+}
+
+.pipes-board-frame {
+  position: relative;
+  padding: var(--frame-inset);
+  border: 3px solid #1a1817;
+  border-radius: 6px;
+  background: #0d1b2a;
+}
+
+.pipes-board {
+  display: grid;
+  grid-template-columns: repeat(var(--pipe-size), minmax(0, 1fr));
+  background: #14263a;
+  border: 2px solid #2b4560;
+}
+
+.pipes-game .pipes-cell {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pipes-game .pipes-cell:hover:not(:disabled) {
+  background-color: rgba(94, 212, 243, 0.16);
+}
+
+.pipes-game .pipes-cell:focus-visible {
+  outline: 2px solid #f5c242;
+  outline-offset: -3px;
+  z-index: 2;
+}
+
+.pipes-game .pipes-cell:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.pipes-texture {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+}
+
+.pipes-texture--opaque {
+  clip-path: polygon(
+    29.8% 0,
+    70.2% 0,
+    70.2% 5.3%,
+    65.3% 5.3%,
+    65.3% 94.7%,
+    70.2% 94.7%,
+    70.2% 100%,
+    29.8% 100%,
+    29.8% 94.7%,
+    34.7% 94.7%,
+    34.7% 5.3%,
+    29.8% 5.3%
+  );
+}
+
+.pipes-port {
+  height: calc((100cqw - 2 * var(--port-width) - 2 * var(--frame-inset) - 8px) / var(--pipe-size));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  color: #0b3d91;
+}
+
+.pipes-port--entry {
+  margin-top: calc(
+    var(--frame-inset) + 4px +
+      (100cqw - 2 * var(--port-width) - 2 * var(--frame-inset) - 8px) / var(--pipe-size) * var(--entry-row)
+  );
+}
+
+.pipes-port--exit {
+  margin-top: calc(
+    var(--frame-inset) + 4px +
+      (100cqw - 2 * var(--port-width) - 2 * var(--frame-inset) - 8px) / var(--pipe-size) * var(--exit-row)
+  );
+  color: #c1440e;
+}
+
+.pipes-port b {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2.5px solid #1a1817;
+  border-radius: 6px;
+  background: #d8ecff;
+  font-size: 1.35rem;
+  font-weight: 900;
+  box-shadow: 0 3px 0 #1a1817;
+}
+
+.pipes-port span {
+  position: absolute;
+  bottom: calc(50% + 22px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.pipes-port--exit span {
+  top: calc(50% + 23px);
+  bottom: auto;
+}
+
+.pipes-port--exit b {
+  background: #ffebc7;
+}
+
+.pipes-port--flowing b {
+  background: #2e8b57;
+  color: #f5efe0;
+}
+
+.pipes-feedback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  margin-top: 10px;
+  text-align: center;
+  font-family: 'Courier Prime', monospace;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #0b3d91;
+}
+
+.pipes-game .pipes-resource-note {
+  color: #a8220e;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: center;
+  margin: 4px 0 0;
+}
+
+/* Live Crew Scoreboard Panel */
+.pipes-crew {
+  background: #f5efe0;
+  color: #1a1817;
+  border: 3px solid #1a1817;
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 5px 0 #1a1817;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pipes-crew__heading {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #0b3d91;
+  border-bottom: 2px solid #d4cab4;
+  padding-bottom: 6px;
+}
+
+.pipes-astronaut {
+  --suit: #599bb3;
+  --suit-dark: #204658;
+  --visor: #244e60;
+  display: grid;
+  grid-template-columns: 38px 1fr auto;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 8px;
+  background: #fff9eb;
+  border: 2px solid #1a1817;
+  border-radius: 8px;
+}
+
+.pipes-astronaut--self {
+  background: #fff3d6;
+  border-color: #fc3d21;
+}
+
+.pipes-astronaut--1 {
+  --suit: #b27b50;
+  --suit-dark: #634024;
+  --visor: #6a462c;
+}
+
+.pipes-astronaut--2 {
+  --suit: #6fa174;
+  --suit-dark: #305a38;
+  --visor: #335e3c;
+}
+
+.pipes-astronaut--3 {
+  --suit: #9572b3;
+  --suit-dark: #4b315f;
+  --visor: #513966;
+}
+
+.pipes-astronaut__avatar svg {
+  display: block;
+  width: 36px;
+  height: auto;
+}
+
+.pipes-astronaut__info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pipes-astronaut-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: #1a1817;
+}
+
+.pipes-astronaut-meta {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #5b5247;
+}
+
+.pipes-astronaut-score {
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: #0d1b2a;
+  color: #f5efe0;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.pipes-game .pipes-back,
+.pipes-game .pipes-restart {
+  padding: 9px 16px;
+  border: 3px solid #1a1817;
+  border-radius: 6px;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 0.84rem;
+  box-shadow: 0 4px 0 #1a1817;
+  cursor: pointer;
+}
+
+.pipes-game .pipes-back {
+  align-self: flex-start;
+  background: #f5efe0;
+  color: #1a1817;
+}
+
+.pipes-game .pipes-restart {
+  background: #fc3d21;
+  color: #f5efe0;
+}
+
+.pipes-end-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.pipes-game--connected .pipes-board-frame {
+  border-color: #2e8b57;
+}
+
+.pipes-game--connected .pipes-feedback {
+  color: #1d6b42;
+}
+
+.pipes-game--urgent .pipes-clock b {
+  color: #fc3d21;
+}
+
+.pipes-game--urgent .pipes-time-track > span {
+  background: #fc3d21;
+}
+
+@media (max-width: 980px) {
+  .pipes-game {
+    --board-edge: min(44dvh, 360px, calc(100vw - 120px));
+  }
+  .pipes-workspace {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 10px;
+  }
+  .pipes-crew {
+    width: min(100%, 620px);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  }
+  .pipes-crew__heading {
+    grid-column: 1 / -1;
+  }
+}
