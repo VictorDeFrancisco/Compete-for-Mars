@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { MinigameDefinition, MinigameResult } from '../../../shared/minigames/types';
 import { getMinigameModule } from './registry';
+import type { MinigameContext } from '../../../shared/minigames/context';
 
 export interface MinigameWrapperProps {
   definition: MinigameDefinition;
+  context: MinigameContext;
   initialElapsedMs?: number;
   onResult: (result: MinigameResult) => void;
 }
@@ -12,9 +14,9 @@ export default function MinigameWrapper(props: MinigameWrapperProps) {
   if (!module) return <p role="alert">No está registrado el minijuego «{props.definition.id}».</p>;
   return <Runner {...props} module={module} />;
 }
-function Runner({ definition, initialElapsedMs = 0, onResult, module }: MinigameWrapperProps & { module: NonNullable<ReturnType<typeof getMinigameModule>> }) {
+function Runner({ definition, context, initialElapsedMs = 0, onResult, module }: MinigameWrapperProps & { module: NonNullable<ReturnType<typeof getMinigameModule>> }) {
   // El padre debe cambiar key cuando comienza un intento nuevo.
-  const [run] = useState(() => module.createRun(definition));
+  const [run] = useState(() => module.createRun(definition, context));
   const { engine } = run;
   const snapshot = useSyncExternalStore(engine.subscribe, engine.getSnapshot);
   const callback = useRef(onResult); callback.current = onResult;
@@ -55,6 +57,7 @@ function Runner({ definition, initialElapsedMs = 0, onResult, module }: Minigame
       if (!event.currentTarget.contains(event.relatedTarget)) engine.controls.getActions().forEach(action => engine.dispatch(action.id, 'release'));
     }}>
     <p role="timer">{Math.ceil(snapshot.remainingMs / 1000)} s</p>
+    <p>Energía: {engine.context.resources.energy}/10 · Comida: {engine.context.resources.food}/10</p>
     <p className="score">{snapshot.score} / {definition.maxScore}</p>
     {run.render()}
     <p>Progreso: {Math.round(snapshot.progress * 100)} %</p>

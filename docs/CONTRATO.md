@@ -67,7 +67,7 @@ El servidor envía `game:state` después de cada cambio relevante. Un desconecta
 - Catálogo de minijuegos en `shared/minigames/catalog.ts`, con modo, controles, presentación y recompensas declarativas.
 - Prueba por puntos y carrera de secuencia como ejemplos; la clase base termina automáticamente al vencer el tiempo y el wrapper envía el resultado.
 - El servidor clasifica según puntos o tiempo/progreso, y aplica premio de recursos al ganador y daño al perdedor según cada definición. Los puestos intermedios son neutrales. Los empates y la prueba individual están descritos en `MINIJUEGOS.md`.
-- La vida queda entre 1 y 100: sin eliminación ni condición de victoria global por ahora. Radiación todavía no provoca daño ni filtros. Los recursos no modifican todavía la dificultad.
+- La vida queda entre 1 y 100: sin eliminación ni condición de victoria global por ahora. Radiación todavía no provoca daño ni filtros. Comida y energía se entregan al minijuego mediante un contexto inmutable, con modificadores comunes; cada implementación aplica sus desventajas (ver MINIJUEGOS.md).
 - Se ha retirado el consumo fijo de energía y comida al terminar un minijuego; se aplican sus cambios configurados, sujetos a los límites globales.
 - El resultado se comunica desde el cliente: el servidor valida ID, coherencia, límites, fase y entrega única, pero esto todavía no es un sistema contra trampas.
 

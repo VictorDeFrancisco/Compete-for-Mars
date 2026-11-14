@@ -76,9 +76,10 @@ import { miDefinicion } from '../../../../../shared/minigames/miJuego';
 class MiJuego extends BaseMinigame<{ aciertos: number }> {
   protected onAction(actionId: string, state: ActionState) {
     if (actionId !== 'acertar' || state !== 'press') return;
+    if (!this.tryAction()) return;
     const aciertos = this.getSnapshot().data.aciertos + 1;
     this.setData({ aciertos });
-    this.addScore(10);
+    this.setScore(aciertos * 10 * this.modifiers.scoreMultiplier);
     this.setProgress(aciertos / 10);
     // Solo en una carrera cuyo objetivo sea alcanzar 10 aciertos:
     if (this.definition.mode === 'race' && aciertos >= 10) this.complete();
@@ -93,7 +94,7 @@ function Vista({ engine, snapshot }: MinigameViewProps<{ aciertos: number }>) {
 }
 
 export default defineModule(miDefinicion,
-  definition => new MiJuego(definition, { aciertos: 0 }), Vista);
+  (definition, context) => new MiJuego(definition, { aciertos: 0 }, undefined, context), Vista);
 ```
 
 La acción `acertar` debe estar declarada en `controls`. Para juegos con movimiento continuo, usar `onAction` para registrar teclas pulsadas/soltadas y `onUpdate(deltaMs)` para mover elementos. `deltaMs` está expresado en milisegundos. Actualizar el estado propio con objetos nuevos; no mutar `snapshot.data`.
@@ -110,7 +111,7 @@ Los dos registros deben tener el mismo ID. El servidor solo importa el catálogo
 
 ## API completa de BaseMinigame
 
-Constructor: `new MiJuego(definition, initialData, clock?)`. El reloj opcional permite pruebas deterministas. Si la subclase declara su constructor, debe llamar a `super(...)`.
+Constructor: `new MiJuego(definition, initialData, clock?, context?)`. El reloj opcional permite pruebas deterministas. Si la subclase declara su constructor, debe pasar también el contexto a `super(...)`.
 
 | Método público | Uso |
 |---|---|
@@ -125,12 +126,13 @@ Constructor: `new MiJuego(definition, initialData, clock?)`. El reloj opcional p
 | `subscribe(listener)` | Escucha cambios y devuelve una función de desuscripción. El wrapper usa esta API para React. |
 | `dispose()` | Limpia la instancia y sus suscripciones. Idempotente. No envía un resultado al desmontar. |
 
-Propiedades públicas de solo lectura: `definition` y `controls`.
+Propiedades públicas de solo lectura: `definition`, `controls`, `context` y `modifiers`.
 
 | Método protegido | Uso desde la subclase |
 |---|---|
 | `setScore(score)` | Establece puntos enteros, limitados a 0–maxScore. |
 | `addScore(points)` | Suma o resta puntos respetando esos límites. |
+| `tryAction()` | Acepta una acción válida si ha pasado la cadencia mínima por energía/comida. Usar una vez por acción válida si se elige esta penalización. |
 | `setProgress(progress)` | Progreso entre 0 y 1; permite comparar carreras sin terminar. |
 | `setData(data)` | Sustituye el estado propio que recibe la vista. |
 | `onStart()` | Hook opcional de inicialización al comenzar. |
@@ -193,3 +195,27 @@ pnpm test
 ```
 
 Probar también teclado y clic/toque, expiración, terminar antes, reiniciar y salir de la pantalla. Para lógica compleja, añadir una prueba de la clase con reloj simulado como las de `core/BaseMinigame.test.ts`. La clase no debe necesitar DOM, servidor ni React para ejecutar su lógica.
+
+## Comida y energía del jugador
+
+`defineModule` recibe `(definition, context)`. Reenvía siempre `context` al constructor de la clase, y este a `super(definition, data, clock, context)`. La fase online lo construye con los recursos privados reales del jugador **después de aplicar las cartas**. La base copia y congela el contexto al iniciar el intento; el minijuego no puede gastar ni modificar recursos globales.
+
+Disponibles dentro de cualquier subclase:
+
+```ts
+this.context.resources.energy
+this.context.resources.food
+this.context.resources.radiation
+this.modifiers.speedMultiplier
+this.modifiers.scoreMultiplier
+this.modifiers.actionCooldownMs
+this.modifiers.reactionDelayMs
+```
+
+El equilibrio provisional está centralizado en `shared/minigames/context.ts`: con energía 0, velocidad sugerida x0.75 y cadencia mínima de 250 ms; con comida 0, puntos sugeridos x0.75 y demora adicional de 150 ms. Con 10/10 todos son neutros. Los valores intermedios se interpolan linealmente.
+
+**Cada minijuego debe aplicar desventajas de comida y energía apropiadas a su mecánica.** Los multiplicadores se ofrecen como herramientas, no se aplican a escondidas en `setScore` o `addScore`. No es necesario aplicarlos todos ni acumularlos si resulta demasiado punitivo. Por ejemplo: un rover puede usar velocidad por energía y menor precisión por hambre; un trivial, menos margen para responder. Coordinar valores nuevos en el módulo común.
+
+Los ejemplos ya aplican ambas: en el panel `tryAction()` limita la cadencia y la comida multiplica la puntuación total; en la carrera `tryAction()` suma los tiempos de energía y comida entre cierres. Se conserva el mismo plazo de sala para todos.
+
+En el laboratorio hay controles de comida y energía de 0 a 10; se fijan antes de iniciar cada intento. El contexto predeterminado al probar una clase directamente es 10/10, sin penalización. La radiación se transporta como dato, pero todavía no aplica modificadores comunes. El resultado enviado sigue siendo el mismo y no incluye recursos modificables.

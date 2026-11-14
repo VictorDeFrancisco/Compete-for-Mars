@@ -18,3 +18,5 @@
 - No uses Socket.io ni modifiques recursos, vida o fases desde el minijuego. El contenedor envía el resultado y el servidor aplica la clasificación y sus consecuencias.
 - Para probar sin servidor: `pnpm dev:client` y abrir `http://localhost:5173/?minigame=<id>`. Comprueba controles, finalización, timeout y reinicio en el laboratorio.
 - Antes de entregar: `pnpm build` y `pnpm test`. Trabaja en tu rama y prepara un PR hacia `main` con los archivos y la forma de probarlo.
+
+- Cada minijuego recibe `(definition, context)` en `defineModule`: reenvía el contexto a `super(definition, data, clock, context)`. Usa `this.context.resources` y `this.modifiers` para aplicar desventajas por comida y energía adecuadas a la mecánica. Prueba recursos 0/0 y 10/10 en el laboratorio; consulta la sección de recursos de `docs/MINIJUEGOS.md`. No modifiques los recursos globales desde el minijuego.

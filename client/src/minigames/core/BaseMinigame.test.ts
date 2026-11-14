@@ -5,6 +5,34 @@ import { pulseDefinition } from '../../../../shared/minigames/pulse';
 import { validateResult } from '../../../../shared/minigames/ranking';
 import { PulseGame } from '../games/pulse/PulseGame';
 import { SequenceRaceGame } from '../games/sequence-race/SequenceRaceGame';
+import { resourceModifiers } from '../../../../shared/minigames/context';
+
+test('recursos bajos reducen cadencia y puntos; el contexto es una copia inmutable', () => {
+  let now = 0; const context = { resources: { energy: 0, food: 0, radiation: 0 } };
+  const weak = new PulseGame(pulseDefinition, () => now, context);
+  const strong = new PulseGame(pulseDefinition, () => now);
+  context.resources.food = 10;
+  assert.equal(weak.context.resources.food, 0);
+  assert.equal(Object.isFrozen(weak.context.resources), true);
+  weak.start(); strong.start(); weak.dispatch('activate'); strong.dispatch('activate');
+  assert.equal(weak.getSnapshot().score, 4); assert.equal(strong.getSnapshot().score, 5);
+  now = 100; weak.dispatch('activate'); strong.dispatch('activate');
+  assert.equal(weak.getSnapshot().data.hits, 1); assert.equal(strong.getSnapshot().data.hits, 2);
+  now = 400; weak.dispatch('activate'); assert.equal(weak.getSnapshot().data.hits, 2);
+});
+test('una carrera con pocos recursos requiere separar acciones', () => {
+  let now = 0;
+  const game = new SequenceRaceGame(undefined, () => now, { resources: { energy: 0, food: 0, radiation: 0 } });
+  game.start();
+  for (let i = 1; i <= 5; i++) { now = (i - 1) * 400; game.dispatch(`step-${i}`); }
+  assert.equal(game.getResult()?.elapsedMs, 1600); assert.equal(game.getResult()?.completed, true);
+});
+test('recursos completos son neutros y se rechazan valores inválidos', () => {
+  assert.deepEqual(resourceModifiers({ resources: { energy: 10, food: 10, radiation: 0 } }), {
+    speedMultiplier: 1, scoreMultiplier: 1, actionCooldownMs: 0, reactionDelayMs: 0,
+  });
+  assert.throws(() => resourceModifiers({ resources: { energy: NaN, food: 5, radiation: 0 } }));
+});
 
 test('reloj local: timeout automático conserva puntos, sin acciones después de terminar', () => {
   let now = 0;

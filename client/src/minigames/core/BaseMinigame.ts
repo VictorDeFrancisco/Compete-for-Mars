@@ -1,4 +1,5 @@
 import { Controls } from '../../../../shared/minigames/Controls';
+import { copyContext, DEFAULT_MINIGAME_CONTEXT, resourceModifiers, type MinigameContext, type ResourceModifiers } from '../../../../shared/minigames/context';
 import type { FinishReason, MinigameDefinition, MinigameResult } from '../../../../shared/minigames/types';
 
 export interface MinigameSnapshot<T extends object = object> {
@@ -11,12 +12,17 @@ export type ActionState = 'press' | 'release';
 /** Una instancia por intento. Sin React, Socket.io, recursos globales ni listeners DOM. */
 export abstract class BaseMinigame<T extends object = object> {
   readonly controls: Controls;
+  readonly context: MinigameContext;
+  readonly modifiers: Readonly<ResourceModifiers>;
   private snapshot: MinigameSnapshot<T>;
   private listeners = new Set<() => void>();
   private startedAt = 0;
   private initialElapsedMs = 0;
   private previousElapsedMs = 0;
-  constructor(readonly definition: MinigameDefinition, data: T, private readonly clock: () => number = () => performance.now()) {
+  private lastActionMs = -Infinity;
+  constructor(readonly definition: MinigameDefinition, data: T, private readonly clock: () => number = () => performance.now(), context: MinigameContext = DEFAULT_MINIGAME_CONTEXT) {
+    this.context = copyContext(context);
+    this.modifiers = resourceModifiers(this.context);
     this.controls = new Controls(definition.controls);
     this.snapshot = { status: 'idle', score: 0, progress: 0, elapsedMs: 0, remainingMs: definition.durationMs, data: { ...data }, result: null };
   }
@@ -60,6 +66,14 @@ export abstract class BaseMinigame<T extends object = object> {
     this.patch({ score: Math.max(0, Math.min(this.definition.maxScore, Math.round(score))) });
   }
   protected addScore(points: number): void { this.setScore(this.snapshot.score + points); }
+  /** Invocar una vez por acción válida si el juego usa penalización de cadencia. */
+  protected tryAction(): boolean {
+    if (this.snapshot.status !== 'running') return false;
+    const cooldown = this.modifiers.actionCooldownMs + this.modifiers.reactionDelayMs;
+    if (this.snapshot.elapsedMs - this.lastActionMs < cooldown) return false;
+    this.lastActionMs = this.snapshot.elapsedMs;
+    return true;
+  }
   protected setProgress(progress: number): void {
     if (this.snapshot.status !== 'running') return;
     if (!Number.isFinite(progress)) throw new Error('Progreso no finito.');
