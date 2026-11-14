@@ -458,8 +458,8 @@ export default function MarsBase3D({ game }: { game: GameView }) {
         ctx.arc(head.x, head.y + helmR * 0.85, helmR * 0.58, 0, Math.PI * 2);
         ctx.fill();
 
-        const label = `${player.name}${isSelf ? ' (Tú)' : ''}`;
-        const statusText = !player.connected ? 'OFF' : player.ready ? 'LISTO' : 'ESPERA';
+        const label = `${player.name}${isSelf ? ' (You)' : ''}`;
+        const statusText = !player.connected ? 'OFF' : player.ready ? 'READY' : 'WAIT';
         ctx.font = `600 ${Math.round(11 * dpr)}px Inter, system-ui, sans-serif`;
         const textWidth = ctx.measureText(`${label} · ${statusText}`).width;
         const padX = 8 * dpr;
@@ -513,7 +513,7 @@ export default function MarsBase3D({ game }: { game: GameView }) {
       <canvas
         ref={canvasRef}
         className="mars-base-bg__canvas"
-        aria-label="Vista 3D de la base marciana"
+        aria-label="3D view of the Mars base"
         onPointerDown={event => {
           cameraRef.current.dragging = true;
           cameraRef.current.lastX = event.clientX;
@@ -543,12 +543,12 @@ export default function MarsBase3D({ game }: { game: GameView }) {
 
       <div className="mars-base-bg__camera-controls">
         <button type="button" className="secondary" onClick={() => setAutoOrbit(value => !value)}>
-          {autoOrbit ? 'Pausar órbita' : 'Auto-órbita'}
+          {autoOrbit ? 'Pause orbit' : 'Auto-orbit'}
         </button>
-        <button type="button" className="secondary" onClick={() => zoomBy(-0.6)} aria-label="Acercar cámara">
+        <button type="button" className="secondary" onClick={() => zoomBy(-0.6)} aria-label="Zoom in">
           +
         </button>
-        <button type="button" className="secondary" onClick={() => zoomBy(0.6)} aria-label="Alejar cámara">
+        <button type="button" className="secondary" onClick={() => zoomBy(0.6)} aria-label="Zoom out">
           -
         </button>
       </div>

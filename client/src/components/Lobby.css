@@ -224,8 +224,35 @@
   background: #91edc9;
 }
 
-.lobby-bar__fill--radiation {
-  background: #f6a18f;
+.lobby-radiation-row {
+  margin-top: 10px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: rgba(54, 34, 18, 0.55);
+  border: 1px solid rgba(245, 190, 82, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lobby-radiation-row__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #ffe08a;
+}
+
+.radiation-icon {
+  color: #ffd15c;
+  flex-shrink: 0;
+}
+
+.lobby-radiation-row__value {
+  font-size: 1rem;
+  color: #fff2c4;
 }
 
 .lobby-traits {

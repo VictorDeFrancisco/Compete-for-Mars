@@ -1,5 +1,5 @@
 [
-  { "id": "rest", "title": "Descansar", "description": "Recuperas 2 de energía.", "effect": { "energy": 2 } },
-  { "id": "supplies", "title": "Recoger raciones", "description": "Ganas 2 de comida y gastas 1 de energía.", "effect": { "food": 2, "energy": -1 } },
-  { "id": "expedition", "title": "Expedición", "description": "Ganas 3 de comida, gastas 2 de energía y acumulas 1 de radiación.", "effect": { "food": 3, "energy": -2, "radiation": 1 } }
+  { "id": "rest", "title": "Rest", "description": "Recover 2 energy.", "effect": { "energy": 2 } },
+  { "id": "supplies", "title": "Gather Rations", "description": "Gain 2 food and spend 1 energy.", "effect": { "food": 2, "energy": -1 } },
+  { "id": "expedition", "title": "Expedition", "description": "Gain 3 food, spend 2 energy, and gain 1 radiation.", "effect": { "food": 3, "energy": -2, "radiation": 1 } }
 ]

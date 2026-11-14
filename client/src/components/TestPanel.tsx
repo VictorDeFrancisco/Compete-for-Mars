@@ -78,16 +78,16 @@ export function buildPreviewGame(
       ready: selfReady,
       hasChosenCard: false,
       hasSubmitted: false,
-      stats: { energy: 2, food: 2, shielding: 2 },
-      resources: { energy: 7, food: 6, radiation: 2 },
+      stats: { energy: 4, food: 1, shielding: 1 },
+      resources: { energy: 100, food: 100, radiation: 1 },
       selectedCardId: null,
       score: null,
       result: null,
     },
     cards: [
-      { id: 'rest', title: 'Descansar', description: 'Recuperas 2 de energía.', effect: { energy: 2 } },
-      { id: 'supplies', title: 'Recoger raciones', description: 'Ganas 2 de comida y gastas 1 de energía.', effect: { food: 2, energy: -1 } },
-      { id: 'expedition', title: 'Expedición', description: 'Ganas 3 de comida, gastas 2 de energía y acumulas 1 de radiación.', effect: { food: 3, energy: -2, radiation: 1 } },
+      { id: 'rest', title: 'Rest', description: 'Recover 2 energy.', effect: { energy: 2 } },
+      { id: 'supplies', title: 'Gather Rations', description: 'Gain 2 food and spend 1 energy.', effect: { food: 2, energy: -1 } },
+      { id: 'expedition', title: 'Expedition', description: 'Gain 3 food, spend 2 energy, and gain 1 radiation.', effect: { food: 3, energy: -2, radiation: 1 } },
     ],
     minigame,
     lastResults: [
@@ -131,15 +131,12 @@ export default function TestPanel({
     <main className="test-panel">
       <header>
         <div>
-          <p className="eyebrow">Compete For Mars · Modo Test</p>
-          <h1>Panel de control</h1>
+          <p className="eyebrow">Compete For Mars · Test Mode</p>
+          <h1>Control Panel</h1>
         </div>
         <div className="actions">
-          <span className={connected ? 'status' : 'status offline'}>
-            {connected ? 'Servidor conectado' : 'Sin servidor (solo previews locales)'}
-          </span>
           <button type="button" className="secondary" onClick={onBackToStart}>
-            Volver al inicio
+            Back to start
           </button>
         </div>
       </header>
@@ -148,23 +145,23 @@ export default function TestPanel({
 
       <div className="test-panel__grid">
         <section className="panel">
-          <h2>Acceso rápido con servidor</h2>
-          <p>Crea una partida real al instante o abre el flujo clásico paso a paso.</p>
+          <h2>Quick Live Access</h2>
+          <p>Create a live match instantly or open the step-by-step dev flow.</p>
           <div className="test-panel__actions">
             <button type="button" disabled={!connected} onClick={onQuickLiveLobby}>
-              Crear sala rápida + 3 bots (Lobby 3D real)
+              Quick room + 3 bots (Live 3D Lobby)
             </button>
             <button type="button" className="secondary" onClick={onOpenClassicFlow}>
-              Flujo clásico (Estadísticas → Lobby)
+              Classic flow (Stats → Lobby)
             </button>
           </div>
         </section>
 
         <section className="panel">
-          <h2>Ir directo a una pantalla (vista previa local)</h2>
-          <p>Salta directamente a cualquier fase para probar diseño y controles sin esperar rondas.</p>
+          <h2>Jump to any screen (local preview)</h2>
+          <p>Inspect any game phase directly without waiting for rounds.</p>
           <label>
-            Minijuego para fases 2 y 4
+            Minigame for phases 2 &amp; 4
             <select
               className="test-panel__select"
               value={minigameId}
@@ -179,27 +176,27 @@ export default function TestPanel({
           </label>
           <div className="test-panel__actions">
             <button type="button" onClick={() => onPreviewPhase('lobby', minigameId)}>
-              1 · Lobby 3D (Base Marciana)
+              1 · 3D Lobby (Mars Base)
             </button>
             <button type="button" className="secondary" onClick={() => onPreviewPhase('presentation', minigameId)}>
-              2 · Presentación
+              2 · Briefing
             </button>
             <button type="button" className="secondary" onClick={() => onPreviewPhase('cards', minigameId)}>
-              3 · Elección de cartas
+              3 · Card Selection
             </button>
             <button type="button" className="secondary" onClick={() => onPreviewPhase('playing', minigameId)}>
-              4 · Jugar minijuego
+              4 · Play Minigame
             </button>
           </div>
         </section>
 
         <section className="panel">
-          <h2>Laboratorio de minijuegos</h2>
-          <p>Prueba cada minijuego aislado con selector de energía, comida y duración.</p>
+          <h2>Minigame Lab</h2>
+          <p>Test each minigame standalone with energy, food, and duration controls.</p>
           <div className="test-panel__links">
             {MINIGAMES.map(game => (
               <a key={game.id} className="test-panel__link-btn" href={`/?minigame=${game.id}`}>
-                Abrir {game.title}
+                Open {game.title}
               </a>
             ))}
           </div>
