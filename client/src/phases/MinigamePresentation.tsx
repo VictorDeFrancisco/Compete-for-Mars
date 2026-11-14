@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import type { MinigameDefinition } from '../../../shared/minigames/types';
 import type { PresentationProps } from '../../../shared/types';
 import AstronautPortraitSvg, { suitColorByIndex, suitColorForPlayer } from '../components/AstronautPortraitSvg';
 import { playUiClick, playUiConfirm } from '../utils/uiAudio';
@@ -58,31 +57,6 @@ function MinigamePreviewSvg({ id }: { id: string }) {
   }
 }
 
-function extractKeycaps(controls: MinigameDefinition['controls']): string[] {
-  const seen = new Set<string>();
-  const caps: string[] = [];
-
-  for (const action of controls) {
-    for (const binding of action.bindings) {
-      if (binding.device === 'keyboard') {
-        const raw = binding.label.toUpperCase();
-        const normalized = raw === 'ESPACIO' ? 'SPACE' : raw;
-        if (!seen.has(normalized)) {
-          seen.add(normalized);
-          caps.push(normalized);
-        }
-      } else if (binding.device === 'pointer') {
-        if (!seen.has('CLICK')) {
-          seen.add('CLICK');
-          caps.push('CLICK');
-        }
-      }
-    }
-  }
-
-  return caps.slice(0, 8);
-}
-
 // Phase 2/3: Mario Party-inspired Retro-NASA Briefing Card with DESCRIPTION & CONTROLS tabs.
 export default function MinigamePresentation({ game, onReady }: PresentationProps) {
   const [activeTab, setActiveTab] = useState<'description' | 'controls'>('description');
@@ -94,7 +68,6 @@ export default function MinigamePresentation({ game, onReady }: PresentationProp
   const roundBonus = Math.max(0, baseBonus - Math.max(0, game.round - 1) * 2);
   const deaths = game.players.filter(p => p.health <= 0).length;
   const loserPenalty = Math.max(1, game.round) * 8 * (deaths + 1);
-  const keycaps = extractKeycaps(game.minigame.controls);
 
   if (game.self.health <= 0) {
     return (
@@ -138,21 +111,10 @@ export default function MinigamePresentation({ game, onReady }: PresentationProp
       <div className="briefing-card">
         {activeTab === 'description' ? (
           <div className="briefing-card__body">
-            {/* Left Zone (35%): Minigame SVG preview + 3D physical keycaps */}
+            {/* Left Zone (35%): Minigame SVG preview only (controls live exclusively in CONTROLS tab) */}
             <div className="briefing-card__visual">
               <div className="briefing-card__frame">
                 <MinigamePreviewSvg id={game.minigame.id} />
-              </div>
-
-              <div className="briefing-keycaps" aria-label="Controls">
-                {keycaps.map(cap => (
-                  <kbd
-                    key={cap}
-                    className={`briefing-keycap3d${cap.length > 2 ? ' briefing-keycap3d--wide' : ''}`}
-                  >
-                    {cap}
-                  </kbd>
-                ))}
               </div>
             </div>
 

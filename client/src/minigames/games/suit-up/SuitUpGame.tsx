@@ -22,12 +22,25 @@ const DIRECTION_KEYS = [
   { id: 'action-right', arrow: '→', key: 'RIGHT', mod: 'right' },
 ] as const;
 
+const QTE_MODE_META: Record<
+  'timing' | 'mash' | 'sequence' | 'hold',
+  { label: string; colorClass: string }
+> = {
+  timing: { label: 'TIMING SEAL', colorClass: 'suit-qte-mode--timing' },
+  mash: { label: 'PRESSURE PUMP', colorClass: 'suit-qte-mode--mash' },
+  sequence: { label: 'LOCK SEQUENCE', colorClass: 'suit-qte-mode--sequence' },
+  hold: { label: 'CHARGE SEAL', colorClass: 'suit-qte-mode--hold' },
+};
+
 function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
   const { data, status, score, progress } = snapshot;
   const isRunning = status === 'running';
   const isFinished = status === 'finished';
   const step = data.currentStep;
   const qte = step.qte;
+  const modeMeta = QTE_MODE_META[qte.type];
+  const psiPercent = Math.max(0, Math.min(100, (data.suitPressurePsi / 4.3) * 100));
+  const o2Percent = Math.max(0, Math.min(100, data.oxygenPercent));
 
   const activeSeqTarget =
     qte.type === 'sequence'
@@ -57,18 +70,31 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
           <span className="suit-header__phase">
             STEP {Math.min(data.currentStepIndex + 1, data.totalSteps)} / {data.totalSteps}
           </span>
-          <span className="suit-header__code">{step.code}</span>
         </div>
 
+        <ol className="suit-step-pipeline" aria-label="Secuencia de montaje del traje">
+          {engine instanceof SuitUpEngine &&
+            engine.steps.map((s, idx) => {
+              const isDone = data.completedStepIds.includes(s.id);
+              const isActive = isRunning && data.currentStepIndex === idx;
+              return (
+                <li
+                  key={s.id}
+                  title={s.name}
+                  className={`suit-pipe-node ${
+                    isDone ? 'suit-pipe-node--done' : isActive ? 'suit-pipe-node--active' : ''
+                  }`}
+                >
+                  <span className="suit-pipe-node__idx">
+                    {isDone ? '✓' : String(idx + 1).padStart(2, '0')}
+                  </span>
+                  <span className="suit-pipe-node__code">{s.code}</span>
+                </li>
+              );
+            })}
+        </ol>
+
         <div className="suit-telemetry-strip">
-          <div className="suit-telemetry-pill">
-            <span>PSI</span>
-            <b>{data.suitPressurePsi.toFixed(1)}</b>
-          </div>
-          <div className="suit-telemetry-pill">
-            <span>O₂</span>
-            <b>{data.oxygenPercent}%</b>
-          </div>
           <div className="suit-telemetry-pill suit-telemetry-pill--score">
             <span>SCORE</span>
             <b>{score} PTS</b>
@@ -78,31 +104,41 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
 
       <div className="suit-main-layout">
         <aside className="suit-astronaut-column" aria-label="Visualizador de traje espacial">
-          <SuitAstronautSvg
-            completedParts={data.completedParts}
-            activePartKey={isRunning ? step.partKey : null}
-            lastRating={data.lastRating}
-            suitPressurePsi={data.suitPressurePsi}
-          />
+          <div className="suit-astronaut-stage">
+            <SuitAstronautSvg
+              completedParts={data.completedParts}
+              activePartKey={isRunning ? step.partKey : null}
+              lastRating={data.lastRating}
+              suitPressurePsi={data.suitPressurePsi}
+            />
+          </div>
 
-          <div className="suit-parts-checklist" role="list" aria-label="Componentes del traje">
-            {engine instanceof SuitUpEngine &&
-              engine.steps.map((s, idx) => {
-                const isDone = data.completedStepIds.includes(s.id);
-                const isActive = isRunning && data.currentStepIndex === idx;
-                return (
-                  <div
-                    key={s.id}
-                    role="listitem"
-                    className={`suit-part-pill ${
-                      isDone ? 'suit-part-pill--done' : isActive ? 'suit-part-pill--active' : ''
-                    }`}
-                  >
-                    <span>{isDone ? '✓' : isActive ? '●' : '○'}</span>
-                    <span>{s.code}</span>
-                  </div>
-                );
-              })}
+          <div className="suit-gauges" aria-label="Telemetría del traje">
+            <div className="suit-gauge">
+              <div className="suit-gauge__row">
+                <span>PRESSURE (PSI)</span>
+                <b>{data.suitPressurePsi.toFixed(1)} / 4.3</b>
+              </div>
+              <div className="suit-gauge__track">
+                <div
+                  className="suit-gauge__fill suit-gauge__fill--psi"
+                  style={{ width: `${psiPercent}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="suit-gauge">
+              <div className="suit-gauge__row">
+                <span>OXYGEN SUPPLY</span>
+                <b>{data.oxygenPercent}%</b>
+              </div>
+              <div className="suit-gauge__track">
+                <div
+                  className="suit-gauge__fill suit-gauge__fill--o2"
+                  style={{ width: `${o2Percent}%` }}
+                />
+              </div>
+            </div>
           </div>
         </aside>
 
@@ -110,6 +146,12 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
           {!isFinished ? (
             <>
               <div className="suit-step-head">
+                <div className="suit-step-meta-row">
+                  <span className={`suit-qte-mode ${modeMeta.colorClass}`}>
+                    {modeMeta.label}
+                  </span>
+                  <span className="suit-header__code">{step.code}</span>
+                </div>
                 <h3 className="suit-step-title">{step.name}</h3>
                 <p className="suit-step-description">{step.prompt}</p>
               </div>

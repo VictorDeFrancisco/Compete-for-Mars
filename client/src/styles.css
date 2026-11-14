@@ -82,6 +82,7 @@ main.mars-stage__main {
   padding: 8px 14px 10px;
   display: flex;
   flex-direction: column;
+  gap: 8px;
   overflow: hidden;
 }
 

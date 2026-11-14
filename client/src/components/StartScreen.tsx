@@ -1,3 +1,4 @@
+import MarsBackdrop from './MarsBackdrop';
 import './StartScreen.css';
 
 export interface StartScreenProps {
@@ -13,43 +14,50 @@ export default function StartScreen({
 }: StartScreenProps) {
   return (
     <section className="start-screen" aria-label="Compete For Mars">
-      <div className="start-screen__scrim" aria-hidden="true" />
+      <MarsBackdrop />
 
-      <div className="start-screen__content">
-        <div className="start-screen__left">
-          <h1 className="start-screen__title">
-            <span>COMPETE</span>
-            <span>FOR MARS</span>
-          </h1>
+      <div className="start-screen__hud">
+        <header className="start-screen__top">
+          <span className="start-screen__stamp">NASA // ARES SECTOR OUTPOST</span>
+          <button
+            type="button"
+            className="start-screen__test-btn"
+            onClick={onOpenTest}
+          >
+            TEST LAB
+          </button>
+        </header>
 
-          <nav className="start-screen__menu" aria-label="Main menu">
-            <button
-              type="button"
-              className="start-screen__btn start-screen__btn--primary"
-              onClick={onCreateScreen}
-            >
-              CREATE ROOM
-            </button>
-            <button
-              type="button"
-              className="start-screen__btn"
-              onClick={onJoinScreen}
-            >
-              JOIN ROOM
-            </button>
-            <button
-              type="button"
-              className="start-screen__btn start-screen__btn--test"
-              onClick={onOpenTest}
-            >
-              TEST
-            </button>
-          </nav>
+        <div className="start-screen__center">
+          <div className="start-screen__hero-card">
+            <span className="start-screen__kicker">SURVIVAL PARTY MISSION · 1–4 CREW</span>
+            <h1 className="start-screen__title">COMPETE FOR MARS</h1>
+            <p className="start-screen__subtitle">
+              Coordina o sabotea a tu tripulación en la base marciana. Gestiona energía, comida y radiación en cada ronda.
+            </p>
+
+            <nav className="start-screen__menu" aria-label="Main menu">
+              <button
+                type="button"
+                className="start-screen__btn start-screen__btn--primary"
+                onClick={onCreateScreen}
+              >
+                CREATE ROOM
+              </button>
+              <button
+                type="button"
+                className="start-screen__btn start-screen__btn--secondary"
+                onClick={onJoinScreen}
+              >
+                JOIN ROOM
+              </button>
+            </nav>
+          </div>
         </div>
-      </div>
 
-      <div className="start-screen__footer">
-        <span>C-Moon Dynamics</span>
+        <footer className="start-screen__footer">
+          <span className="start-screen__brand">C-MOON DYNAMICS · RETRO-NASA TELEMETRY</span>
+        </footer>
       </div>
     </section>
   );

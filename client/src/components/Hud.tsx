@@ -1,5 +1,5 @@
-import type { GameView } from '../../../shared/types';
-import AstronautPortraitSvg, { suitColorForPlayer } from './AstronautPortraitSvg';
+import type { GameView, PublicPlayer } from '../../../shared/types';
+import AstronautPortraitSvg, { suitColorByIndex, suitColorForPlayer } from './AstronautPortraitSvg';
 import { RadiationIcon } from './RadiationIcon';
 import './Hud.css';
 
@@ -16,6 +16,34 @@ function pct(value: number, max: number): number {
   return Math.max(0, Math.min(100, Math.round((value / max) * 100)));
 }
 
+function playerStatusTag(player: PublicPlayer, phase: GameView['phase']): {
+  label: string;
+  tone: 'neutral' | 'ready' | 'score' | 'offline';
+} {
+  if (player.health <= 0) {
+    return { label: 'OUT', tone: 'offline' };
+  }
+  if (!player.connected) {
+    return { label: 'OFFLINE', tone: 'offline' };
+  }
+  if (phase === 'playing') {
+    if (typeof player.liveScore === 'number') {
+      return { label: `${player.liveScore} PTS`, tone: player.hasSubmitted ? 'ready' : 'score' };
+    }
+    return { label: player.hasSubmitted ? 'DONE ✓' : 'LIVE', tone: player.hasSubmitted ? 'ready' : 'score' };
+  }
+  if (phase === 'results') {
+    return player.ready ? { label: 'READY ✓', tone: 'ready' } : { label: `${player.liveScore ?? 0} PTS`, tone: 'score' };
+  }
+  if (phase === 'presentation') {
+    return player.ready ? { label: 'READY ✓', tone: 'ready' } : { label: 'READING', tone: 'neutral' };
+  }
+  if (phase === 'cards') {
+    return player.hasChosenCard ? { label: 'LOCKED ✓', tone: 'ready' } : { label: 'CHOOSING', tone: 'neutral' };
+  }
+  return { label: 'ACTIVE', tone: 'neutral' };
+}
+
 export default function Hud({
   game,
   seconds = null,
@@ -23,12 +51,6 @@ export default function Hud({
   leaveLabel = 'LEAVE ROOM',
   disabled = false,
 }: HudProps) {
-  const selfIndex = Math.max(0, game.players.findIndex(p => p.id === game.self.id));
-  const suitColor = suitColorForPlayer(game.self.stats, selfIndex);
-  const maxEnergy = 100 + game.self.stats.energy;
-  const maxFood = 100 + game.self.stats.food;
-  const radiation = game.self.resources.radiation;
-
   return (
     <header className="top-hud" aria-label="Mission Status Bar">
       <div className="top-hud__left">
@@ -41,81 +63,6 @@ export default function Hud({
             {seconds}s
           </strong>
         )}
-      </div>
-
-      <div className="top-hud__center">
-        <div className="top-hud__identity">
-          <div className="top-hud__avatar-frame">
-            <AstronautPortraitSvg suitColor={suitColor} variant={selfIndex} className="top-hud__avatar" />
-          </div>
-          <span className="top-hud__name" title={game.self.name}>
-            {game.self.name}
-          </span>
-        </div>
-
-        <div className="top-hud__meters" aria-label="Suit vitals and resources">
-          <div className="top-hud__meter" title={`Health: ${game.self.health}/${game.self.maxHealth}`}>
-            <div className="top-hud__meter-head">
-              <span className="top-hud__meter-label">
-                <svg className="top-hud__icon top-hud__icon--hp" viewBox="0 0 20 20" aria-hidden="true">
-                  <path
-                    d="M10 17.2s-6.2-4-7.6-7.8C1.3 6.4 3.3 3.4 6.3 3.4c1.6 0 3 .9 3.7 2.2.7-1.3 2.1-2.2 3.7-2.2 3 0 5 3 3.9 6-1.4 3.8-7.6 7.8-7.6 7.8z"
-                    fill="currentColor"
-                  />
-                </svg>
-                HP
-              </span>
-              <span className="top-hud__meter-val">{game.self.health}/{game.self.maxHealth}</span>
-            </div>
-            <div className="top-hud__track">
-              <div className="top-hud__fill top-hud__fill--hp" style={{ width: `${pct(game.self.health, game.self.maxHealth)}%` }} />
-            </div>
-          </div>
-
-          <div className="top-hud__meter" title={`Energy: ${game.self.resources.energy}/${maxEnergy}`}>
-            <div className="top-hud__meter-head">
-              <span className="top-hud__meter-label">
-                <svg className="top-hud__icon top-hud__icon--energy" viewBox="0 0 20 20" aria-hidden="true">
-                  <polygon points="11,1.5 4,11.5 9.5,11.5 8.5,18.5 16,8.5 10.5,8.5" fill="currentColor" />
-                </svg>
-                ENERGY
-              </span>
-              <span className="top-hud__meter-val">{game.self.resources.energy}/{maxEnergy}</span>
-            </div>
-            <div className="top-hud__track">
-              <div className="top-hud__fill top-hud__fill--energy" style={{ width: `${pct(game.self.resources.energy, maxEnergy)}%` }} />
-            </div>
-          </div>
-
-          <div className="top-hud__meter" title={`Food: ${game.self.resources.food}/${maxFood}`}>
-            <div className="top-hud__meter-head">
-              <span className="top-hud__meter-label">
-                <svg className="top-hud__icon top-hud__icon--food" viewBox="0 0 20 20" aria-hidden="true">
-                  <path
-                    d="M16.5 3.5c-5.8.2-10.3 3.2-12 8.2-.4 1.3-.4 2.7.2 3.9l-2 2 1.4 1.4 2-2c1.2.6 2.6.6 3.9.2 5-1.7 8-6.2 8.2-12l-1.7-1.7zm-3.2 4.9c-2 2-4.3 3.6-6.9 4.4 1-2.5 2.5-4.7 4.7-6.4l2.2 2z"
-                    fill="currentColor"
-                  />
-                </svg>
-                FOOD
-              </span>
-              <span className="top-hud__meter-val">{game.self.resources.food}/{maxFood}</span>
-            </div>
-            <div className="top-hud__track">
-              <div className="top-hud__fill top-hud__fill--food" style={{ width: `${pct(game.self.resources.food, maxFood)}%` }} />
-            </div>
-          </div>
-
-          <div
-            className={`top-hud__rad-badge${radiation > 0 ? ' is-active' : ''}`}
-            title={`Radiation: ${radiation} (cumulative)`}
-          >
-            <span className="top-hud__icon top-hud__icon--rad" aria-hidden="true">
-              <RadiationIcon />
-            </span>
-            <span className="top-hud__rad-label">RAD</span>
-            <strong className="top-hud__rad-val">{radiation}</strong>
-          </div>
-        </div>
       </div>
 
       <div className="top-hud__right">
@@ -131,5 +78,120 @@ export default function Hud({
         )}
       </div>
     </header>
+  );
+}
+
+export function BottomCrewDock({ game }: { game: GameView }) {
+  const maxEnergy = 100 + game.self.stats.energy;
+  const maxFood = 100 + game.self.stats.food;
+  const radiation = game.self.resources.radiation;
+
+  return (
+    <footer className="bottom-crew-dock" aria-label="Crew Telemetry Dock">
+      {game.players.map((player, index) => {
+        const isSelf = player.id === game.self.id;
+        const suitColor = isSelf
+          ? suitColorForPlayer(game.self.stats, index)
+          : suitColorByIndex(index);
+        const badge = playerStatusTag(player, game.phase);
+        const hpPercent = pct(player.health, player.maxHealth);
+
+        return (
+          <article
+            key={player.id}
+            className={`crew-dock-card${isSelf ? ' crew-dock-card--self' : ''}${!player.connected ? ' crew-dock-card--offline' : ''}`}
+          >
+            <div className="crew-dock-card__identity">
+              <div className="crew-dock-card__avatar-frame">
+                <AstronautPortraitSvg
+                  suitColor={suitColor}
+                  variant={index}
+                  className="crew-dock-card__avatar"
+                />
+              </div>
+
+              <div className="crew-dock-card__meta">
+                <div className="crew-dock-card__name-row">
+                  <strong className="crew-dock-card__name" title={player.name}>
+                    {player.name}
+                  </strong>
+                  {isSelf && <span className="crew-dock-card__you">YOU</span>}
+                  <span className={`crew-dock-card__status crew-dock-card__status--${badge.tone}`}>
+                    {badge.label}
+                  </span>
+                </div>
+
+                <div
+                  className="crew-dock-card__hp-row"
+                  title={`HP: ${player.health}/${player.maxHealth}`}
+                >
+                  <span className="crew-dock-card__stat-tag crew-dock-card__stat-tag--hp">HP</span>
+                  <div className="crew-dock-card__track">
+                    <div
+                      className="crew-dock-card__fill crew-dock-card__fill--hp"
+                      style={{ width: `${hpPercent}%` }}
+                    />
+                  </div>
+                  <span className="crew-dock-card__stat-val">
+                    {player.health}/{player.maxHealth}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {isSelf && (
+              <div className="crew-dock-card__self-resources" aria-label="Personal Resources">
+                <div
+                  className="crew-dock-res"
+                  title={`Energy: ${game.self.resources.energy}/${maxEnergy}`}
+                >
+                  <div className="crew-dock-res__head">
+                    <span>⚡ ENERGY</span>
+                    <b>
+                      {game.self.resources.energy}/{maxEnergy}
+                    </b>
+                  </div>
+                  <div className="crew-dock-card__track crew-dock-card__track--sm">
+                    <div
+                      className="crew-dock-card__fill crew-dock-card__fill--energy"
+                      style={{ width: `${pct(game.self.resources.energy, maxEnergy)}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div
+                  className="crew-dock-res"
+                  title={`Food: ${game.self.resources.food}/${maxFood}`}
+                >
+                  <div className="crew-dock-res__head">
+                    <span>🌿 FOOD</span>
+                    <b>
+                      {game.self.resources.food}/{maxFood}
+                    </b>
+                  </div>
+                  <div className="crew-dock-card__track crew-dock-card__track--sm">
+                    <div
+                      className="crew-dock-card__fill crew-dock-card__fill--food"
+                      style={{ width: `${pct(game.self.resources.food, maxFood)}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div
+                  className={`crew-dock-rad${radiation > 0 ? ' is-active' : ''}`}
+                  title={`Radiation: ${radiation} (cumulative)`}
+                >
+                  <span className="crew-dock-rad__icon" aria-hidden="true">
+                    <RadiationIcon />
+                  </span>
+                  <span className="crew-dock-rad__label">RAD</span>
+                  <strong className="crew-dock-rad__val">{radiation}</strong>
+                </div>
+              </div>
+            )}
+          </article>
+        );
+      })}
+    </footer>
   );
 }

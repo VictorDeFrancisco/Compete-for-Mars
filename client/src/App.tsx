@@ -5,8 +5,7 @@ import { socket, useGame } from './hooks/useGame';
 import { useCountdown } from './hooks/useCountdown';
 import RoleSelect from './components/RoleSelect';
 import Lobby from './components/Lobby';
-import Hud from './components/Hud';
-import CrewSidebar from './components/CrewSidebar';
+import Hud, { BottomCrewDock } from './components/Hud';
 import StartScreen from './components/StartScreen';
 import RoomEntryScreen from './components/RoomEntryScreen';
 import MarsBackdrop from './components/MarsBackdrop';
@@ -104,8 +103,8 @@ export default function App() {
                 )}
               </fieldset>
             </div>
-            {phase !== 'results' && <CrewSidebar game={game} />}
           </div>
+          <BottomCrewDock game={game} />
         </main>
       </div>
     );
@@ -187,8 +186,8 @@ export default function App() {
                 />
               )}
             </div>
-            {previewPhase !== 'results' && <CrewSidebar game={previewGame} />}
           </div>
+          <BottomCrewDock game={previewGame} />
           {previewBanner}
         </main>
       </div>

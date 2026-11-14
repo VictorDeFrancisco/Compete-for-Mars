@@ -236,20 +236,25 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
   const textureImgRef = useRef<HTMLImageElement | null>(null);
   const [textureVersion, setTextureVersion] = useState(0);
 
-  // Mantener la relación de aspecto del lienzo 3D adaptada al ancho completo disponible
+  // Mantener la relación de aspecto del lienzo 3D adaptada al contenedor disponible
   useEffect(() => {
     const el = wrapperRef.current;
-    if (!el || typeof ResizeObserver === 'undefined') return;
+    if (!el) return;
     const sync = () => {
-      const rect = el.getBoundingClientRect();
-      const w = Math.max(320, Math.round(rect.width));
-      const h = Math.max(220, Math.round(rect.height));
+      const w = Math.max(320, Math.round(el.clientWidth || el.getBoundingClientRect().width));
+      const h = Math.max(220, Math.round(el.clientHeight || el.getBoundingClientRect().height));
       setViewportSize(prev => (prev.width === w && prev.height === h ? prev : { width: w, height: h }));
     };
     sync();
-    const ro = new ResizeObserver(sync);
-    ro.observe(el);
-    return () => ro.disconnect();
+    const rafId = requestAnimationFrame(sync);
+    window.addEventListener('resize', sync);
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(sync) : null;
+    ro?.observe(el);
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', sync);
+      ro?.disconnect();
+    };
   }, []);
 
   // Animación continua de la cámara orbital cenital al finalizar la misión
@@ -425,8 +430,8 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
     gl.uniform1i(uNasaTexLoc, 0);
 
     // 2. Cámara Orbital de Seguimiento Dinámico (con elevación cenital en 360° al terminar la partida)
-    const aspect = canvas.width / canvas.height;
-    const projMat = mat4Perspective(mat4Create(), (48 * Math.PI) / 180, aspect, 1.0, 600.0);
+    const aspect = canvas.width / Math.max(1, canvas.height);
+    const projMat = mat4Perspective(mat4Create(), (52 * Math.PI) / 180, aspect, 1.0, 600.0);
 
     const roverX = data.posX;
     const roverY = data.posY;
@@ -436,11 +441,11 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
     const ufZ = -Math.cos(headingRad);
 
     const isGameOver = status === 'finished' || snapshot.result !== null;
-    let camDist = 26.0;
-    let camHeight = 22.0;
-    let lookTargetX = roverX + ufX * 10.0;
+    let camDist = 24.0;
+    let camHeight = 20.0;
+    let lookTargetX = roverX + ufX * 8.5;
     let lookTargetY = groundZ + 1.5;
-    let lookTargetZ = roverY + ufZ * 10.0;
+    let lookTargetZ = roverY + ufZ * 8.5;
 
     let eyeX = roverX - ufX * camDist;
     let eyeY = groundZ + camHeight;

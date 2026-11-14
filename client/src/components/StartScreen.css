@@ -1,185 +1,197 @@
+/* Pantalla inicial Retro-NASA 100% cohesiva con MarsBackdrop, tarjetas crema y botones táctiles */
 .start-screen {
   position: relative;
   height: 100dvh;
   max-height: 100dvh;
   width: 100%;
+  overflow: hidden;
+  font-family: 'Archivo', system-ui, sans-serif;
+  color: var(--ink-black, #1A1817);
+}
+
+.start-screen__hud {
+  position: relative;
+  z-index: 2;
+  height: 100dvh;
+  max-height: 100dvh;
+  width: 100%;
+  padding: 16px 26px 14px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  background-color: #0b0d12;
-  background-image: url('/assets/compete-for-mars-bg.jpg');
-  background-size: cover;
-  background-position: 62% center;
-  background-repeat: no-repeat;
-  overflow: hidden;
-  color: #f4f7fb;
+  justify-content: space-between;
 }
 
-.start-screen__scrim {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(
-      to bottom,
-      rgba(5, 7, 11, 0.72) 0%,
-      rgba(5, 7, 11, 0.12) 18%,
-      rgba(5, 7, 11, 0.1) 80%,
-      rgba(5, 7, 11, 0.8) 100%
-    ),
-    linear-gradient(
-      to right,
-      rgba(7, 9, 14, 0.84) 0%,
-      rgba(7, 9, 14, 0.54) 36%,
-      rgba(7, 9, 14, 0.1) 66%,
-      rgba(7, 9, 14, 0) 100%
-    );
-}
-
-.start-screen__content {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: clamp(32px, 7vh, 72px) clamp(24px, 6vw, 84px);
+.start-screen__top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 36px;
-  flex-wrap: wrap;
+  gap: 12px;
 }
 
-.start-screen__left {
-  flex: 1 1 340px;
+.start-screen__stamp {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  background: var(--paper-cream, #F5EFE0);
+  color: var(--nasa-blue, #0B3D91);
+  border: 3px solid var(--ink-black, #1A1817);
+  border-radius: 8px;
+  box-shadow: 0 4px 0 var(--ink-black, #1A1817);
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.start-screen__test-btn {
+  padding: 7px 14px;
+  background: var(--paper-cream, #F5EFE0);
+  color: var(--ink-black, #1A1817);
+  border: 3px solid var(--ink-black, #1A1817);
+  border-radius: 8px;
+  box-shadow: 0 4px 0 var(--ink-black, #1A1817);
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.1s ease;
+}
+
+.start-screen__test-btn:hover {
+  background: #FFF9EB;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 0 var(--ink-black, #1A1817);
+}
+
+.start-screen__test-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--ink-black, #1A1817);
+}
+
+.start-screen__center {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: clamp(8px, 4vw, 60px);
+}
+
+.start-screen__hero-card {
+  width: min(560px, 100%);
+  background: var(--paper-cream, #F5EFE0);
+  border: 4px solid var(--ink-black, #1A1817);
+  border-top: 10px solid var(--nasa-orange, #FC3D21);
+  border-radius: 14px;
+  padding: 26px 30px 28px;
+  box-shadow: 0 8px 0 var(--ink-black, #1A1817);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.start-screen__kicker {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--nasa-blue, #0B3D91);
 }
 
 .start-screen__title {
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.14em;
-  font-family: 'Michroma', 'Orbitron', system-ui, sans-serif;
-  font-weight: 400;
-  font-size: clamp(2.1rem, 4.6vw, 3.85rem);
-  line-height: 1.16;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 900;
+  font-size: clamp(2.1rem, 4.4vw, 3.2rem);
+  line-height: 1.02;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink-black, #1A1817);
+}
+
+.start-screen__subtitle {
+  margin: 0 0 8px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.96rem;
+  font-weight: 700;
+  line-height: 1.45;
+  color: #3F3830;
+}
+
+.start-screen__menu {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.start-screen__btn {
+  height: 58px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: 3px solid var(--ink-black, #1A1817);
+  font-family: 'Archivo', sans-serif;
+  font-weight: 900;
+  font-size: 1rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #f5f8fc;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.65);
-}
-
-.start-screen .start-screen__menu {
-  margin: clamp(38px, 7vh, 68px) 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 20px;
-}
-
-.start-screen .start-screen__btn {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  padding: 6px 4px 6px 0;
-  border: 0;
-  border-radius: 0;
-  clip-path: none;
-  background: transparent;
-  box-shadow: none;
-  color: rgba(240, 245, 252, 0.92);
-  font-family: 'Michroma', 'Orbitron', system-ui, sans-serif;
-  font-weight: 400;
-  font-size: clamp(1rem, 1.7vw, 1.32rem);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  text-decoration: none;
   cursor: pointer;
-  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.75);
-  transition: color 0.18s ease, transform 0.18s ease, text-shadow 0.18s ease;
+  box-shadow: 0 5px 0 var(--ink-black, #1A1817);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.1s ease;
 }
 
-.start-screen .start-screen__btn::before {
-  content: '';
-  width: 0;
-  height: 2px;
-  background: #f59c42;
-  box-shadow: 0 0 10px rgba(245, 156, 66, 0.8);
-  transition: width 0.2s ease;
+.start-screen__btn--primary {
+  background: var(--nasa-orange, #FC3D21);
+  color: var(--paper-cream, #F5EFE0);
 }
 
-.start-screen .start-screen__btn--primary {
-  color: #ffffff;
+.start-screen__btn--primary:hover {
+  background: var(--nasa-orange-hover, #FF553B);
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 var(--ink-black, #1A1817);
 }
 
-.start-screen .start-screen__btn--test {
-  margin-top: 8px;
-  font-size: clamp(0.85rem, 1.3vw, 1.02rem);
-  color: rgba(145, 237, 201, 0.82);
+.start-screen__btn--secondary {
+  background: #FFF9EB;
+  color: var(--ink-black, #1A1817);
 }
 
-.start-screen button.start-screen__btn:hover:not(:disabled),
-.start-screen button.start-screen__btn:focus-visible {
-  background: transparent;
-  box-shadow: none;
-  color: #ffd399;
-  transform: translateX(6px);
-  text-shadow: 0 0 18px rgba(245, 156, 66, 0.55);
-  outline: none;
+.start-screen__btn--secondary:hover {
+  background: #FFFFFF;
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 var(--ink-black, #1A1817);
 }
 
-.start-screen button.start-screen__btn--test:hover:not(:disabled),
-.start-screen button.start-screen__btn--test:focus-visible {
-  background: transparent;
-  box-shadow: none;
-  color: #a6f2d7;
-  text-shadow: 0 0 16px rgba(115, 212, 194, 0.55);
-}
-
-.start-screen .start-screen__btn:hover::before,
-.start-screen .start-screen__btn:focus-visible::before {
-  width: 22px;
+.start-screen__btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 var(--ink-black, #1A1817);
 }
 
 .start-screen__footer {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 1280px;
-  margin: auto auto 0;
-  padding: 18px clamp(24px, 6vw, 84px);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  font-size: 0.78rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(212, 223, 235, 0.65);
+  justify-content: flex-start;
+  padding-left: clamp(8px, 4vw, 60px);
 }
 
-.start-screen__conn {
-  color: #91edc9;
+.start-screen__brand {
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(245, 239, 224, 0.9);
+  border: 2px solid var(--ink-black, #1A1817);
+  border-radius: 6px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--ink-black, #1A1817);
 }
 
-.start-screen__conn--offline {
-  color: #ffd37c;
-}
-
-@media (max-width: 640px) {
-  .start-screen {
-    background-position: 70% center;
+@media (max-width: 600px) {
+  .start-screen__center {
+    padding-left: 0;
   }
 
-  .start-screen__scrim {
-    background:
-      linear-gradient(
-        to bottom,
-        rgba(7, 9, 14, 0.78) 0%,
-        rgba(7, 9, 14, 0.52) 55%,
-        rgba(7, 9, 14, 0.85) 100%
-      );
+  .start-screen__menu {
+    grid-template-columns: 1fr;
   }
 }
