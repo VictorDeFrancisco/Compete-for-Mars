@@ -22,7 +22,9 @@ function SignalModulatorView({ snapshot }: MinigameViewProps<SignalModulatorData
 
       {/* 2. Pantalla de osciloscopio */}
       <div className="signal-mod__screen">
-        <SignalCanvas data={data} />
+        <div className="signal-mod__canvas-wrap">
+          <SignalCanvas data={data} />
+        </div>
         {/* Barra de progreso de enlace */}
         <div className="signal-mod__lock-track">
           <div

@@ -18,6 +18,22 @@ export function SignalCanvas({ data }: SignalCanvasProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    const syncCanvasSize = () => {
+      const parent = canvas.parentElement;
+      const targetW = parent ? Math.max(480, Math.round(parent.clientWidth)) : 1080;
+      const targetH = parent ? Math.max(200, Math.round(parent.clientHeight)) : 320;
+      if (canvas.width !== targetW || canvas.height !== targetH) {
+        canvas.width = targetW;
+        canvas.height = targetH;
+      }
+    };
+
+    syncCanvasSize();
+    const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(syncCanvasSize) : null;
+    if (observer && canvas.parentElement) {
+      observer.observe(canvas.parentElement);
+    }
+
     const render = () => {
       phaseRef.current += 0.012;
       const phase = phaseRef.current;
@@ -79,7 +95,7 @@ export function SignalCanvas({ data }: SignalCanvasProps) {
 
       // 3. Onda Objetivo (Tierra DSN) - Ámbar cálido
       ctx.save();
-      ctx.lineWidth = 2.2;
+      ctx.lineWidth = 3.2;
       ctx.strokeStyle = d.isAligned ? 'rgba(245, 158, 11, 0.35)' : '#f59e0b';
       ctx.beginPath();
 
@@ -89,7 +105,7 @@ export function SignalCanvas({ data }: SignalCanvasProps) {
 
         let rfNoise = 0;
         if (isStorm) {
-          rfNoise = (Math.sin(nx * 120 + phase * 10) * 0.4 + (Math.random() - 0.5)) * 12;
+          rfNoise = (Math.sin(nx * 120 + phase * 10) * 0.4 + (Math.random() - 0.5)) * 14;
         }
 
         const y = centerY - Math.sin(angle) * targetAmpY + rfNoise;
@@ -101,7 +117,7 @@ export function SignalCanvas({ data }: SignalCanvasProps) {
 
       // 4. Onda del Jugador (Base) - Azul Cielo
       ctx.save();
-      ctx.lineWidth = 2.2;
+      ctx.lineWidth = 3.2;
       ctx.strokeStyle = d.isAligned ? '#22c55e' : '#38bdf8';
       ctx.beginPath();
 
@@ -119,7 +135,7 @@ export function SignalCanvas({ data }: SignalCanvasProps) {
       // 5. Interferencia constructiva al estar en fase
       if (d.isAligned) {
         ctx.save();
-        ctx.lineWidth = 3.2;
+        ctx.lineWidth = 4.4;
         ctx.strokeStyle = '#22c55e';
         ctx.beginPath();
 
@@ -136,20 +152,21 @@ export function SignalCanvas({ data }: SignalCanvasProps) {
 
       // 6. Rótulos en esquinas con tipografía del proyecto (Archivo)
       ctx.save();
-      ctx.font = '800 11px "Archivo", sans-serif';
+      ctx.font = '800 14px "Archivo", sans-serif';
 
       ctx.fillStyle = '#f59e0b';
-      ctx.fillText('● DSN TIERRA', 16, 22);
+      ctx.fillText('● DSN TIERRA', 18, 26);
 
       ctx.fillStyle = '#38bdf8';
-      ctx.fillText('● TU SEÑAL', 120, 22);
+      ctx.fillText('● TU SEÑAL', 148, 26);
 
+      ctx.textAlign = 'right';
       if (d.isAligned) {
         ctx.fillStyle = '#22c55e';
-        ctx.fillText('● SINTONIZADO', width - 110, 22);
+        ctx.fillText('● SINTONIZADO', width - 18, 26);
       } else if (isStorm) {
         ctx.fillStyle = '#fc3d21';
-        ctx.fillText('⚡ RUIDO SOLAR', width - 115, 22);
+        ctx.fillText('⚡ RUIDO SOLAR', width - 18, 26);
       }
 
       ctx.restore();
@@ -158,14 +175,17 @@ export function SignalCanvas({ data }: SignalCanvasProps) {
     };
 
     animId = requestAnimationFrame(render);
-    return () => cancelAnimationFrame(animId);
+    return () => {
+      cancelAnimationFrame(animId);
+      observer?.disconnect();
+    };
   }, []);
 
   return (
     <canvas
       ref={canvasRef}
-      width={720}
-      height={210}
+      width={1080}
+      height={320}
       className="signal-canvas"
       aria-label="Osciloscopio de modulación"
     />

@@ -5,9 +5,12 @@
 .signal-mod {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 12px;
   width: 100%;
-  max-width: 760px;
+  max-width: 1180px;
+  height: 100%;
+  min-height: 0;
   margin: 0 auto;
   user-select: none;
   font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -19,8 +22,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 8px 14px;
+  gap: 14px;
+  flex-shrink: 0;
+  padding: 10px 18px;
   background: var(--paper-cream, #f5efe0);
   border: 3px solid var(--ink-black, #1a1817);
   border-radius: 6px;
@@ -29,10 +33,10 @@
 
 .signal-mod__badge {
   display: inline-block;
-  padding: 3px 9px;
+  padding: 4px 12px;
   border-radius: 4px;
   font-family: 'Archivo', sans-serif;
-  font-size: 0.74rem;
+  font-size: 0.9rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -43,28 +47,32 @@
 
 .signal-mod__counter {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: 1.05rem;
+  font-weight: 800;
   letter-spacing: 0.06em;
   color: var(--ink-black, #1a1817);
 }
 
 .signal-mod__station {
-  padding: 3px 9px;
+  padding: 4px 12px;
   border-radius: 4px;
   background: #e4ebf8;
   border: 2px solid var(--ink-black, #1a1817);
   font-family: 'Archivo', sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.88rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   color: var(--nasa-blue, #0b3d91);
   text-transform: uppercase;
 }
 
-/* 2. Pantalla de osciloscopio (CRT Bezel) */
+/* 2. Pantalla de osciloscopio (CRT Bezel expansivo) */
 .signal-mod__screen {
   position: relative;
+  flex: 1 1 0;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
   border-radius: 6px;
   overflow: hidden;
   border: 3px solid var(--ink-black, #1a1817);
@@ -74,17 +82,24 @@
     0 4px 0 var(--ink-black, #1a1817);
 }
 
+.signal-mod__canvas-wrap {
+  flex: 1 1 0;
+  min-height: 185px;
+  position: relative;
+  width: 100%;
+}
+
 .signal-canvas {
   width: 100%;
-  height: auto;
-  max-height: 210px;
+  height: 100%;
   display: block;
 }
 
 /* Barra de progreso de bloqueo en base de pantalla */
 .signal-mod__lock-track {
   width: 100%;
-  height: 8px;
+  height: 12px;
+  flex-shrink: 0;
   background: #0f1522;
   border-top: 2px solid var(--ink-black, #1a1817);
   overflow: hidden;
@@ -102,10 +117,11 @@
 
 /* Banners de estado contextual */
 .signal-mod__banner {
-  padding: 6px 12px;
+  flex-shrink: 0;
+  padding: 8px 16px;
   border-radius: 6px;
   font-family: 'Archivo', sans-serif;
-  font-size: 0.78rem;
+  font-size: 0.94rem;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-align: center;
@@ -127,17 +143,18 @@
 .signal-mod__controls {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 14px;
+  flex-shrink: 0;
 }
 
 .signal-mod__card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   background: var(--paper-cream, #f5efe0);
   border: 3px solid var(--ink-black, #1a1817);
   border-radius: 6px;
-  padding: 10px 14px;
+  padding: 14px 20px;
   box-shadow: 0 4px 0 var(--ink-black, #1a1817);
   color: var(--ink-black, #1a1817);
 }
@@ -150,7 +167,7 @@
 
 .signal-mod__card-title {
   font-family: 'Archivo', sans-serif;
-  font-size: 0.76rem;
+  font-size: 0.92rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   color: #524d47;
@@ -159,9 +176,9 @@
 
 .signal-mod__status {
   font-family: 'Archivo', sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   font-weight: 800;
-  padding: 2px 7px;
+  padding: 3px 10px;
   border-radius: 4px;
   border: 2px solid transparent;
 }
@@ -185,13 +202,13 @@
 .signal-mod__readout {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 10px;
 }
 
 .signal-mod__val {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 1.45rem;
-  font-weight: 700;
+  font-size: 2rem;
+  font-weight: 800;
   line-height: 1;
   color: var(--ink-black, #1a1817);
   font-variant-numeric: tabular-nums;
@@ -199,14 +216,14 @@
 
 .signal-mod__target {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 1.12rem;
+  font-weight: 700;
   color: #6b635b;
 }
 
 .signal-mod__keys {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   margin-top: 2px;
 }
 
@@ -215,9 +232,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 36px;
-  height: 30px;
-  padding: 0 10px;
+  min-width: 48px;
+  height: 38px;
+  padding: 0 14px;
   background: #ffffff;
   color: var(--ink-black, #1a1817);
   border: 2.5px solid var(--ink-black, #1a1817);
@@ -225,7 +242,7 @@
   box-shadow: 0 3px 0 var(--ink-black, #1a1817);
   font-family: 'Archivo', sans-serif;
   font-weight: 800;
-  font-size: 0.85rem;
+  font-size: 1rem;
   transition: transform 0.05s ease, box-shadow 0.05s ease, background 0.05s ease;
 }
 
@@ -237,7 +254,7 @@
 }
 
 .mod-key--space {
-  min-width: 104px;
+  min-width: 136px;
 }
 
 /* 4. Filtro Solar */
@@ -245,10 +262,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
   background: var(--paper-cream, #f5efe0);
   border: 3px solid var(--ink-black, #1a1817);
   border-radius: 6px;
-  padding: 8px 14px;
+  padding: 12px 20px;
   box-shadow: 0 4px 0 var(--ink-black, #1a1817);
   color: var(--ink-black, #1a1817);
 }
@@ -261,12 +279,12 @@
 .signal-mod__filter-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .signal-mod__filter-label {
   font-family: 'Archivo', sans-serif;
-  font-size: 0.76rem;
+  font-size: 0.94rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   color: #524d47;
@@ -275,20 +293,20 @@
 .signal-mod__battery {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .signal-mod__battery-pct {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.82rem;
-  font-weight: 700;
+  font-size: 1.05rem;
+  font-weight: 800;
   color: var(--ink-black, #1a1817);
   font-variant-numeric: tabular-nums;
 }
 
 .signal-mod__battery-track {
-  width: 90px;
-  height: 8px;
+  width: 180px;
+  height: 14px;
   background: #e2d9c8;
   border-radius: 4px;
   overflow: hidden;
@@ -301,8 +319,43 @@
   transition: width 0.08s linear;
 }
 
+@media (max-height: 760px) {
+  .signal-mod {
+    gap: 8px;
+  }
+
+  .signal-mod__header {
+    padding: 7px 14px;
+  }
+
+  .signal-mod__screen {
+    min-height: 150px;
+  }
+
+  .signal-mod__canvas-wrap {
+    min-height: 138px;
+  }
+
+  .signal-mod__card {
+    padding: 10px 16px;
+    gap: 6px;
+  }
+
+  .signal-mod__val {
+    font-size: 1.65rem;
+  }
+
+  .signal-mod__filter {
+    padding: 9px 16px;
+  }
+}
+
 @media (max-width: 580px) {
   .signal-mod__controls {
     grid-template-columns: 1fr;
+  }
+
+  .signal-mod__battery-track {
+    width: 110px;
   }
 }
