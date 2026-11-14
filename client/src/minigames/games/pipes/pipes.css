@@ -65,31 +65,24 @@ body:has(.pipes-game:not(.pipes-game--embedded)) {
 }
 
 .pipes-embedded-bar {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 6px 12px;
-  background: #f5efe0;
-  border: 2.5px solid #1a1817;
-  border-radius: 8px;
-  box-shadow: 0 3px 0 #1a1817;
+  gap: 14px;
+  padding: 2px 4px 10px;
+  border-bottom: 2.5px solid #cbbda2;
   flex-shrink: 0;
-}
-
-.pipes-embedded-bar .pipes-instruction {
-  margin: 0;
-  font-size: 0.88rem;
 }
 
 .pipes-embedded-score {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  padding: 4px 10px;
-  border-radius: 5px;
+  padding: 5px 11px;
+  border-radius: 6px;
   background: #f5c242;
   border: 2px solid #1a1817;
+  box-shadow: 0 2px 0 #1a1817;
   font-family: 'Courier Prime', monospace;
   white-space: nowrap;
 }
@@ -254,19 +247,44 @@ body:has(.pipes-game:not(.pipes-game--embedded)) {
 
 .pipes-game .pipes-instruction {
   margin: 0 0 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   text-align: center;
-  color: #2b2622;
-  font-size: 0.92rem;
-  font-weight: 700;
-  line-height: 1.35;
+  color: #3a332d;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.25;
 }
 
-.pipes-instruction strong:first-child {
+.pipes-game--embedded .pipes-instruction {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.pipes-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 5px;
+  border: 2px solid #1a1817;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+}
+
+.pipes-tag--entry {
+  background: #d8f3fc;
   color: #0b3d91;
 }
 
-.pipes-instruction strong:last-child {
-  color: #c1440e;
+.pipes-tag--exit {
+  background: #fef0c7;
+  color: #b45309;
 }
 
 .pipes-machine {

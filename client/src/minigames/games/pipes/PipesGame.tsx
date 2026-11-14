@@ -67,7 +67,10 @@ function PipesView({ engine, snapshot }: MinigameViewProps<PipesData>) {
           <div className="pipes-embedded-bar">
             <span className="pipes-kicker">WATER GRID</span>
             <p className="pipes-instruction">
-              Haz clic para girar las tuberías. Conecta la <strong>ENTRADA AZUL</strong> con la <strong>SALIDA DORADA</strong>.
+              Clic para girar · Conecta{' '}
+              <span className="pipes-tag pipes-tag--entry">IN AZUL</span>
+              {' → '}
+              <span className="pipes-tag pipes-tag--exit">OUT DORADA</span>
             </p>
             <div className="pipes-embedded-score" aria-label={`${solved} circuitos reparados, ${snapshot.score} puntos`}>
               <b>{snapshot.score} PTS</b>
@@ -80,7 +83,10 @@ function PipesView({ engine, snapshot }: MinigameViewProps<PipesData>) {
           <div className="pipes-console">
             {!embedded && (
               <p className="pipes-instruction">
-                Haz clic para girar las tuberías. Conecta la <strong>ENTRADA AZUL</strong> con la <strong>SALIDA DORADA</strong>.
+                Clic para girar · Conecta{' '}
+                <span className="pipes-tag pipes-tag--entry">IN AZUL</span>
+                {' → '}
+                <span className="pipes-tag pipes-tag--exit">OUT DORADA</span>
               </p>
             )}
             <div
