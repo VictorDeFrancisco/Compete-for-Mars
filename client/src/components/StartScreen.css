@@ -1,4 +1,4 @@
-/* Pantalla inicial estilo Title Screen de videojuego sobre el horizonte de Marte */
+/* Pantalla inicial estilo Title Screen de videojuego con entrada fade-in escalonada de sus elementos */
 .start-screen {
   position: relative;
   height: 100dvh;
@@ -9,9 +9,13 @@
   color: var(--paper-cream, #F5EFE0);
 }
 
+.start-screen .mars-backdrop {
+  animation: startFadeOnly 0.7s ease-out backwards;
+}
+
 .start-screen__hud {
   position: relative;
-  z-index: 2;
+  z-index: 5;
   height: 100dvh;
   max-height: 100dvh;
   width: 100%;
@@ -26,6 +30,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  animation: startFadeDown 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.08s backwards;
 }
 
 .start-screen__stamp {
@@ -70,7 +75,7 @@
   box-shadow: 0 1px 0 var(--ink-black, #1A1817);
 }
 
-/* Centro limpio tipo portada de videojuego (sin cajas pesadas tapando Marte) */
+/* Centro limpio tipo portada de videojuego con entrada fade-in escalonada */
 .start-screen__title-stage {
   flex: 1 1 auto;
   display: flex;
@@ -94,6 +99,7 @@
   font-weight: 800;
   letter-spacing: 0.16em;
   box-shadow: 0 4px 0 #1A1817;
+  animation: startFadeUp 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.2s backwards;
 }
 
 .start-screen__hero-title {
@@ -116,11 +122,13 @@
   text-shadow:
     0 6px 0 #1A1817,
     0 14px 32px rgba(0, 0, 0, 0.65);
+  animation: startTitleFade 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.35s backwards;
 }
 
 .start-screen__title-line--accent {
   color: #FC3D21;
   font-size: clamp(3.3rem, 8.6vw, 6.8rem);
+  animation: startTitleFade 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.52s backwards;
 }
 
 .start-screen__tagline {
@@ -134,6 +142,7 @@
   font-weight: 700;
   color: #F5EFE0;
   max-width: 640px;
+  animation: startFadeUp 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.7s backwards;
 }
 
 .start-screen__menu {
@@ -143,6 +152,7 @@
   gap: 16px;
   margin-top: 4px;
   flex-wrap: wrap;
+  animation: startFadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.88s backwards;
 }
 
 .start-screen__btn {
@@ -191,6 +201,7 @@
 .start-screen__footer {
   display: flex;
   justify-content: center;
+  animation: startFadeOnly 0.65s ease-out 1.05s backwards;
 }
 
 .start-screen__brand {
@@ -204,6 +215,48 @@
   font-weight: 800;
   letter-spacing: 0.1em;
   color: var(--ink-black, #1A1817);
+}
+
+@keyframes startFadeOnly {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes startFadeDown {
+  from {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes startFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes startTitleFade {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @media (max-width: 600px) {
