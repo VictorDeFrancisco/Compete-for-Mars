@@ -78,9 +78,7 @@ test('dos clientes reales: sala, autorizaciones, ronda, reconexión y segunda ro
   const liveRoom = server.rooms.get(initial.code)!;
   const cards = await state(resumed, view => view.phase === 'cards' && view.round === 2);
   liveRoom.cards = ['rest', 'sabotage', 'eat'].map(id => CARD_CATALOG.find(c => c.id === id)!);
-  const cardsWithSabotage = await state(resumed, view => view.phase === 'cards');
   assert.equal((await action(resumed, 'card:choose', { phaseId: intro1.phaseId, cardId: 'rest' })).ok, false);
-  const fallback = cardsWithSabotage.cards.find(c => c.id === 'rest' || c.id === 'eat')!;
   assert.equal(cards.cards.length, 3);
   const targetId = cards.players.find(p => p.id !== cards.self.id)!.id;
   assert.equal((await action(resumed, 'card:choose', { phaseId: cards.phaseId, cardId: 'sabotage' })).ok, false);

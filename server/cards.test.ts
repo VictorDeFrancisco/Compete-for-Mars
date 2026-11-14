@@ -226,7 +226,7 @@ test('a death from a card ends a duel immediately and eliminated observers never
   p.slice(1).forEach(q => { q.ready = true; }); startRound(room, p[0], 4);
   assert.equal(room.phase, 'cards');
   assert.equal(p[0].hasChosenCard, true); assert.equal(p[0].hasSubmitted, true);
-  const fallback = room.cards.find(c => c.id === 'rest' || c.id === 'eat')!;
+  const fallback = room.cards.find(c => c.category === 'supply')!;
   p.slice(1).forEach(q => chooseCard(room, q, fallback.id)); advanceIfComplete(room, 5);
   assert.equal(room.phase, 'presentation');
   p.slice(1).forEach(q => { q.ready = true; }); advanceIfComplete(room, 6);
