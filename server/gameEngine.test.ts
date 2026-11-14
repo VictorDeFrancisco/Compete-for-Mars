@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_STATS } from '../shared/constants';
 import {
+  CARDS,
   advanceIfComplete,
   chooseCard,
   clampResource,
@@ -48,7 +49,7 @@ test('valida estadísticas con límites de profesión (+10/+30) y rechaza presup
   assert.equal(pilot.resources.food, 100);
 });
 
-test('ciclo completo, coste -5, topes dinámicos de profesión, cartas ligadas y privacidad', () => {
+test('ciclo completo, coste -5, topes dinámicos de profesión, cartas simultáneas y privacidad', () => {
   const baseStats = { energy: 0, food: 0, health: 30 }; // Medic: maxHealth 130, energy 100, food 100
   const a = player('Ana', baseStats);
   const b = player('Luis', { energy: 20, food: 0, health: 10 }); // Pilot: maxHealth 110, energy 120, food 100
@@ -67,12 +68,10 @@ test('ciclo completo, coste -5, topes dinámicos de profesión, cartas ligadas y
 
   const roundResource = minigameRewardResource(room.minigame);
   const otherResource = roundResource === 'energy' ? 'food' : 'energy';
-  for (const card of room.cards) {
-    assert.ok(roundResource in card.effect);
-    assert.equal(otherResource in card.effect, false);
-  }
-
-  chooseCard(room, a, 'expedition');
+  assert.equal(room.cards.length, 3);
+  assert.ok(room.cards.some(card => card.id === 'rest' || card.id === 'eat'));
+  room.cards = ['rest', 'eat', 'emergency-landing'].map(id => CARDS.find(card => card.id === id)!);
+  chooseCard(room, a, 'emergency-landing');
   chooseCard(room, b, 'rest');
   assert.throws(() => chooseCard(room, a, 'rest'));
 
@@ -144,7 +143,7 @@ test('orden aleatorio controlado: mínimo 2 minijuegos distintos entre repeticio
     seenOrder.push(id);
     a.ready = true;
     advanceIfComplete(room, i * 10 + 1);
-    chooseCard(room, a, 'rest');
+    chooseCard(room, a, room.cards.find(card => card.id === 'rest' || card.id === 'eat')!.id);
     advanceIfComplete(room, i * 10 + 2);
     submitResult(room, a, timeoutResult(room.minigame));
     advanceIfComplete(room, i * 10 + 3);
@@ -176,8 +175,9 @@ test('radiación sin límite superior, daño por 0 comida/energía, decaimiento 
   startRound(room, a, 0, () => 0);
   a.ready = b.ready = true;
   advanceIfComplete(room, 1);
+  room.cards = ['exchange', 'rest', 'eat'].map(id => CARDS.find(card => card.id === id)!);
   chooseCard(room, a, 'rest');
-  chooseCard(room, b, 'rest');
+  chooseCard(room, b, 'exchange');
   advanceIfComplete(room, 2);
   submitResult(room, a, { ...timeoutResult(room.minigame), score: room.minigame.maxScore });
   submitResult(room, b, { ...timeoutResult(room.minigame), score: 0 });
@@ -194,8 +194,9 @@ test('radiación sin límite superior, daño por 0 comida/energía, decaimiento 
   startRound(room, a, 10, () => 0);
   a.ready = b.ready = true;
   advanceIfComplete(room, 11);
+  room.cards = ['exchange', 'rest', 'eat'].map(id => CARDS.find(card => card.id === id)!);
   chooseCard(room, a, 'rest');
-  chooseCard(room, b, 'rest');
+  chooseCard(room, b, 'exchange');
   advanceIfComplete(room, 12);
   submitResult(room, a, { ...timeoutResult(room.minigame), score: room.minigame.maxScore });
   submitResult(room, b, { ...timeoutResult(room.minigame), score: 0 });
@@ -215,7 +216,7 @@ test('los tiempos límite completan elecciones y resultados ausentes', () => {
   assert.equal(room.phase, 'cards');
   advanceIfComplete(room, room.deadline!);
   assert.equal(room.phase, 'playing');
-  assert.equal(a.selectedCardId, 'rest');
+  assert.ok(a.selectedCardId === 'rest' || a.selectedCardId === 'eat');
   advanceIfComplete(room, room.deadline!);
   assert.equal(room.phase, 'playing');
   advanceIfComplete(room, room.deadline! + RESULT_GRACE_MS);

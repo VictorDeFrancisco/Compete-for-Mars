@@ -1,3 +1,5 @@
+import previewCards from '../../../server/data/boardSlots.json';
+import type { Card } from '../../../shared/types';
 import { useState } from 'react';
 import { MINIGAMES } from '../../../shared/minigames/catalog';
 import type { GameView, Phase } from '../../../shared/types';
@@ -89,11 +91,7 @@ export function buildPreviewGame(
       score: null,
       result: null,
     },
-    cards: [
-      { id: 'rest', title: 'Conserve Power', description: 'Gain +4 energy safely.', effect: { energy: 4 } },
-      { id: 'supplies', title: 'Power Scrub', description: 'Spend 8 energy to purge 1 radiation.', effect: { energy: -8, radiation: -1 } },
-      { id: 'expedition', title: 'Solar Expedition', description: 'Gain +15 energy and +1 radiation.', effect: { energy: 15, radiation: 1 } },
-    ],
+    cards: (previewCards as Card[]).filter(card => ['rest', 'sabotage', 'expedition'].includes(card.id)),
     minigame,
     lastResults: [
       {

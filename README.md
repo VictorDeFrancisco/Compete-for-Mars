@@ -29,7 +29,7 @@ Para desarrollar minijuegos sin servidor: `pnpm dev:client` y abrir http://local
 
 Para probar multijugador: abrir otra pestaña independiente o una ventana privada y unirse con el código. Para probar desde otro dispositivo de la misma red, usar la URL Network que muestra Vite y permitir el puerto 5173 en el firewall local si es necesario. No hace falta introducir la dirección del backend en el cliente.
 
-La misma pestaña recupera su jugador tras una recarga o reconexión. Las partidas se guardan en RAM: reiniciar el servidor (también por una edición con `tsx watch`) borra las salas. El contenido y el equilibrio son provisionales; no hay eliminación, victoria, 3D ni filtros de radiación implementados todavía.
+La misma pestaña recupera su jugador tras una recarga o reconexión. Las partidas se guardan en RAM: reiniciar el servidor (también por una edición con `tsx watch`) borra las salas. Las cartas tienen selección simultánea, objetivos y protecciones; la radiación causa daño al final de la ronda, hay eliminación y gana el último superviviente. Las cantidades siguen siendo provisionales: consulta [las reglas y el catálogo de cartas](docs/CARTAS.md).
 
 ## Repartir el frontend
 

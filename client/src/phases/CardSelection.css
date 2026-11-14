@@ -1,10 +1,31 @@
-/* Estilos de fase 3: usar selectores que empiecen por .phase-cards. */
-.phase-cards .cards {
-  margin: 16px 0;
-}
-
-.phase-cards .card h3 {
-  color: #ff5a1f;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
+.phase-cards.panel { padding: 24px; }
+.phase-cards .cards-heading { display: flex; justify-content: space-between; gap: 18px; align-items: center; }
+.phase-cards .cards-heading .eyebrow { margin: 0 0 7px; color: #ff5a1f; font-size: 10px; letter-spacing: .14em; }
+.phase-cards .cards-heading h2 { font-size: clamp(20px, 2vw, 27px); font-weight: 500; margin: 0; }
+.phase-cards .cards-heading > span { font-family: var(--font-mono); color: #94a2ae; font: 10px ui-monospace, monospace; white-space: nowrap; }
+.phase-cards .cards-resources { display: flex; flex-wrap: wrap; gap: 12px 22px; padding: 18px 0; margin-top: 15px; border-top: 1px solid #35424e; border-bottom: 1px solid #35424e; }
+.phase-cards .cards-resources span { display: flex; align-items: center; gap: 10px; color: #9fadb8; font-size: 11px; }
+.phase-cards .cards-resources b { color: #e3e8ed; font: 500 18px ui-monospace, monospace; }
+.phase-cards .cards-intro { font-size: 12px; color: #a5b2be; margin: 16px 0 20px; }
+.phase-cards .cards-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; align-items: stretch; }
+.phase-cards .action-card { --card-accent: #87a594; display: flex; flex-direction: column; padding: 17px 14px 14px; min-width: 0; border: 1px solid #3a4a55; border-top: 3px solid var(--card-accent); background: rgba(14, 19, 28, .82); }
+.phase-cards .action-card[data-category=risk] { --card-accent: #c09b70; }
+.phase-cards .action-card[data-category=defense] { --card-accent: #7d9eb0; }
+.phase-cards .action-card[data-category=interaction] { --card-accent: #a394b1; }
+.phase-cards .action-card--selected { border-color: #a9d6b7; background: #23372e; }
+.phase-cards .action-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--card-accent); text-transform: uppercase; font-size: 9px; letter-spacing: .06em; }
+.phase-cards .action-card h3 { text-transform: uppercase; margin: 23px 0 13px; min-height: 45px; color: #e6ebef; font-size: 18px; font-weight: 500; line-height: 1.25; }
+.phase-cards .action-card-description { margin: 0 0 18px; color: #b3bfc9; font-size: 12px; line-height: 1.65; }
+.phase-cards .action-card-detail { margin: 3px 0 8px; color: #a4b1bc; font-size: 11px; display: flex; justify-content: space-between; gap: 8px; }
+.phase-cards .action-card-detail b { color: #e3d3b9; font-weight: 500; }
+.phase-cards .action-card-target { color: #b5c1ca; font-size: 11px; margin: 12px 0 0; }
+.phase-cards .action-card-target select { display: block; max-width: 100%; width: 100%; margin-top: 7px; padding: 9px 5px; background: #111b24; border: 1px solid #526371; border-radius: 0; color: #e0e8ee; font: inherit; }
+.phase-cards .action-card-bottom { margin-top: auto; }
+.phase-cards .action-card-warning { font-size: 10px; color: #dfb18f; margin: 12px 0 7px; min-height: 16px; }
+.phase-cards .action-card button { width: 100%; border-radius: 0; border: 0; background: #ff5a1f; color: #090b0e; font-size: 12px; font-weight: 500; padding: 10px 4px; }
+.phase-cards .action-card button:hover:not(:disabled) { background: #f4f1ea; }
+.phase-cards .action-card--selected button { background: #3d624b; border-color: #89b89a; }
+.phase-cards .cards-status { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-top: 20px; color: #91a4b1; font-size: 11px; line-height: 1.6; }
+.phase-cards .cards-status > :first-child { color: #d3dce3; }
+.phase-cards .cards-protection { padding-top: 13px; margin: 15px 0 0; border-top: 1px solid #35424e; color: #a7c9b3; font-size: 11px; }
+@media (max-width: 650px) { .phase-cards.panel { padding: 18px 12px; } .phase-cards .cards-options { grid-template-columns: 1fr; } .phase-cards .action-card h3 { text-transform: uppercase; margin-top: 15px; min-height: 0; } }

@@ -12,6 +12,8 @@ export default function MinigamePresentation({ game, onReady }: PresentationProp
   const deaths = game.players.filter(p => p.health <= 0).length;
   const loserPenalty = Math.max(1, game.round) * (deaths + 1);
 
+  if (game.self.health <= 0) return <section className="panel phase-presentation"><h2>Spectating the mission</h2><p>The surviving crew is preparing the next round.</p></section>;
+
   return (
     <section className="panel phase-presentation">
       <p className="eyebrow">2 · Minigame Briefing · Round {game.round}</p>
@@ -20,7 +22,7 @@ export default function MinigamePresentation({ game, onReady }: PresentationProp
         <strong>This round:</strong> All players spend 5 energy and 5 food. Winner gets +{roundBonus} {resource}.
         Last place loses {loserPenalty} health. Radiation deals 5 health per point, and each resource at 0 costs 10 health.
       </p>
-      <p>Cards in the next step also use <strong>{resource}</strong>.</p>
+      <p>Next: choose one of three action cards. Reinforced suits block radiation damage only; other survival penalties still apply.</p>
       <button disabled={game.self.ready || game.self.health <= 0} onClick={onReady}>
         {game.self.health <= 0 ? 'Eliminated' : game.self.ready ? 'Waiting for crew…' : 'Got it'}
       </button>

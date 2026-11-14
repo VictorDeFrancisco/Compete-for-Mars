@@ -29,7 +29,7 @@ Se usan plazos absolutos (`deadline`) y una referencia de tiempo del servidor (`
 | Fase 3 | `client/src/phases/CardSelection.tsx` | `CardSelectionProps`: `game`, `onChoose(cardId)` |
 | Fase 4 | `client/src/phases/PlayMinigame.tsx` | `MinigameProps`: `game`, `onSubmit(result)` |
 
-`App.tsx` conecta estas callbacks al Socket. Las pantallas no importan Socket.io ni modifican `game`: muestran la instantánea y llaman a su callback. Los estilos propios deben usar la clase raíz de su fase para no afectar a otras pantallas. La fase 4 monta el wrapper común de `src/minigames/`. Consultar [la API de minijuegos](MINIJUEGOS.md) antes de crear un juego.
+`App.tsx` conecta estas callbacks al Socket. Las pantallas no importan Socket.io ni modifican `game`: muestran la instantánea y llaman a su callback. Cartas utiliza `onChoose(cardId, targetId?)` para las acciones dirigidas. Los estilos propios deben usar la clase raíz de su fase para no afectar a otras pantallas. La fase 4 monta el wrapper común de `src/minigames/`. Consultar [la API de minijuegos](MINIJUEGOS.md) antes de crear un juego.
 
 ## Qué recibe cada navegador
 
@@ -54,21 +54,21 @@ Todos reciben una callback de respuesta `{ ok, error? }`. `shared/types.ts` cont
 | `player:ready` | Booleano; lobby |
 | `game:start` | Sin datos; anfitrión |
 | `phase:ready` | `{ phaseId }`; presentación |
-| `card:choose` | `{ phaseId, cardId }`; cartas |
+| `card:choose` | `{ phaseId, cardId, targetId? }`; cartas; el servidor valida carta ofrecida, coste y objetivo vivo |
 | `minigame:submit` | `{ phaseId, result }`; resultado estructurado del minijuego |
 
 El servidor envía `game:state` después de cada cambio relevante. Un desconectado conserva la plaza; en fases con tiempo no puede bloquear la ronda. En lobby el anfitrión puede retirar su plaza. Si se desconecta el anfitrión, se transfiere el control a otro humano conectado. Las salas sin humanos conectados se limpian tras un periodo de inactividad.
 
 ## Reglas provisionales, no diseño definitivo
 
-- Estadísticas: repartir 6 puntos enteros entre energía, comida y blindaje, de 0 a 4 por atributo. Blindaje todavía no tiene efecto.
-- Energía/comida iniciales: `4 + atributo`. Recursos limitados entre 0 y 10.
-- Tres cartas de prueba en `server/data/boardSlots.json`, sin cupos ni conflictos todavía.
+- Estadísticas: 30 puntos entre energía, comida y vida, según las profesiones. Cada valor inicial y máximo es 100 más su bonificación de profesión. Se elimina el atributo blindaje conforme a `main`.
+- Comida y energía se limitan al máximo de cada profesión; la fase del minijuego los convierte al contexto local 0–10. Radiación inicial: 0, sin límite superior.
+- Tres cartas distintas por ronda procedentes de `server/data/boardSlots.json`, con resolución simultánea, objetivos, conflictos, azar y protecciones. Ver [reglas y valores provisionales de cartas](CARTAS.md).
 - Catálogo de minijuegos en `shared/minigames/catalog.ts`, con modo, controles, presentación y recompensas declarativas.
 - Prueba por puntos y carrera de secuencia como ejemplos; la clase base termina automáticamente al vencer el tiempo y el wrapper envía el resultado.
 - El servidor clasifica según puntos o tiempo/progreso, y aplica premio de recursos al ganador y daño al perdedor según cada definición. Los puestos intermedios son neutrales. Los empates y la prueba individual están descritos en `MINIJUEGOS.md`.
-- La vida queda entre 1 y 100: sin eliminación ni condición de victoria global por ahora. Radiación todavía no provoca daño ni filtros. Comida y energía se entregan al minijuego mediante un contexto inmutable, con modificadores comunes; cada implementación aplica sus desventajas (ver MINIJUEGOS.md).
-- Se ha retirado el consumo fijo de energía y comida al terminar un minijuego; se aplican sus cambios configurados, sujetos a los límites globales.
+- La vida queda entre 0 y el máximo de profesión. Al final de cada ronda la radiación quita 5 de vida por unidad, salvo protección de traje. A 0 de vida se pasa a observador. En multijugador gana el último superviviente; si todos mueren al final del minijuego, se conserva el desempate de `main` por clasificación. `GameView.matchFinished` y `winnerId` comunican el final; la elección, el objetivo, `protection` y `cardOutcome` solo aparecen en `self`. Comida y energía se entregan al minijuego mediante un contexto inmutable, con modificadores comunes; cada implementación aplica sus desventajas (ver MINIJUEGOS.md).
+- Se conservan las reglas de supervivencia de `main`: gasto fijo de 5 de comida y 5 de energía, premio inicial de 20 del recurso principal con reducción de 2 por ronda posterior, daño del último de `ronda × (muertes previas + 1)` y 10 de daño por cada reserva vacía. El sorteo evita repetir minijuego sin al menos dos intermedios.
 - El resultado se comunica desde el cliente: el servidor valida ID, coherencia, límites, fase y entrega única, pero esto todavía no es un sistema contra trampas.
 
 La base permite organizar las tareas; no fija el lore ni sustituye las ideas de `Ideas.txt`.

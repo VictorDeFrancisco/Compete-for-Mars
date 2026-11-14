@@ -25,6 +25,8 @@ export default function PlayMinigame({ game, onSubmit }: MinigameProps) {
     .filter(Boolean)
     .join(' ');
 
+  if (game.self.health <= 0) return <section className="panel phase-playing"><h2>Eliminated</h2><p>Spectating the surviving crew.</p></section>;
+
   if (game.minigame.id === 'pipes') {
     return (
       <section className={`phase-playing ${debuffClasses}`.trim()}>
@@ -45,6 +47,7 @@ export default function PlayMinigame({ game, onSubmit }: MinigameProps) {
     <section className={`panel phase-playing ${debuffClasses}`.trim()}>
       <p className="eyebrow">4 · Play Minigame</p>
       <h2>{game.minigame.title}</h2>
+      {game.self.cardOutcome && <p role="status">{game.self.cardOutcome.summary}</p>}
       {(lowEnergy || lowFood) && (
         <p className="phase-playing__debuff" role="status">
           {lowEnergy ? 'Low Energy debuff: slower actions & suit brownout. ' : ''}

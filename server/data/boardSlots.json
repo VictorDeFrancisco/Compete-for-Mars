@@ -1,5 +1,224 @@
 [
-  { "id": "rest", "title": "Rest", "description": "Recover 2 energy.", "effect": { "energy": 2 } },
-  { "id": "supplies", "title": "Gather Rations", "description": "Gain 2 food and spend 1 energy.", "effect": { "food": 2, "energy": -1 } },
-  { "id": "expedition", "title": "Expedition", "description": "Gain 3 food, spend 2 energy, and gain 1 radiation.", "effect": { "food": 3, "energy": -2, "radiation": 1 } }
+  {
+    "id": "rest",
+    "title": "Descansar",
+    "description": "Reparte 40 de energía entre todos los que elijan esta carta.",
+    "category": "supply",
+    "effect": {},
+    "rules": {
+      "kind": "rest",
+      "amount": 40
+    }
+  },
+  {
+    "id": "eat",
+    "title": "Comer",
+    "description": "Reparte 40 de comida entre todos los que elijan esta carta.",
+    "category": "supply",
+    "effect": {},
+    "rules": {
+      "kind": "eat",
+      "amount": 40
+    }
+  },
+  {
+    "id": "expedition",
+    "title": "Expedición",
+    "description": "Éxito: +30 de comida y +30 de energía. Fracaso: +1 de radiación. Probabilidad: jugadores vivos / 5.",
+    "category": "risk",
+    "effect": {
+      "food": 30,
+      "energy": 30
+    },
+    "rules": {
+      "kind": "expedition",
+      "chance": "alive/5",
+      "failure": {
+        "radiation": 1
+      }
+    }
+  },
+  {
+    "id": "decontamination",
+    "title": "Descontaminación",
+    "description": "Si solo la eliges tú, elimina tu radiación. Si la eligen varios, se cancela. Quien la elija estando limpio recibe 1 de radiación, aunque se cancele.",
+    "category": "defense",
+    "effect": {},
+    "rules": {
+      "kind": "decontamination"
+    }
+  },
+  {
+    "id": "radiation-shield",
+    "title": "Escudo antirradiación",
+    "description": "Bloquea la próxima recepción de radiación. Permanece hasta usarse; no se acumula.",
+    "category": "defense",
+    "effect": {},
+    "rules": {
+      "kind": "radiation-shield"
+    }
+  },
+  {
+    "id": "reinforced-suit",
+    "title": "Traje reforzado",
+    "description": "Anula el próximo daño de radiación al final de una ronda. No elimina la radiación. Permanece hasta usarse; no se acumula.",
+    "category": "defense",
+    "effect": {},
+    "rules": {
+      "kind": "reinforced-suit"
+    }
+  },
+  {
+    "id": "recycle-food",
+    "title": "Reciclaje · comida",
+    "description": "Paga 15 de energía y gana 15 de comida.",
+    "category": "supply",
+    "effect": {
+      "food": 15
+    },
+    "rules": {
+      "kind": "recycle-food"
+    },
+    "cost": {
+      "energy": 15
+    }
+  },
+  {
+    "id": "recycle-energy",
+    "title": "Reciclaje · energía",
+    "description": "Paga 15 de comida y gana 15 de energía.",
+    "category": "supply",
+    "effect": {
+      "energy": 15
+    },
+    "rules": {
+      "kind": "recycle-energy"
+    },
+    "cost": {
+      "food": 15
+    }
+  },
+  {
+    "id": "sabotage",
+    "title": "Sabotaje",
+    "description": "Quita hasta 20 de comida a otro jugador. Si os saboteáis mutuamente, ambos sabotajes se cancelan.",
+    "category": "interaction",
+    "effect": {},
+    "rules": {
+      "kind": "sabotage",
+      "amount": 20
+    },
+    "targetRequired": true
+  },
+  {
+    "id": "supply-theft",
+    "title": "Robo de suministros",
+    "description": "Roba hasta 30 de comida al jugador con más comida que no haya elegido robar. Si roban varios, comparten el botín.",
+    "category": "interaction",
+    "effect": {},
+    "rules": {
+      "kind": "supply-theft",
+      "amount": 30
+    }
+  },
+  {
+    "id": "dust-storm",
+    "title": "Tormenta de polvo",
+    "description": "50 %: gana 30 de energía. Si falla, pierde 15 de comida o de energía, al azar.",
+    "category": "risk",
+    "effect": {
+      "energy": 30
+    },
+    "rules": {
+      "kind": "dust-storm",
+      "chance": 0.5,
+      "failure": {
+        "energy": -15,
+        "food": -15
+      }
+    }
+  },
+  {
+    "id": "ice-cave",
+    "title": "Cueva de hielo",
+    "description": "40 %: gana 40 de comida. Si falla, pierde 20 de vida por un derrumbe.",
+    "category": "risk",
+    "effect": {
+      "food": 40
+    },
+    "rules": {
+      "kind": "ice-cave",
+      "chance": 0.4,
+      "failureHealth": -20
+    }
+  },
+  {
+    "id": "all-in",
+    "title": "Todo o nada",
+    "description": "Paga 20 de energía. Con probabilidad de 1/3, gana 60 de comida. Si falla, no recuperas el coste.",
+    "category": "risk",
+    "effect": {
+      "food": 60
+    },
+    "rules": {
+      "kind": "all-in",
+      "chance": 0.3333333333333333
+    },
+    "cost": {
+      "energy": 20
+    }
+  },
+  {
+    "id": "mysterious-signal",
+    "title": "Señal misteriosa",
+    "description": "60 %: encuentra 25 de comida y 25 de energía. Si falla, recibe 1 de radiación.",
+    "category": "risk",
+    "effect": {
+      "food": 25,
+      "energy": 25
+    },
+    "rules": {
+      "kind": "mysterious-signal",
+      "chance": 0.6,
+      "failure": {
+        "radiation": 1
+      }
+    }
+  },
+  {
+    "id": "exchange",
+    "title": "Intercambio",
+    "description": "Los participantes intercambian sus cantidades de comida y energía mediante una rotación al azar. Con un único participante no pasa nada.",
+    "category": "interaction",
+    "effect": {},
+    "rules": {
+      "kind": "exchange"
+    }
+  },
+  {
+    "id": "contagion",
+    "title": "Contagio",
+    "description": "Si tienes radiación, añade 1 a otro jugador limpio. Tú conservas la tuya. Si el objetivo ya estaba contaminado, no tiene efecto.",
+    "category": "interaction",
+    "effect": {},
+    "rules": {
+      "kind": "contagion"
+    },
+    "targetRequired": true,
+    "requiresRadiation": true
+  },
+  {
+    "id": "emergency-landing",
+    "title": "Aterrizaje de emergencia",
+    "description": "Gana 25 de comida y 25 de energía, pero recibe 1 de radiación. Cada participante recibe estas cantidades.",
+    "category": "risk",
+    "effect": {
+      "food": 25,
+      "energy": 25,
+      "radiation": 1
+    },
+    "rules": {
+      "kind": "emergency-landing"
+    }
+  }
 ]

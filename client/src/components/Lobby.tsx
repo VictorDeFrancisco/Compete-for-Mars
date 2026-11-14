@@ -62,10 +62,10 @@ export default function Lobby({
   const nextLevel = game.round + 1;
   const alivePlayers = game.players.filter(p => p.health > 0);
   const readyCount = alivePlayers.filter(p => p.ready).length;
-  const allReady = alivePlayers.length > 0 && alivePlayers.every(p => p.ready && p.connected);
+  const allReady = !game.matchFinished && alivePlayers.length > 0 && alivePlayers.every(p => p.ready && p.connected);
   const otherPlayers = game.players.filter(p => p.id !== game.self.id);
   const matchWinner = game.winnerId ? game.players.find(p => p.id === game.winnerId) ?? null : null;
-  const gameOver = Boolean(matchWinner);
+  const gameOver = Boolean(game.matchFinished || matchWinner);
   const selfDead = game.self.health <= 0;
   const maxHealth = game.self.maxHealth || 100 + (game.self.stats.health ?? 0);
   const maxEnergy = 100 + game.self.stats.energy;
@@ -82,7 +82,7 @@ export default function Lobby({
             <div className="lobby-hud__title-row">
               <strong>Room {game.code}</strong>
               <span className={`lobby-hud__pill ${allReady ? 'lobby-hud__pill--all' : ''}`.trim()}>
-                {gameOver ? `Winner: ${matchWinner!.name}` : `${readyCount}/${alivePlayers.length} ready`}
+                {gameOver ? (matchWinner ? `Winner: ${matchWinner.name}` : 'Mission ended') : `${readyCount}/${alivePlayers.length} ready`}
               </span>
             </div>
             <span className="lobby-hud__drag-hint">Drag background to orbit base · Scroll to zoom</span>
@@ -112,6 +112,9 @@ export default function Lobby({
               </span>
             </div>
 
+            {game.self.cardOutcome && <p className="lobby-card-result">{game.self.cardOutcome.summary}</p>}
+            {game.self.protection?.radiationShield && <p className="lobby-card-result">Radiation shield ready.</p>}
+            {game.self.protection?.reinforcedSuit && <p className="lobby-card-result">Reinforced suit ready.</p>}
             <div className="lobby-stat-row">
               <div className="lobby-stat-row__label">
                 <span>Health</span>
@@ -165,7 +168,7 @@ export default function Lobby({
                   {game.self.resources.energy === 0 || game.self.resources.food === 0
                     ? '0 resource: -10 HP/minigame'
                     : game.self.resources.radiation > 0
-                      ? `Rad: -${game.self.resources.radiation * 5} HP/minigame`
+                      ? game.self.protection?.reinforcedSuit ? 'Radiation: next damage blocked' : `Rad: -${game.self.resources.radiation * 5} HP/minigame`
                       : 'Low reserves debuff active'}
                 </span>
               )}
@@ -224,7 +227,7 @@ export default function Lobby({
             <section className="lobby-glass lobby-hud__actions" aria-label="Level actions">
               {gameOver ? (
                 <p className="lobby-crew-note">
-                  <strong>{matchWinner!.name}</strong> survived as the sole winner of the mission!
+                  {matchWinner ? <><strong>{matchWinner.name}</strong> wins the mission.</> : 'Mission ended. No survivors remain.'}
                 </p>
               ) : (
                 <>
@@ -242,7 +245,7 @@ export default function Lobby({
                       <button
                         type="button"
                         className="secondary"
-                        disabled={disabled || game.players.length >= 4}
+                        disabled={disabled || gameOver || game.players.length >= 4}
                         onClick={onBots}
                       >
                         + Bots

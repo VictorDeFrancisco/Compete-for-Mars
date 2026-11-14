@@ -1,15 +1,16 @@
 import { randomUUID } from 'node:crypto';
-import cardsData from './data/boardSlots.json';
+import { CARD_CATALOG, cardUnavailable, drawCards, radiationDamage, resolveCards } from './cards';
+import { BASE_STAT_CAP, clamp, clampPlayerResource, maxHealthFor } from './playerLimits';
+export { BASE_STAT_CAP, clamp, clampResource, clampPlayerResource, maxHealthFor, maxResourceFor } from './playerLimits';
 import { MINIGAMES } from '../shared/minigames/catalog';
 import { rankResults, timeoutResult, validateResult } from '../shared/minigames/ranking';
 import type { MinigameResult } from '../shared/minigames/types';
 import { CARDS_MS, MAX_PLAYERS, PRESENTATION_MS, STAT_BUDGET } from '../shared/constants';
-import type { Card, Entry, GameView, MinigameDefinition, PublicPlayer, Resources, RoundResult, Stats } from '../shared/types';
+import type { Card, Entry, GameView, MinigameDefinition, PublicPlayer, Resources, RoundResult, Stats, CardOutcome, PlayerProtection } from '../shared/types';
 
-export const CARDS: Card[] = cardsData;
+export const CARDS: Card[] = CARD_CATALOG;
 export { MINIGAMES };
 export const RESULT_GRACE_MS = 1500;
-export const BASE_STAT_CAP = 100;
 export const ROUND_RESOURCE_UPKEEP = 5;
 export const BASE_WIN_RESOURCE_BONUS = 20;
 export const WIN_BONUS_ROUND_DECAY = 2;
@@ -24,6 +25,9 @@ export interface Player extends PublicPlayer {
   selectedCardId: string | null;
   score: number | null;
   result: MinigameResult | null;
+  selectedTargetId: string | null;
+  protection: PlayerProtection;
+  cardOutcome: CardOutcome | null;
 }
 
 export interface Room {
@@ -31,19 +35,9 @@ export interface Room {
   round: number; deadline: number | null; players: Player[];
   minigame: MinigameDefinition; minigameHistory: string[]; cards: Card[];
   lastResults: RoundResult[]; winnerId: string | null; lastActive: number;
+  cardsResolved: boolean; competitive: boolean; matchFinished: boolean;
 }
 
-export const clamp = (n: number, low = 0, high = BASE_STAT_CAP) => Math.max(low, Math.min(high, n));
-export const maxHealthFor = (player: Pick<Player, 'stats'>) => BASE_STAT_CAP + player.stats.health;
-export function maxResourceFor(player: Pick<Player, 'stats'>, key: keyof Resources): number {
-  return key === 'radiation' ? Infinity : BASE_STAT_CAP + player.stats[key];
-}
-export function clampResource(key: keyof Resources, value: number, maxLimit = BASE_STAT_CAP): number {
-  return key === 'radiation' ? Math.max(0, value) : clamp(value, 0, maxLimit);
-}
-export function clampPlayerResource(player: Pick<Player, 'stats'>, key: keyof Resources, value: number): number {
-  return clampResource(key, value, maxResourceFor(player, key));
-}
 export function requireRule(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
 }
@@ -60,21 +54,6 @@ export function roundWinBonus(round: number, baseBonus = BASE_WIN_RESOURCE_BONUS
 
 export function roundLoserDamage(round: number, deaths: number): number {
   return Math.max(1, round) * (Math.max(0, deaths) + 1);
-}
-
-export function cardsForResource(resource: 'energy' | 'food'): Card[] {
-  if (resource === 'food') {
-    return [
-      { id: 'rest', title: 'Light Rations', description: 'Gain +4 food safely.', effect: { food: 4 } },
-      { id: 'supplies', title: 'Hydro Scrub', description: 'Spend 8 food to purge 1 radiation.', effect: { food: -8, radiation: -1 } },
-      { id: 'expedition', title: 'Crater Expedition', description: 'Gain +15 food and +1 radiation.', effect: { food: 15, radiation: 1 } },
-    ];
-  }
-  return [
-    { id: 'rest', title: 'Conserve Power', description: 'Gain +4 energy safely.', effect: { energy: 4 } },
-    { id: 'supplies', title: 'Power Scrub', description: 'Spend 8 energy to purge 1 radiation.', effect: { energy: -8, radiation: -1 } },
-    { id: 'expedition', title: 'Solar Expedition', description: 'Gain +15 energy and +1 radiation.', effect: { energy: 15, radiation: 1 } },
-  ];
 }
 
 export function pickNextMinigame(room: Room, random: () => number = Math.random): MinigameDefinition {
@@ -119,6 +98,7 @@ export function makePlayer(entry: Entry, token: string, socketId: string | null,
     selectedCardId: null,
     score: null,
     result: null,
+    selectedTargetId: null, protection: { radiationShield: false, reinforcedSuit: false }, cardOutcome: null,
     resources: {
       energy: BASE_STAT_CAP + entry.stats.energy,
       food: BASE_STAT_CAP + entry.stats.food,
@@ -139,7 +119,8 @@ export function makeRoom(code: string, player: Player, now = Date.now()): Room {
     players: [player],
     minigame: initialMinigame,
     minigameHistory: [],
-    cards: cardsForResource(minigameRewardResource(initialMinigame)),
+    cards: [],
+    cardsResolved: false, competitive: false, matchFinished: false,
     lastResults: [],
     winnerId: null,
     lastActive: now,
@@ -166,13 +147,17 @@ export function viewFor(room: Room, player: Player, now = Date.now()): GameView 
       stats: { ...player.stats },
       resources: { ...player.resources },
       selectedCardId: player.selectedCardId,
+      selectedTargetId: player.selectedTargetId,
+      protection: { ...player.protection },
+      cardOutcome: player.cardOutcome ? structuredClone(player.cardOutcome) : null,
       score: player.score,
       result: player.result ? { ...player.result } : null,
     },
-    cards: room.cards,
+    cards: structuredClone(room.cards),
     minigame: room.minigame,
     lastResults: room.lastResults.map(result => ({ ...result })),
     winnerId: room.winnerId,
+    matchFinished: room.matchFinished,
   };
 }
 
@@ -185,16 +170,17 @@ function transition(room: Room, phase: Room['phase'], duration: number | null, n
 export function startRound(room: Room, actor: Player, now = Date.now(), random: () => number = Math.random) {
   requireRule(room.phase === 'lobby' && room.hostId === actor.id, 'Solo el anfitrión puede iniciar desde el lobby.');
   const alivePlayers = room.players.filter(p => p.health > 0);
-  requireRule(alivePlayers.length > 0 && room.winnerId === null, 'La partida ya ha terminado.');
+  requireRule(alivePlayers.length > 0 && !room.matchFinished && room.winnerId === null, 'La partida ya ha terminado.');
   requireRule(room.players.length <= MAX_PLAYERS && alivePlayers.every(p => p.connected && p.ready), 'Todos los supervivientes deben estar conectados y listos.');
   room.round++;
   room.minigame = pickNextMinigame(room, random);
-  room.cards = cardsForResource(minigameRewardResource(room.minigame));
+  room.cards = drawCards(alivePlayers, random); room.cardsResolved = false;
+  room.competitive ||= alivePlayers.length > 1;
   for (const player of room.players) {
     player.ready = player.isBot && player.health > 0;
-    player.hasChosenCard = false;
-    player.hasSubmitted = false;
-    player.selectedCardId = null;
+    player.hasChosenCard = player.health <= 0;
+    player.hasSubmitted = player.health <= 0;
+    player.selectedCardId = null; player.selectedTargetId = null; player.cardOutcome = null;
     player.score = null;
     player.result = null;
   }
@@ -205,23 +191,20 @@ export function currentPhase(room: Room, expected: Room['phase'], phaseId: unkno
   requireRule(room.phase === expected && phaseId === room.phaseId, 'Esta acción ya no corresponde a la fase actual.');
 }
 
-export function chooseCard(room: Room, player: Player, cardId: unknown) {
-  requireRule(player.health > 0, 'Los jugadores eliminados no pueden elegir carta.');
+export function chooseCard(room: Room, player: Player, cardId: unknown, targetId?: unknown) {
+  requireRule(room.phase === 'cards' && room.players.includes(player), 'No puedes elegir cartas en esta fase.');
   requireRule(!player.hasChosenCard, 'Ya has elegido una carta.');
-  const card = room.cards.find(entry => entry.id === cardId);
-  requireRule(card, 'Carta desconocida.');
-  for (const key of ['energy', 'food'] as const) {
-    const delta = card.effect[key] ?? 0;
-    if (delta < 0) {
-      requireRule(player.resources[key] >= Math.abs(delta), `No tienes suficiente ${key} para esa carta.`);
-    }
-  }
-  player.selectedCardId = card.id;
-  player.hasChosenCard = true;
+  const card = room.cards.find(c => c.id === cardId);
+  requireRule(card, 'Esta carta no está disponible en la ronda.');
+  const unavailable = cardUnavailable(player, card);
+  requireRule(!unavailable, unavailable ?? 'Carta no disponible.');
+  if (card.targetRequired) {
+    requireRule(typeof targetId === 'string' && room.players.some(p => p.id === targetId && p.id !== player.id && p.health > 0), 'Elige a otro jugador vivo como objetivo.');
+  } else requireRule(targetId === undefined || targetId === null, 'Esta carta no admite objetivo.');
+  player.selectedCardId = card.id; player.selectedTargetId = card.targetRequired ? targetId as string : null; player.hasChosenCard = true;
 }
-
 export function submitResult(room: Room, player: Player, input: unknown) {
-  requireRule(player.health > 0, 'Los jugadores eliminados no pueden enviar resultado.');
+  requireRule(player.health > 0 && room.phase === 'playing', 'Los jugadores eliminados no pueden enviar resultado.');
   requireRule(!player.hasSubmitted, 'Ya has enviado tu resultado.');
   const result = validateResult(room.minigame, input);
   requireRule(result.reason !== 'aborted', 'Un intento abortado no se puede enviar.');
@@ -238,13 +221,12 @@ export function advanceIfComplete(room: Room, now = Date.now()): boolean {
   }
 
   if (room.phase === 'cards' && (timedOut || alivePlayers.every(p => p.hasChosenCard))) {
+    const fallback = room.cards.find(c => c.id === 'rest' || c.id === 'eat')!;
     for (const player of alivePlayers) {
-      if (!player.hasChosenCard) chooseCard(room, player, room.cards[0].id);
-      const card = room.cards.find(c => c.id === player.selectedCardId)!;
-      for (const key of Object.keys(card.effect) as (keyof Resources)[]) {
-        player.resources[key] = clampPlayerResource(player, key, player.resources[key] + (card.effect[key] ?? 0));
-      }
+      if (!player.hasChosenCard) chooseCard(room, player, fallback.id);
     }
+    resolveCards(room);
+    if (finishMatchIfNeeded(room)) { transition(room, 'lobby', null, now); return true; }
     transition(room, 'playing', room.minigame.durationMs, now);
     return true;
   }
@@ -279,11 +261,11 @@ export function advanceIfComplete(room: Room, now = Date.now()): boolean {
 
       // 3. Apply health penalties: last place + radiation + depleted food/energy.
       let healthDelta = entry.outcome === 'loser' ? -loserPenalty : 0;
-      healthDelta -= player.resources.radiation * RADIATION_HEALTH_DAMAGE;
       if (player.resources.food === 0) healthDelta -= EMPTY_RESOURCE_HEALTH_DAMAGE;
       if (player.resources.energy === 0) healthDelta -= EMPTY_RESOURCE_HEALTH_DAMAGE;
 
       player.health = clamp(player.health + healthDelta, 0, maxHealthFor(player));
+      radiationDamage(player, RADIATION_HEALTH_DAMAGE);
       player.maxHealth = maxHealthFor(player);
       player.ready = player.isBot && player.health > 0;
 
@@ -304,18 +286,22 @@ export function advanceIfComplete(room: Room, now = Date.now()): boolean {
       };
     });
 
-    if (room.players.length > 1) {
-      const aliveAfter = room.players.filter(p => p.health > 0);
-      if (aliveAfter.length === 1) {
-        room.winnerId = aliveAfter[0].id;
-      } else if (aliveAfter.length === 0) {
-        room.winnerId = ranking[0]?.playerId ?? null;
-      }
-    }
+    finishMatchIfNeeded(room, ranking[0]?.playerId ?? null);
 
     transition(room, 'lobby', null, now);
     return true;
   }
 
+  return false;
+}
+
+function finishMatchIfNeeded(room: Room, fallbackWinner: string | null = null): boolean {
+  const alive = room.players.filter(p => p.health > 0);
+  if (alive.length === 0 || (room.competitive && alive.length === 1)) {
+    room.matchFinished = true;
+    // Main uses the best ranked player to break a simultaneous final elimination.
+    room.winnerId = alive[0]?.id ?? (room.competitive ? fallbackWinner : null);
+    return true;
+  }
   return false;
 }
