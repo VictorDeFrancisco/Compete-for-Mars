@@ -1,4 +1,4 @@
-/* Pantalla inicial estilo Title Screen de videojuego con entrada fade-in escalonada de sus elementos */
+/* Pantalla inicial estilo Title Screen limpia con entrada fade-in escalonada */
 .start-screen {
   position: relative;
   height: 100dvh;
@@ -19,34 +19,16 @@
   height: 100dvh;
   max-height: 100dvh;
   width: 100%;
-  padding: 18px 28px 16px;
+  padding: 18px 28px 18px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
 }
 
 .start-screen__top {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  animation: startFadeDown 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.08s backwards;
-}
-
-.start-screen__stamp {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 14px;
-  background: var(--paper-cream, #F5EFE0);
-  color: var(--nasa-blue, #0B3D91);
-  border: 3px solid var(--ink-black, #1A1817);
-  border-radius: 8px;
-  box-shadow: 0 4px 0 var(--ink-black, #1A1817);
-  font-family: 'Archivo', sans-serif;
-  font-size: 0.78rem;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  justify-content: flex-end;
+  animation: startFadeDown 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.08s backwards;
 }
 
 .start-screen__test-btn {
@@ -83,23 +65,8 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 14px;
-  padding-bottom: clamp(18px, 6vh, 64px);
-}
-
-.start-screen__edition {
-  display: inline-block;
-  padding: 5px 14px;
-  border-radius: 999px;
-  background: rgba(11, 25, 44, 0.82);
-  border: 2.5px solid #F5EFE0;
-  color: #F5C242;
-  font-family: 'Courier Prime', monospace;
-  font-size: 0.82rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  box-shadow: 0 4px 0 #1A1817;
-  animation: startFadeUp 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.2s backwards;
+  gap: 28px;
+  padding-bottom: clamp(24px, 7vh, 72px);
 }
 
 .start-screen__hero-title {
@@ -115,34 +82,20 @@
 .start-screen__title-line {
   font-family: 'Archivo', sans-serif;
   font-weight: 900;
-  font-size: clamp(3rem, 7.8vw, 6.2rem);
+  font-size: clamp(3.2rem, 8.2vw, 6.6rem);
   letter-spacing: 0.04em;
   color: #F5EFE0;
   -webkit-text-stroke: 3px #1A1817;
   text-shadow:
     0 6px 0 #1A1817,
     0 14px 32px rgba(0, 0, 0, 0.65);
-  animation: startTitleFade 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.35s backwards;
+  animation: startTitleFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.18s backwards;
 }
 
 .start-screen__title-line--accent {
   color: #FC3D21;
-  font-size: clamp(3.3rem, 8.6vw, 6.8rem);
-  animation: startTitleFade 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.52s backwards;
-}
-
-.start-screen__tagline {
-  margin: 2px 0 8px;
-  padding: 6px 16px;
-  border-radius: 8px;
-  background: rgba(11, 25, 44, 0.74);
-  border: 2px solid rgba(245, 239, 224, 0.32);
-  font-family: 'Courier Prime', monospace;
-  font-size: clamp(0.88rem, 1.4vw, 1.04rem);
-  font-weight: 700;
-  color: #F5EFE0;
-  max-width: 640px;
-  animation: startFadeUp 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.7s backwards;
+  font-size: clamp(3.5rem, 9vw, 7.2rem);
+  animation: startTitleFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.34s backwards;
 }
 
 .start-screen__menu {
@@ -150,9 +103,8 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
-  margin-top: 4px;
   flex-wrap: wrap;
-  animation: startFadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.88s backwards;
+  animation: startFadeUp 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.52s backwards;
 }
 
 .start-screen__btn {
@@ -196,25 +148,6 @@
 .start-screen__btn:active {
   transform: translateY(3px);
   box-shadow: 0 2px 0 var(--ink-black, #1A1817);
-}
-
-.start-screen__footer {
-  display: flex;
-  justify-content: center;
-  animation: startFadeOnly 0.65s ease-out 1.05s backwards;
-}
-
-.start-screen__brand {
-  display: inline-block;
-  padding: 4px 12px;
-  background: rgba(245, 239, 224, 0.92);
-  border: 2px solid var(--ink-black, #1A1817);
-  border-radius: 6px;
-  font-family: 'Courier Prime', monospace;
-  font-size: 0.74rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  color: var(--ink-black, #1A1817);
 }
 
 @keyframes startFadeOnly {
