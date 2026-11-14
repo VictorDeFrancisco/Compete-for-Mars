@@ -7,7 +7,8 @@ export interface Card {
   description: string;
   effect: Partial<Resources>;
 }
-export interface MinigameDefinition { id: string; title: string; instructions: string; durationMs: number }
+import type { MinigameDefinition, MinigameResult, Outcome } from './minigames/types';
+export type { MinigameDefinition, MinigameResult } from './minigames/types';
 export interface PublicPlayer {
   id: string;
   name: string;
@@ -23,8 +24,13 @@ export interface SelfPlayer extends PublicPlayer {
   resources: Resources;
   selectedCardId: string | null;
   score: number | null;
+  result: MinigameResult | null;
 }
-export interface RoundResult { playerId: string; name: string; score: number; healthDelta: number }
+export interface RoundResult {
+  playerId: string; name: string; score: number; healthDelta: number;
+  resourcesDelta: Resources; rank: number; outcome: Outcome;
+  elapsedMs: number; completed: boolean;
+}
 export interface GameView {
   code: string;
   hostId: string;
@@ -52,11 +58,11 @@ export interface ClientToServerEvents {
   'player:ready': (ready: boolean, reply: Reply) => void;
   'phase:ready': (action: PhaseAction, reply: Reply) => void;
   'card:choose': (action: PhaseAction & { cardId: string }, reply: Reply) => void;
-  'minigame:submit': (action: PhaseAction & { score: number }, reply: Reply) => void;
+  'minigame:submit': (action: PhaseAction & { result: MinigameResult }, reply: Reply) => void;
 }
 export interface ServerToClientEvents { 'game:state': (state: GameView) => void }
 
 // Contratos de las tres pantallas: pueden rediseñarse sin gestionar el Socket.
 export interface PresentationProps { game: GameView; onReady: () => void }
 export interface CardSelectionProps { game: GameView; onChoose: (cardId: string) => void }
-export interface MinigameProps { game: GameView; onSubmit: (score: number) => void }
+export interface MinigameProps { game: GameView; onSubmit: (result: MinigameResult) => void }

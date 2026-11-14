@@ -5,6 +5,7 @@ import { io, type Socket } from 'socket.io-client';
 import { createGameServer } from './index';
 import { DEFAULT_STATS } from '../shared/constants';
 import type { GameView } from '../shared/types';
+import { timeoutResult } from '../shared/minigames/ranking';
 
 test('dos clientes reales: sala, autorizaciones, ronda, reconexión y segunda ronda', async t => {
   const server = createGameServer();
@@ -54,15 +55,16 @@ test('dos clientes reales: sala, autorizaciones, ronda, reconexión y segunda ro
   assert.equal((await action(a, 'card:choose', { phaseId: cards.phaseId, cardId: 'rest' })).ok, false);
   assert.equal((await action(b, 'card:choose', { phaseId: cards.phaseId, cardId: 'rest' })).ok, true);
   const playing = await state(a, view => view.phase === 'playing');
-  assert.equal((await action(a, 'minigame:submit', { phaseId: playing.phaseId, score: 80 })).ok, true);
-  assert.equal((await action(b, 'minigame:submit', { phaseId: playing.phaseId, score: 30 })).ok, true);
+  const result = timeoutResult(playing.minigame);
+  assert.equal((await action(a, 'minigame:submit', { phaseId: playing.phaseId, result: { ...result, score: 80 } })).ok, true);
+  assert.equal((await action(b, 'minigame:submit', { phaseId: playing.phaseId, result: { ...result, score: 30 } })).ok, true);
   const lobby = await state(a, view => view.phase === 'lobby' && view.round === 1);
   assert.equal(lobby.lastResults.length, 2);
   const id = lobby.self.id; a.disconnect();
   await state(b, view => view.players.some(p => p.id === id && !p.connected));
   const resumed = await connect('token-astronauta-a-123456');
   const restored = await state(resumed, view => view.phase === 'lobby');
-  assert.equal(restored.self.id, id); assert.equal(restored.self.resources.food, 8);
+  assert.equal(restored.self.id, id); assert.equal(restored.self.resources.food, 10);
   for (const client of [resumed, b]) assert.equal((await action(client, 'player:ready', true)).ok, true);
   assert.equal((await action(b, 'game:start')).ok, true);
   await state(resumed, view => view.phase === 'presentation' && view.round === 2);

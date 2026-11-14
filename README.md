@@ -23,7 +23,9 @@ Abrir http://localhost:5173. El cliente Vite usa el puerto 5173 y el servidor el
 
 Salas con código, entre uno y cuatro jugadores, bots para completar plazas, estado autoritativo del servidor, elecciones privadas, plazos y resultados. Las estadísticas se validan al entrar en la sala. El anfitrión inicia cada ronda cuando todos están listos.
 
-Para probar solo: poner nombre, continuar, crear sala, completar con bots, marcarse listo e iniciar. Pulsar Entendido en la presentación, elegir una carta, activar el panel y enviar el resultado. Al acabar se vuelve al lobby para la siguiente ronda.
+Para probar solo: poner nombre, continuar, crear sala, completar con bots, marcarse listo e iniciar. Pulsar Entendido en la presentación, elegir una carta y jugar. El resultado se envía automáticamente al terminar o vencer el tiempo. Al acabar se vuelve al lobby para la siguiente ronda.
+
+Para desarrollar minijuegos sin servidor: `pnpm dev:client` y abrir http://localhost:5173/?minigame=pulse o http://localhost:5173/?minigame=sequence-race. El laboratorio permite reiniciar y ver el JSON final. [API completa, métodos, controles y guía para crear un minijuego](docs/MINIJUEGOS.md).
 
 Para probar multijugador: abrir otra pestaña independiente o una ventana privada y unirse con el código. Para probar desde otro dispositivo de la misma red, usar la URL Network que muestra Vite y permitir el puerto 5173 en el firewall local si es necesario. No hace falta introducir la dirección del backend en el cliente.
 
@@ -35,7 +37,7 @@ La misma pestaña recupera su jugador tras una recarga o reconexión. Las partid
 |---|---|---|
 | 2 · Presentación | `client/src/phases/MinigamePresentation.tsx` y su CSS | `game`, `onReady()` |
 | 3 · Cartas | `client/src/phases/CardSelection.tsx` y su CSS | `game`, `onChoose(cardId)` |
-| 4 · Minijuego | `client/src/phases/PlayMinigame.tsx` y su CSS | `game`, `onSubmit(score)` |
+| 4 · Minijuego | `client/src/phases/PlayMinigame.tsx` y su CSS | `game`, `onSubmit(result)` |
 
 Cada persona puede cambiar la presentación de su fase conservando estas props. `App.tsx` y los hooks ya gestionan la comunicación. Los componentes originales de `src/minigames/` y `BaseBoard`, `NightSummary`, etc. que no usa esta demo siguen disponibles como plantillas para futuras tareas.
 
@@ -59,6 +61,6 @@ Las pruebas cubren validación de estadísticas, permisos del anfitrión, privac
 
 ## Organización
 
-`shared/` contiene tipos y constantes; `server/gameEngine.ts` las transiciones; `server/index.ts` las salas y los eventos; `server/bots.ts` los bots; `server/data/` las cartas y definiciones de minijuegos. `client/src/phases/` contiene las pantallas que os podéis repartir.
+`shared/` contiene tipos y constantes; `shared/minigames/` las definiciones y clasificación; `server/gameEngine.ts` las transiciones; `server/index.ts` las salas y los eventos; `server/bots.ts` los bots; `server/data/` las cartas y preguntas. `client/src/phases/` contiene las pantallas que os podéis repartir; `client/src/minigames/games/` las implementaciones de cada juego.
 
 El responsable de integración coordina cambios en `shared/`, `App.tsx`, hooks y dependencias. Las demás tareas se integran mediante PR pequeños hacia `main`, probando una ronda completa antes de fusionar.

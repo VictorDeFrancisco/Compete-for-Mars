@@ -17,7 +17,7 @@ El servidor posee el estado de cada sala. El frontend solo solicita acciones. El
 | `lobby` | El anfitrión inicia y todos están conectados/listos | Sin temporizador |
 | `presentation` | Todos confirman o pasan 15 s | Va a cartas |
 | `cards` | Todos eligen o pasan 25 s | Quien no elige recibe Descansar |
-| `playing` | Todos envían resultado o termina la duración del minijuego | Quien no envía puntúa 0 |
+| `playing` | Todos envían resultado o termina el plazo más 1,5 s de recepción | Quien no envía: 0 puntos, 0 progreso y timeout |
 
 Se usan plazos absolutos (`deadline`) y una referencia de tiempo del servidor (`serverNow`). Los botones pueden adelantar las fases cuando todos han terminado. Cada transición crea un `phaseId` nuevo: enviar el que figure en `game.phaseId`. Las acciones antiguas, duplicadas o fuera de fase se rechazan.
 
@@ -27,9 +27,9 @@ Se usan plazos absolutos (`deadline`) y una referencia de tiempo del servidor (`
 |---|---|---|
 | Fase 2 | `client/src/phases/MinigamePresentation.tsx` | `PresentationProps`: `game`, `onReady()` |
 | Fase 3 | `client/src/phases/CardSelection.tsx` | `CardSelectionProps`: `game`, `onChoose(cardId)` |
-| Fase 4 | `client/src/phases/PlayMinigame.tsx` | `MinigameProps`: `game`, `onSubmit(score)` |
+| Fase 4 | `client/src/phases/PlayMinigame.tsx` | `MinigameProps`: `game`, `onSubmit(result)` |
 
-`App.tsx` conecta estas callbacks al Socket. Las pantallas no importan Socket.io ni modifican `game`: muestran la instantánea y llaman a su callback. Los estilos propios deben usar la clase raíz de su fase para no afectar a otras pantallas. Los futuros minijuegos de `src/minigames/` se montarán dentro de la fase 4.
+`App.tsx` conecta estas callbacks al Socket. Las pantallas no importan Socket.io ni modifican `game`: muestran la instantánea y llaman a su callback. Los estilos propios deben usar la clase raíz de su fase para no afectar a otras pantallas. La fase 4 monta el wrapper común de `src/minigames/`. Consultar [la API de minijuegos](MINIJUEGOS.md) antes de crear un juego.
 
 ## Qué recibe cada navegador
 
@@ -55,7 +55,7 @@ Todos reciben una callback de respuesta `{ ok, error? }`. `shared/types.ts` cont
 | `game:start` | Sin datos; anfitrión |
 | `phase:ready` | `{ phaseId }`; presentación |
 | `card:choose` | `{ phaseId, cardId }`; cartas |
-| `minigame:submit` | `{ phaseId, score }`; minijuego |
+| `minigame:submit` | `{ phaseId, result }`; resultado estructurado del minijuego |
 
 El servidor envía `game:state` después de cada cambio relevante. Un desconectado conserva la plaza; en fases con tiempo no puede bloquear la ronda. En lobby el anfitrión puede retirar su plaza. Si se desconecta el anfitrión, se transfiere el control a otro humano conectado. Las salas sin humanos conectados se limpian tras un periodo de inactividad.
 
@@ -64,9 +64,11 @@ El servidor envía `game:state` después de cada cambio relevante. Un desconecta
 - Estadísticas: repartir 6 puntos enteros entre energía, comida y blindaje, de 0 a 4 por atributo. Blindaje todavía no tiene efecto.
 - Energía/comida iniciales: `4 + atributo`. Recursos limitados entre 0 y 10.
 - Tres cartas de prueba en `server/data/boardSlots.json`, sin cupos ni conflictos todavía.
-- Prueba de pulsaciones: 20 pulsaciones equivalen a 100 puntos. Enviar manualmente antes del plazo. El tiempo solo limita la entrega; las últimas pulsaciones sin enviar no se guardan.
-- Puntuación entera de 0 a 100. Resultado ≥ 50: +5 de vida; resultado < 50: −5. La vida queda entre 1 y 100: sin eliminación ni condición de victoria por ahora.
-- Al volver al lobby: −1 energía y −1 comida. Radiación todavía no provoca daño ni filtros. Los recursos no modifican todavía la dificultad.
-- La puntuación del minijuego se comunica desde el cliente: el servidor valida rango, fase y entrega única, pero esto todavía no es un sistema contra trampas.
+- Catálogo de minijuegos en `shared/minigames/catalog.ts`, con modo, controles, presentación y recompensas declarativas.
+- Prueba por puntos y carrera de secuencia como ejemplos; la clase base termina automáticamente al vencer el tiempo y el wrapper envía el resultado.
+- El servidor clasifica según puntos o tiempo/progreso, y aplica premio de recursos al ganador y daño al perdedor según cada definición. Los puestos intermedios son neutrales. Los empates y la prueba individual están descritos en `MINIJUEGOS.md`.
+- La vida queda entre 1 y 100: sin eliminación ni condición de victoria global por ahora. Radiación todavía no provoca daño ni filtros. Los recursos no modifican todavía la dificultad.
+- Se ha retirado el consumo fijo de energía y comida al terminar un minijuego; se aplican sus cambios configurados, sujetos a los límites globales.
+- El resultado se comunica desde el cliente: el servidor valida ID, coherencia, límites, fase y entrega única, pero esto todavía no es un sistema contra trampas.
 
 La base permite organizar las tareas; no fija el lore ni sustituye las ideas de `Ideas.txt`.

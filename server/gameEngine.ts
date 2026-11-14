@@ -1,11 +1,14 @@
 import { randomUUID } from 'node:crypto';
 import cardsData from './data/boardSlots.json';
-import minigamesData from './data/minigames.json';
+import { MINIGAMES } from '../shared/minigames/catalog';
+import { rankResults, timeoutResult, validateResult } from '../shared/minigames/ranking';
+import type { MinigameResult, Reward } from '../shared/minigames/types';
 import { CARDS_MS, MAX_PLAYERS, PRESENTATION_MS, STAT_BUDGET } from '../shared/constants';
 import type { Card, Entry, GameView, MinigameDefinition, PublicPlayer, Resources, RoundResult, Stats } from '../shared/types';
 
 export const CARDS: Card[] = cardsData;
-export const MINIGAMES: MinigameDefinition[] = minigamesData;
+export { MINIGAMES };
+export const RESULT_GRACE_MS = 1500;
 export interface Player extends PublicPlayer {
   token: string;
   socketId: string | null;
@@ -13,6 +16,7 @@ export interface Player extends PublicPlayer {
   resources: Resources;
   selectedCardId: string | null;
   score: number | null;
+  result: MinigameResult | null;
 }
 export interface Room {
   code: string; hostId: string; phase: GameView['phase']; phaseId: string;
@@ -38,7 +42,7 @@ export function validateEntry(input: unknown): Entry {
 }
 export function makePlayer(entry: Entry, token: string, socketId: string | null, isBot = false): Player {
   return { id: randomUUID(), ...entry, token, socketId, health: 100, isBot, connected: true,
-    ready: isBot, hasChosenCard: false, hasSubmitted: false, selectedCardId: null, score: null,
+    ready: isBot, hasChosenCard: false, hasSubmitted: false, selectedCardId: null, score: null, result: null,
     resources: { energy: 4 + entry.stats.energy, food: 4 + entry.stats.food, radiation: 0 } };
 }
 export function makeRoom(code: string, player: Player, now = Date.now()): Room {
@@ -54,7 +58,7 @@ export function viewFor(room: Room, player: Player, now = Date.now()): GameView 
     round: room.round, deadline: room.deadline, serverNow: now,
     players: room.players.map(publicPlayer),
     self: { ...publicPlayer(player), stats: { ...player.stats }, resources: { ...player.resources },
-      selectedCardId: player.selectedCardId, score: player.score },
+      selectedCardId: player.selectedCardId, score: player.score, result: player.result ? { ...player.result } : null },
     cards: CARDS, minigame: room.minigame, lastResults: room.lastResults.map(result => ({ ...result })) };
 }
 function transition(room: Room, phase: Room['phase'], duration: number | null, now: number) {
@@ -69,7 +73,7 @@ export function startRound(room: Room, actor: Player, now = Date.now()) {
   room.minigame = MINIGAMES[(room.round - 1) % MINIGAMES.length];
   for (const player of room.players) {
     player.ready = player.isBot; player.hasChosenCard = false; player.hasSubmitted = false;
-    player.selectedCardId = null; player.score = null;
+    player.selectedCardId = null; player.score = null; player.result = null;
   }
   transition(room, 'presentation', PRESENTATION_MS, now);
 }
@@ -81,10 +85,11 @@ export function chooseCard(room: Room, player: Player, cardId: unknown) {
   requireRule(CARDS.some(card => card.id === cardId), 'Carta desconocida.');
   player.selectedCardId = cardId as string; player.hasChosenCard = true;
 }
-export function submitScore(player: Player, score: unknown) {
+export function submitResult(room: Room, player: Player, input: unknown) {
   requireRule(!player.hasSubmitted, 'Ya has enviado tu resultado.');
-  requireRule(typeof score === 'number' && Number.isInteger(score) && score >= 0 && score <= 100, 'La puntuación debe estar entre 0 y 100.');
-  player.score = score; player.hasSubmitted = true;
+  const result = validateResult(room.minigame, input);
+  requireRule(result.reason !== 'aborted', 'Un intento abortado no se puede enviar.');
+  player.result = result; player.score = result.score; player.hasSubmitted = true;
 }
 export function advanceIfComplete(room: Room, now = Date.now()): boolean {
   const timedOut = room.deadline !== null && now >= room.deadline;
@@ -101,17 +106,23 @@ export function advanceIfComplete(room: Room, now = Date.now()): boolean {
     }
     transition(room, 'playing', room.minigame.durationMs, now); return true;
   }
-  if (room.phase === 'playing' && (timedOut || room.players.every(p => p.hasSubmitted))) {
-    room.lastResults = room.players.map(player => {
-      const score = player.score ?? 0;
-      // Equilibrio provisional: sin eliminación mientras se desarrolla el ciclo.
-      const delta = score >= 50 ? 5 : -5;
+  if (room.phase === 'playing' && ((room.deadline !== null && now >= room.deadline + RESULT_GRACE_MS) || room.players.every(p => p.hasSubmitted))) {
+    const ranking = rankResults(room.minigame, room.players.map(player => ({ playerId: player.id, result: player.result ?? timeoutResult(room.minigame) })));
+    room.lastResults = ranking.map(entry => {
+      const player = room.players.find(p => p.id === entry.playerId)!;
+      const reward: Reward = entry.outcome === 'winner' ? room.minigame.rewards.winner
+        : entry.outcome === 'loser' ? room.minigame.rewards.loser : {};
       const previousHealth = player.health;
-      player.health = clamp(player.health + delta, 1, 100);
-      player.resources.energy = clamp(player.resources.energy - 1);
-      player.resources.food = clamp(player.resources.food - 1);
+      const previousResources = { ...player.resources };
+      player.health = clamp(player.health + (reward.health ?? 0), 1, 100);
+      for (const key of ['energy', 'food', 'radiation'] as const) {
+        player.resources[key] = clamp(player.resources[key] + (reward.resources?.[key] ?? 0));
+      }
       player.ready = player.isBot;
-      return { playerId: player.id, name: player.name, score, healthDelta: player.health - previousHealth };
+      return { playerId: player.id, name: player.name, score: entry.result.score, rank: entry.rank, outcome: entry.outcome,
+        completed: entry.result.completed, elapsedMs: entry.result.elapsedMs, healthDelta: player.health - previousHealth,
+        resourcesDelta: { energy: player.resources.energy - previousResources.energy,
+          food: player.resources.food - previousResources.food, radiation: player.resources.radiation - previousResources.radiation } };
     });
     transition(room, 'lobby', null, now); return true;
   }

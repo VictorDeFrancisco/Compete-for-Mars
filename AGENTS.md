@@ -6,5 +6,6 @@
 - El servidor gestionará el estado y las consecuencias de las acciones; el cliente mostrará la interfaz y ejecutará los minijuegos locales. No envíes datos privados de otros jugadores al cliente.
 - Mantén los minijuegos independientes y el contenido editable en `server/data/`.
 - No añadas secretos, claves SSH ni archivos `.env` al repositorio.
+- Para crear minijuegos, lee `docs/MINIJUEGOS.md`. Extiende `BaseMinigame`, declara metadatos/controles y crea una vista local. El servidor clasifica los resultados y aplica recompensas; no envíes Socket.io desde una clase o vista de minijuego.
 - Las fases 2, 3 y 4 están aisladas en `client/src/phases/`, con su propio CSS. Usa las props de `shared/types.ts`; no abras sockets adicionales ni cambies de fase desde el cliente.
 - Comprueba `npm run build` y `npm test` (o equivalentes con pnpm) antes de integrar. El lockfile de referencia es `pnpm-lock.yaml`; el responsable de integración coordina dependencias y configuración.

@@ -36,8 +36,8 @@ export default function App() {
         onRemove={id => act(reply => socket.emit('room:remove-player', id, reply))} />}
       {game && phase === 'presentation' && <MinigamePresentation game={game} onReady={() => act(reply => socket.emit('phase:ready', { phaseId: game.phaseId }, reply))} />}
       {game && phase === 'cards' && <CardSelection game={game} onChoose={cardId => act(reply => socket.emit('card:choose', { phaseId: game.phaseId, cardId }, reply))} />}
-      {game && phase === 'playing' && <PlayMinigame key={game.phaseId} game={game} onSubmit={score => act(reply => socket.emit('minigame:submit', { phaseId: game.phaseId, score }, reply))} />}
+      {game && phase === 'playing' && <PlayMinigame key={game.phaseId} game={game} onSubmit={result => act(reply => socket.emit('minigame:submit', { phaseId: game.phaseId, result }, reply))} />}
     </fieldset></div>{game && <Hud game={game} />}</div>
-    <footer>Prototipo: cartas, puntuaciones y efectos provisionales. Ciclo de rondas sin eliminación.</footer>
+    <footer>Prototipo · <a href="/?minigame=pulse">Laboratorio local de minijuegos</a></footer>
   </main>;
 }

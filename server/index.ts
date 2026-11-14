@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { Server } from 'socket.io';
 import { MAX_PLAYERS, ROOM_IDLE_MS } from '../shared/constants';
 import type { ClientToServerEvents, Reply, ServerToClientEvents } from '../shared/types';
-import { advanceIfComplete, chooseCard, currentPhase, makePlayer, makeRoom, requireRule, startRound, submitScore, validateEntry, viewFor, type Player, type Room } from './gameEngine';
+import { advanceIfComplete, chooseCard, currentPhase, makePlayer, makeRoom, requireRule, startRound, submitResult, validateEntry, viewFor, type Player, type Room } from './gameEngine';
 import { fillBots, playBots } from './bots';
 
 interface SocketData { code?: string; playerId?: string }
@@ -121,7 +121,7 @@ export function createGameServer() {
     }));
     socket.on('minigame:submit', (action, reply) => handle(reply, () => {
       const [room, player] = membership(); currentPhase(room, 'playing', action?.phaseId);
-      submitScore(player, action?.score); advanceIfComplete(room); broadcast(room);
+      submitResult(room, player, action?.result); advanceIfComplete(room); broadcast(room);
     }));
     socket.on('disconnect', () => {
       const room = rooms.get(socket.data.code ?? '');

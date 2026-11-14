@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_STATS } from '../shared/constants';
-import { advanceIfComplete, chooseCard, currentPhase, makePlayer, makeRoom, startRound, submitScore, validateEntry, viewFor } from './gameEngine';
+import { advanceIfComplete, chooseCard, currentPhase, makePlayer, makeRoom, startRound, submitResult, validateEntry, viewFor, RESULT_GRACE_MS } from './gameEngine';
+import { timeoutResult } from '../shared/minigames/ranking';
 
 const player = (name: string) => makePlayer({ name, stats: { ...DEFAULT_STATS } }, `secret-token-${name}`, 'socket-' + name);
 test('valida estadísticas y no acepta presupuestos o valores inválidos', () => {
@@ -32,11 +33,16 @@ test('ciclo completo, acciones una sola vez y recursos privados', () => {
   }
   advanceIfComplete(room, 2); assert.equal(room.phase, 'playing');
   assert.equal(a.resources.food, 9);
-  assert.throws(() => submitScore(a, Infinity)); assert.throws(() => submitScore(a, 101));
-  submitScore(a, 75); submitScore(b, 25);
-  assert.throws(() => submitScore(a, 100));
+  const result = timeoutResult(room.minigame);
+  assert.throws(() => submitResult(room, a, { ...result, score: Infinity }));
+  assert.throws(() => submitResult(room, a, { ...result, score: 101 }));
+  assert.throws(() => submitResult(room, a, { ...result, minigameId: 'otro' }));
+  submitResult(room, a, { ...result, score: 75 }); submitResult(room, b, { ...result, score: 25 });
+  assert.throws(() => submitResult(room, a, result));
   advanceIfComplete(room, 3);
-  assert.equal(room.phase, 'lobby'); assert.equal(b.health, 95);
+  assert.equal(room.phase, 'lobby'); assert.equal(b.health, 90);
+  assert.equal(a.resources.food, 10);
+  assert.equal(room.lastResults.find(result => result.playerId === a.id)?.outcome, 'winner');
   assert.equal(a.ready, false); assert.equal(room.lastResults.length, 2);
   a.ready = b.ready = true; startRound(room, a, 4); assert.equal(room.round, 2);
 });
@@ -46,6 +52,7 @@ test('los tiempos límite completan elecciones y resultados ausentes', () => {
   advanceIfComplete(room, room.deadline!); assert.equal(room.phase, 'cards');
   advanceIfComplete(room, room.deadline!); assert.equal(room.phase, 'playing');
   assert.equal(a.selectedCardId, 'rest');
-  advanceIfComplete(room, room.deadline!); assert.equal(room.phase, 'lobby');
+  advanceIfComplete(room, room.deadline!); assert.equal(room.phase, 'playing');
+  advanceIfComplete(room, room.deadline! + RESULT_GRACE_MS); assert.equal(room.phase, 'lobby');
   assert.equal(room.lastResults[0].score, 0);
 });

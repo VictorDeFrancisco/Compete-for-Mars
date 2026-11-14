@@ -26,7 +26,11 @@ export default function Lobby({ game, disabled, onCreate, onJoin, onReady, onSta
       <button disabled={disabled || !game.players.every(p => p.ready && p.connected)} onClick={onStart}>Iniciar ronda {game.round + 1}</button></>}
     </div>{!host && <p>El anfitrión inicia cuando todos están listos.</p>}
     {game.lastResults.length > 0 && <div><h3>Resultados de la última ronda</h3>
-      {game.lastResults.map(result => <p key={result.playerId}>{result.name}: {result.score} puntos · {result.healthDelta > 0 ? '+' : ''}{result.healthDelta} vida</p>)}
+      {game.lastResults.map(result => <p key={result.playerId}>#{result.rank} {result.name}: {result.score} puntos ·
+        {{ winner: ' ganador', loser: ' perdedor', neutral: ' sin premio', draw: ' empate' }[result.outcome]} ·
+        {result.completed ? ` ${(result.elapsedMs / 1000).toFixed(2)} s ·` : ''} {result.healthDelta > 0 ? '+' : ''}{result.healthDelta} vida ·
+        energía {result.resourcesDelta.energy >= 0 ? '+' : ''}{result.resourcesDelta.energy} · comida {result.resourcesDelta.food >= 0 ? '+' : ''}{result.resourcesDelta.food}
+      </p>)}
     </div>}
   </section>;
 }
