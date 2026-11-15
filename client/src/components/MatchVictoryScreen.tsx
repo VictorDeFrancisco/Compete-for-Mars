@@ -43,6 +43,7 @@ export default function MatchVictoryScreen({
     : '#FC3D21';
   const isHost = game.self.id === game.hostId;
   const noSurvivor = game.players.every(p => p.health <= 0);
+  const confettiPieces = Array.from({ length: 28 }, (_, i) => i);
 
   return (
     <main className="victory-screen" aria-label="Fin de la partida">
@@ -51,6 +52,22 @@ export default function MatchVictoryScreen({
         <div className="victory-horizon" />
       </div>
 
+      {!noSurvivor && winner && (
+        <div className="victory-confetti" aria-hidden="true">
+          {confettiPieces.map(idx => (
+            <span
+              key={idx}
+              className="victory-confetti__piece"
+              style={{
+                left: `${((idx * 37) % 96) + 2}%`,
+                animationDelay: `${((idx * 17) % 24) / 10}s`,
+                animationDuration: `${2.8 + ((idx * 13) % 18) / 10}s`,
+              }}
+            />
+          ))}
+        </div>
+      )}
+
       <section className="victory-card">
         <header className="victory-card__header">
           <div className="victory-card__kicker">
@@ -58,11 +75,16 @@ export default function MatchVictoryScreen({
             <span>·</span>
             <span>{game.round} {game.round === 1 ? 'RONDA' : 'RONDAS'} EN MARTE</span>
           </div>
-          <h1 className="victory-card__title">
+          {!noSurvivor && winner && (
+            <div className="victory-winner-callout">
+              GANADOR DE LA EXPEDICIÓN
+            </div>
+          )}
+          <h1 className="victory-card__title victory-card__title--hero">
             {noSurvivor
               ? 'BASE PERDIDA EN MARTE'
               : winner
-                ? `${winner.name.toUpperCase()} CONQUISTA MARTE`
+                ? `¡HA GANADO ${winner.name.toUpperCase()}!`
                 : 'EXPEDICIÓN FINALIZADA'}
           </h1>
         </header>

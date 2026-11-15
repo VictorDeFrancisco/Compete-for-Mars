@@ -305,9 +305,8 @@ export class MarsRoverGame extends BaseMinigame<MarsRoverData> {
     // Llegada a la meta B (radio 8.5m)
     if (targetDist <= 8.5) {
       const basePoints = 500;
-      const energyPoints = Math.round(energy * 3.5);
-      const timeBonus = Math.max(0, Math.round((this.getSnapshot().remainingMs / 1000) * 1.2));
-      const totalScore = Math.min(1000, basePoints + energyPoints + timeBonus);
+      const energyPoints = Math.floor(energy / 10) * 50;
+      const totalScore = Math.min(1000, basePoints + energyPoints);
 
       this.setScore(totalScore);
       this.setData({
@@ -340,7 +339,7 @@ export class MarsRoverGame extends BaseMinigame<MarsRoverData> {
       lastEventMessage = `Pendiente pronunciada (${currentSlopeDeg.toFixed(1)}°): chasis inclinado, alto consumo.`;
     }
 
-    const currentScore = Math.round(progress * 300 + energy * 1.5);
+    const currentScore = Math.min(450, Math.floor(progress * 10) * 50);
     this.setScore(currentScore);
 
     this.setData({

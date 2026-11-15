@@ -19,5 +19,5 @@ export const PHASE_LABELS: Record<Phase, string> = {
 };
 export const PRESENTATION_MS = 15_000;
 export const CARDS_MS = 120_000;
-export const RESULTS_MS = 20_000;
+export const RESULTS_MS = 120_000;
 export const ROOM_IDLE_MS = 10 * 60_000;

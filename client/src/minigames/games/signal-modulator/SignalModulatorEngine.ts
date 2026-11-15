@@ -349,7 +349,7 @@ export class SignalModulatorEngine extends BaseMinigame<SignalModulatorData> {
 
   private advancePacket(): void {
     const data = this.getSnapshot().data;
-    const pointsPerPacket = Math.round(250 * this.modifiers.scoreMultiplier);
+    const pointsPerPacket = Math.max(100, Math.round((250 * this.modifiers.scoreMultiplier) / 50) * 50);
     this.addScore(pointsPerPacket);
 
     const completedPacketIds = [...data.completedPacketIds, data.currentPacket.id];

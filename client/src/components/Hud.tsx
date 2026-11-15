@@ -318,11 +318,13 @@ export function BottomCrewDock({ game }: { game: GameView }) {
   return (
     <>
       {deathAlerts.length > 0 && (
-        <div className="crew-death-banner-stack" aria-live="assertive">
+        <div className="crew-death-callout-stack" aria-live="assertive">
           {deathAlerts.map(item => (
-            <div key={item.id} className="crew-death-banner">
-              <SkullSvg className="crew-death-banner__skull" />
-              <span>{item.playerName.toUpperCase()} HA MUERTO</span>
+            <div key={item.id} className="crew-death-callout">
+              <SkullSvg className="crew-death-callout__skull" />
+              <span className="crew-death-callout__label">
+                {item.playerName.toUpperCase()} HA MUERTO
+              </span>
             </div>
           ))}
         </div>

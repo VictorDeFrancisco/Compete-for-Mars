@@ -7,9 +7,9 @@ export const solarStormDefinition = defineMinigame({
   durationMs: 60_000,
   maxScore: 1000,
   instructions:
-    'La base de datos real NASA DONKI registra llamaradas solares y eyecciones de masa coronal (CME) dirigidas hacia tu cúpula en Marte. Orienta el Escudo Magnético entre 115° y 245° con A/D, las flechas o moviendo el ratón/dedo sobre el domo para interceptar cada onda antes de que impacte (bloquear en el centro exacto activa un Parry Crítico con combo). Captura también los orbes azules de iones para ganar puntos extra y recargar el Super-Escudo, y mantén Espacio, W o ↑ para ensanchar el escudo a 48° ante ráfagas múltiples.',
+    'La base de datos real NASA DONKI registra llamaradas solares y eyecciones de masa coronal (CME) dirigidas hacia tu cúpula en Marte. Orienta el Escudo Magnético entre 115° y 245° con A/D, las flechas o moviendo el ratón/dedo sobre el domo para interceptar cada onda antes de que impacte (bloquear en el centro exacto activa un Parry Crítico con +50 pts extra). Atrapa también las bolas verdes que caen para curar +12% de vida de la base (+50 pts), y mantén Espacio, W o ↑ para ensanchar el escudo a 48° ante ráfagas múltiples.',
   objective:
-    'Intercepta las ondas solares de NASA DONKI, encadena Parrys Críticos y recoge orbes de iones para proteger la integridad de la base.',
+    'Intercepta las ondas solares de NASA DONKI (+100 pts), encadena Parrys Críticos y recoge bolas verdes para curar la integridad de la base.',
   controls: [
     {
       id: 'turn-left',

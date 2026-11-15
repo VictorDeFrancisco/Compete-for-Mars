@@ -4,7 +4,7 @@ export const suitUpDefinition = defineMinigame({
   id: 'suit-up',
   title: 'Ponerse el Traje Espacial',
   mode: 'race',
-  durationMs: 45_000,
+  durationMs: 60_000,
   maxScore: 1000,
   instructions:
     'Vístete con el traje espacial de la NASA antes de que se acabe el tiempo completando los Quick Time Events (QTE) de cada componente: sincroniza anillos de sellado, pulsa rápido para presurizar, mantén y suelta en la zona verde o introduce secuencias de acople. Usa las flechas (↑ ↓ ← →), Espacio o toca los controles en pantalla. Menos energía reduce tu margen de tiempo; menos comida reduce tus puntos.',

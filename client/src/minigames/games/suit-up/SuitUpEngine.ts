@@ -247,13 +247,7 @@ export class SuitUpEngine extends BaseMinigame<SuitUpData> {
       }
     }
 
-    // Comprobar expiración del intento de paso actual
-    const remainingStepMs = data.qteRemainingMs - deltaMs;
-    if (remainingStepMs <= 0) {
-      this.registerMiss('¡TIEMPO AGOTADO EN EL PASO! REINTENTANDO...');
-      this.resetCurrentQte(data.currentStep);
-      return;
-    }
+    const remainingStepMs = Math.max(0, data.qteRemainingMs - deltaMs);
 
     // Actualización continua según la mecánica del QTE
     if (qte.type === 'timing') {
@@ -399,20 +393,6 @@ export class SuitUpEngine extends BaseMinigame<SuitUpData> {
       lastRatingMessage: message,
       combo: 0,
       warningMessage: message,
-    });
-  }
-
-  private resetCurrentQte(step: SuitStep): void {
-    const data = this.getSnapshot().data;
-    this.sweepElapsedMs = 0;
-    this.setData({
-      ...data,
-      qteProgress: 0,
-      qteRemainingMs: step.qte.durationMs,
-      mashCount: 0,
-      sequenceIndex: 0,
-      isHolding: false,
-      holdProgress: 0,
     });
   }
 }

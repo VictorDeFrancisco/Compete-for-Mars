@@ -26,10 +26,10 @@ const QTE_MODE_META: Record<
   'timing' | 'mash' | 'sequence' | 'hold',
   { label: string; colorClass: string }
 > = {
-  timing: { label: 'TIMING SEAL', colorClass: 'suit-qte-mode--timing' },
-  mash: { label: 'PRESSURE PUMP', colorClass: 'suit-qte-mode--mash' },
-  sequence: { label: 'LOCK SEQUENCE', colorClass: 'suit-qte-mode--sequence' },
-  hold: { label: 'CHARGE SEAL', colorClass: 'suit-qte-mode--hold' },
+  timing: { label: 'PRECISIÓN', colorClass: 'suit-qte-mode--timing' },
+  mash: { label: 'BOMBEO', colorClass: 'suit-qte-mode--mash' },
+  sequence: { label: 'SECUENCIA', colorClass: 'suit-qte-mode--sequence' },
+  hold: { label: 'MANTENER', colorClass: 'suit-qte-mode--hold' },
 };
 
 function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
@@ -68,7 +68,7 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
       <header className="suit-header">
         <div className="suit-header__badges">
           <span className="suit-header__phase">
-            STEP {Math.min(data.currentStepIndex + 1, data.totalSteps)} / {data.totalSteps}
+            PASO {Math.min(data.currentStepIndex + 1, data.totalSteps)} / {data.totalSteps}
           </span>
         </div>
 
@@ -86,9 +86,8 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
                   }`}
                 >
                   <span className="suit-pipe-node__idx">
-                    {isDone ? '✓' : String(idx + 1).padStart(2, '0')}
+                    {isDone ? '✓' : idx + 1}
                   </span>
-                  <span className="suit-pipe-node__code">{s.code}</span>
                 </li>
               );
             })}
@@ -96,7 +95,6 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
 
         <div className="suit-telemetry-strip">
           <div className="suit-telemetry-pill suit-telemetry-pill--score">
-            <span>SCORE</span>
             <b>{score} PTS</b>
           </div>
         </div>
@@ -116,8 +114,8 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
           <div className="suit-gauges" aria-label="Telemetría del traje">
             <div className="suit-gauge">
               <div className="suit-gauge__row">
-                <span>PRESSURE (PSI)</span>
-                <b>{data.suitPressurePsi.toFixed(1)} / 4.3</b>
+                <span>PRESIÓN</span>
+                <b>{data.suitPressurePsi.toFixed(1)} PSI</b>
               </div>
               <div className="suit-gauge__track">
                 <div
@@ -129,7 +127,7 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
 
             <div className="suit-gauge">
               <div className="suit-gauge__row">
-                <span>OXYGEN SUPPLY</span>
+                <span>OXÍGENO</span>
                 <b>{data.oxygenPercent}%</b>
               </div>
               <div className="suit-gauge__track">
@@ -146,14 +144,10 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
           {!isFinished ? (
             <>
               <div className="suit-step-head">
-                <div className="suit-step-meta-row">
-                  <span className={`suit-qte-mode ${modeMeta.colorClass}`}>
-                    {modeMeta.label}
-                  </span>
-                  <span className="suit-header__code">{step.code}</span>
-                </div>
+                <span className={`suit-qte-mode ${modeMeta.colorClass}`}>
+                  {modeMeta.label}
+                </span>
                 <h3 className="suit-step-title">{step.name}</h3>
-                <p className="suit-step-description">{step.prompt}</p>
               </div>
 
               <div className="suit-qte-prompt-box">
@@ -357,7 +351,7 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
 
               <div className="suit-finish-stats">
                 <div className="suit-finish-stat-box">
-                  <span>SCORE</span>
+                  <span>PUNTOS</span>
                   <b>{score} PTS</b>
                 </div>
                 <div className="suit-finish-stat-box">

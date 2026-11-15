@@ -190,12 +190,12 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
       const py = baseCenterY - Math.cos(angleRad) * canopyR;
 
       floatingTextsRef.current.push({
-        x: px - 35,
+        x: px - 38,
         y: py - 18,
-        text: '+IÓN AURORAL',
-        color: '#4ade80',
+        text: '+12% VIDA',
+        color: '#22c55e',
         life: 0,
-        maxLife: 25,
+        maxLife: 28,
       });
 
       for (let i = 0; i < 18; i++) {
@@ -565,7 +565,7 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
         ctx.restore();
       }
 
-      // 6. Orbes de Iones Aurorales Verdes descendiendo hacia la base
+      // 6. Orbes Verdes Curativos descendiendo hacia la base (+12% vida de la base)
       for (const ion of currentData.ionOrbs) {
         if (ion.collected || ion.flightProgress <= 0 || ion.flightProgress >= 1.0) continue;
         const p = ion.flightProgress;
@@ -577,14 +577,29 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
 
         const curX = skyX + p * (canopyHitX - skyX);
         const curY = skyY + p * (canopyHitY - skyY);
+        const orbR = 6.2 + Math.sin(tick * 10) * 1.1;
 
-        ctx.fillStyle = '#4ade80';
+        ctx.save();
+        ctx.fillStyle = '#22c55e';
+        ctx.strokeStyle = '#ecfdf5';
+        ctx.lineWidth = 1.4;
         ctx.shadowColor = '#22c55e';
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = 14;
         ctx.beginPath();
-        ctx.arc(curX, curY, 4.0 + Math.sin(tick * 10) * 1.2, 0, Math.PI * 2);
+        ctx.arc(curX, curY, orbR, 0, Math.PI * 2);
         ctx.fill();
+        ctx.stroke();
+
         ctx.shadowBlur = 0;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.moveTo(curX - 3, curY);
+        ctx.lineTo(curX + 3, curY);
+        ctx.moveTo(curX, curY - 3);
+        ctx.lineTo(curX, curY + 3);
+        ctx.stroke();
+        ctx.restore();
       }
 
       // 7. Anillos de Choque Expansivos Temporales

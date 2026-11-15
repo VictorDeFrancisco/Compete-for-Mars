@@ -90,23 +90,54 @@ function Runner({
     });
     const initialResult = engine.getResult();
     if (initialResult && !sent.current) { sent.current = true; callback.current({ ...initialResult }); }
+
+    const normalizeCode = (code: string) => {
+      if (code.startsWith('Numpad') && code.length === 7 && code[6] >= '0' && code[6] <= '9') {
+        return `Digit${code[6]}`;
+      }
+      if (code === 'NumpadEnter') return 'Enter';
+      return code;
+    };
+
+    const isEditableTarget = (target: EventTarget | null) => {
+      if (!(target instanceof HTMLElement)) return false;
+      const tag = target.tagName;
+      return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable;
+    };
+
+    const onWindowKeyDown = (event: KeyboardEvent) => {
+      if (event.repeat || isEditableTarget(event.target)) return;
+      const actions = engine.controls.forKey(normalizeCode(event.code));
+      if (actions.length) {
+        event.preventDefault();
+        actions.forEach(action => engine.dispatch(action, 'press'));
+      }
+    };
+
+    const onWindowKeyUp = (event: KeyboardEvent) => {
+      if (isEditableTarget(event.target)) return;
+      engine.controls.forKey(normalizeCode(event.code)).forEach(action => engine.dispatch(action, 'release'));
+    };
+
+    const onWindowBlur = () => {
+      engine.controls.getActions().forEach(action => engine.dispatch(action.id, 'release'));
+    };
+
+    window.addEventListener('keydown', onWindowKeyDown);
+    window.addEventListener('keyup', onWindowKeyUp);
+    window.addEventListener('blur', onWindowBlur);
+
     return () => {
       cancelAnimationFrame(frame);
       clearInterval(timer);
       unsubscribe();
+      window.removeEventListener('keydown', onWindowKeyDown);
+      window.removeEventListener('keyup', onWindowKeyUp);
+      window.removeEventListener('blur', onWindowBlur);
     };
   }, [engine, paused]);
 
-  return <div ref={container} tabIndex={0} aria-label="Minigame area" className="minigame-area"
-    onKeyDown={event => {
-      if (paused || event.repeat) return;
-      const actions = engine.controls.forKey(event.code);
-      if (actions.length) { event.preventDefault(); actions.forEach(action => engine.dispatch(action, 'press')); }
-    }}
-    onKeyUp={event => { if (paused) return; engine.controls.forKey(event.code).forEach(action => engine.dispatch(action, 'release')); }}
-    onBlur={event => {
-      if (!event.currentTarget.contains(event.relatedTarget)) engine.controls.getActions().forEach(action => engine.dispatch(action.id, 'release'));
-    }}>
+  return <div ref={container} tabIndex={0} aria-label="Minigame area" className="minigame-area">
     {showChrome && definition.id !== 'pipes' && <><p role="timer">{Math.ceil(snapshot.remainingMs / 1000)} s</p>
     <p>Energy: {engine.context.resources.energy}/10 · Food: {engine.context.resources.food}/10</p>
     <p className="score">{snapshot.score} / {definition.maxScore}</p></>}

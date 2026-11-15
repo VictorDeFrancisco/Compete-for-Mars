@@ -329,6 +329,9 @@ export function advanceIfComplete(room: Room, now = Date.now()): boolean {
         completed: entry.result.completed,
         elapsedMs: entry.result.elapsedMs,
         healthDelta: player.health - previousHealth,
+        healthAfter: player.health,
+        maxHealth: player.maxHealth,
+        suitColor: player.suitColor,
         resourcesDelta: {
           energy: player.resources.energy - previousResources.energy,
           food: player.resources.food - previousResources.food,
@@ -344,6 +347,9 @@ export function advanceIfComplete(room: Room, now = Date.now()): boolean {
   }
 
   if (room.phase === 'results' && (timedOut || alivePlayers.length === 0 || alivePlayers.every(p => p.ready))) {
+    if (!room.matchFinished && room.winnerId === null) {
+      room.players = room.players.filter(p => !p.token.startsWith('left:'));
+    }
     for (const player of room.players) player.ready = player.isBot && player.health > 0;
     transition(room, 'lobby', null, now);
     return true;

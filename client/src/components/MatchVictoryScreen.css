@@ -364,3 +364,57 @@
     align-items: stretch;
   }
 }
+
+.victory-confetti {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.victory-confetti__piece {
+  position: absolute;
+  top: -20px;
+  width: 11px;
+  height: 20px;
+  border-radius: 2px;
+  border: 1.5px solid #1a1817;
+  animation: victoryConfettiFall 3.6s linear infinite;
+}
+
+.victory-confetti__piece:nth-child(4n + 1) { background: #fc3d21; }
+.victory-confetti__piece:nth-child(4n + 2) { background: #f59e0b; }
+.victory-confetti__piece:nth-child(4n + 3) { background: #22c55e; }
+.victory-confetti__piece:nth-child(4n + 4) { background: #38bdf8; }
+
+@keyframes victoryConfettiFall {
+  0% {
+    transform: translateY(-24px) rotate(0deg);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateY(105vh) rotate(540deg);
+    opacity: 0.2;
+  }
+}
+
+.victory-winner-callout {
+  align-self: center;
+  padding: 5px 16px;
+  border-radius: 999px;
+  background: #f59e0b;
+  color: #1a1817;
+  border: 2.5px solid #1a1817;
+  box-shadow: 0 3px 0 #1a1817;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.victory-card__title--hero {
+  font-size: clamp(1.9rem, 4.2vw, 3rem) !important;
+  color: #fc3d21 !important;
+  text-shadow: 0 3px 0 #1a1817;
+}

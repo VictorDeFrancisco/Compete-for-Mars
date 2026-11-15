@@ -135,8 +135,8 @@ export const DEFAULT_SUIT_STEPS: readonly SuitStep[] = [
       sweetSpotEnd: 0.88,
       perfectTolerance: 0.05,
       durationMs: 7000,
-      basePoints: 120,
-      perfectBonus: 40,
+      basePoints: 100,
+      perfectBonus: 50,
     },
   },
 
@@ -153,8 +153,8 @@ export const DEFAULT_SUIT_STEPS: readonly SuitStep[] = [
       type: 'sequence',
       sequence: ['action-down', 'action-left', 'action-right', 'action-down'],
       durationMs: 7500,
-      basePoints: 130,
-      perfectBonus: 30,
+      basePoints: 100,
+      perfectBonus: 50,
     },
   },
 
@@ -171,10 +171,10 @@ export const DEFAULT_SUIT_STEPS: readonly SuitStep[] = [
       type: 'mash',
       actionId: 'action-primary',
       targetCount: 6,
-      leakRatePerSec: 0.5,
+      leakRatePerSec: 0.25,
       durationMs: 6500,
-      basePoints: 140,
-      perfectBonus: 30,
+      basePoints: 100,
+      perfectBonus: 50,
     },
   },
 
@@ -195,8 +195,8 @@ export const DEFAULT_SUIT_STEPS: readonly SuitStep[] = [
       sweetSpotEnd: 0.86,
       perfectTolerance: 0.05,
       durationMs: 7000,
-      basePoints: 130,
-      perfectBonus: 40,
+      basePoints: 100,
+      perfectBonus: 50,
     },
   },
 
@@ -218,8 +218,8 @@ export const DEFAULT_SUIT_STEPS: readonly SuitStep[] = [
       perfectMin: 0.73,
       perfectMax: 0.81,
       durationMs: 6500,
-      basePoints: 140,
-      perfectBonus: 40,
+      basePoints: 100,
+      perfectBonus: 50,
     },
   },
 
@@ -236,8 +236,8 @@ export const DEFAULT_SUIT_STEPS: readonly SuitStep[] = [
       type: 'sequence',
       sequence: ['action-up', 'action-primary', 'action-down', 'action-primary'],
       durationMs: 7500,
-      basePoints: 160,
-      perfectBonus: 40,
+      basePoints: 100,
+      perfectBonus: 50,
     },
   },
 ];
@@ -281,18 +281,18 @@ export function generateRandomSuitSteps(rng: () => number = Math.random): SuitSt
     });
   }
 
-  return selected.map((baseStep, idx) => {
+  return selected.map((baseStep) => {
     // Asegura variedad de mecánicas sin repetir exactamente la anterior cuando hay opciones
     const chosenType = QTE_TYPES[Math.floor(rng() * QTE_TYPES.length)];
 
     if (chosenType === 'timing') {
-      const sweetWidth = 0.18 + rng() * 0.08;
-      const sweetSpotStart = Math.round((0.18 + rng() * (0.76 - sweetWidth)) * 100) / 100;
+      const sweetWidth = 0.20 + rng() * 0.08;
+      const sweetSpotStart = Math.round((0.18 + rng() * (0.74 - sweetWidth)) * 100) / 100;
       const sweetSpotEnd = Math.round((sweetSpotStart + sweetWidth) * 100) / 100;
-      const sweepPeriodMs = 1050 + Math.floor(rng() * 450);
+      const sweepPeriodMs = 1150 + Math.floor(rng() * 400);
       return {
         ...baseStep,
-        prompt: '¡PULSA ESPACIO JUSTO EN LA ZONA VERDE DE SELLADO!',
+        prompt: '¡PULSA ESPACIO EN LA ZONA VERDE!',
         description: 'Sincroniza el indicador móvil dentro del rango de acople estanco.',
         qte: {
           type: 'timing',
@@ -302,39 +302,39 @@ export function generateRandomSuitSteps(rng: () => number = Math.random): SuitSt
           sweetSpotEnd,
           perfectTolerance: 0.06,
           durationMs: 7000,
-          basePoints: 120 + idx * 5,
-          perfectBonus: 40,
+          basePoints: 100,
+          perfectBonus: 50,
         },
       };
     }
 
     if (chosenType === 'mash') {
-      const targetCount = 6 + Math.floor(rng() * 10); // 6 a 15 pulsaciones aleatorias
+      const targetCount = 5 + Math.floor(rng() * 4); // 5 a 8 pulsaciones limpias
       return {
         ...baseStep,
-        prompt: `¡PULSA RÁPIDO ESPACIO O EL BOTÓN ${targetCount} VECES!`,
-        description: `Presuriza el acople de ${baseStep.code} con ${targetCount} bombeos antes de que baje la presión.`,
+        prompt: `¡PULSA RÁPIDO ${targetCount} VECES!`,
+        description: `Presuriza el acople de ${baseStep.code} con ${targetCount} bombeos.`,
         qte: {
           type: 'mash',
           actionId: 'action-primary',
           targetCount,
-          leakRatePerSec: 0.35 + rng() * 0.35,
+          leakRatePerSec: 0.2,
           durationMs: 7000,
-          basePoints: 130 + idx * 5,
-          perfectBonus: 35,
+          basePoints: 100,
+          perfectBonus: 50,
         },
       };
     }
 
     if (chosenType === 'hold') {
-      const chargeDurationMs = 1250 + Math.floor(rng() * 600);
-      const zoneWidth = 0.20 + rng() * 0.06;
-      const targetMin = Math.round((0.46 + rng() * 0.24) * 100) / 100;
+      const chargeDurationMs = 1250 + Math.floor(rng() * 500);
+      const zoneWidth = 0.22 + rng() * 0.06;
+      const targetMin = Math.round((0.46 + rng() * 0.22) * 100) / 100;
       const targetMax = Math.round((targetMin + zoneWidth) * 100) / 100;
       const mid = (targetMin + targetMax) / 2;
       return {
         ...baseStep,
-        prompt: '¡MANTÉN PULSADO ESPACIO Y SUELTA EN LA ZONA VERDE!',
+        prompt: '¡MANTÉN PULSADO Y SUELTA EN LO VERDE!',
         description: 'Carga el sello neumático y suelta justo en la franja óptima.',
         qte: {
           type: 'hold',
@@ -342,17 +342,17 @@ export function generateRandomSuitSteps(rng: () => number = Math.random): SuitSt
           chargeDurationMs,
           targetMin,
           targetMax,
-          perfectMin: Math.round((mid - 0.04) * 100) / 100,
-          perfectMax: Math.round((mid + 0.04) * 100) / 100,
+          perfectMin: Math.round((mid - 0.05) * 100) / 100,
+          perfectMax: Math.round((mid + 0.05) * 100) / 100,
           durationMs: 7000,
-          basePoints: 135 + idx * 5,
-          perfectBonus: 40,
+          basePoints: 100,
+          perfectBonus: 50,
         },
       };
     }
 
-    // 'sequence': longitud y teclas aleatorias (3 a 5 teclas)
-    const seqLen = 3 + Math.floor(rng() * 3);
+    // 'sequence': longitud y teclas aleatorias (3 a 4 teclas)
+    const seqLen = 3 + Math.floor(rng() * 2);
     const sequence: string[] = [];
     for (let k = 0; k < seqLen; k++) {
       sequence.push(SEQ_POOL[Math.floor(rng() * SEQ_POOL.length)]);
@@ -360,14 +360,14 @@ export function generateRandomSuitSteps(rng: () => number = Math.random): SuitSt
     const readable = sequence.map(a => ACTION_LABELS[a]?.key ?? a).join(' · ');
     return {
       ...baseStep,
-      prompt: `¡INTRODUCE LA SECUENCIA [${readable}]!`,
+      prompt: `¡SECUENCIA: ${readable}!`,
       description: 'Pulsa las teclas en orden exacto para bloquear los seguros del traje.',
       qte: {
         type: 'sequence',
         sequence,
         durationMs: 8000,
-        basePoints: 130 + idx * 5,
-        perfectBonus: 35,
+        basePoints: 100,
+        perfectBonus: 50,
       },
     };
   });

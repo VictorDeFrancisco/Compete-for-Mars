@@ -26,6 +26,20 @@ export function createGameServer() {
     }
   }
   function remove(room: Room, player: Player) {
+    // Al finalizar la partida o durante el resumen de resultados, conservamos al jugador
+    // en la tabla para que ni el ganador ni el leaderboard cambien si alguien abandona la sala.
+    if (room.matchFinished || room.winnerId !== null || room.phase === 'results') {
+      player.connected = false;
+      player.socketId = null;
+      player.token = `left:${player.id}`;
+      // Si se va en mitad de results, no bloquea a los que siguen para pasar de ronda.
+      player.ready = room.phase === 'results' && !room.matchFinished;
+      const connectedHuman = room.players.find(p => !p.isBot && p.connected);
+      if (!connectedHuman) { rooms.delete(room.code); return; }
+      if (room.hostId === player.id) room.hostId = connectedHuman.id;
+      advanceIfComplete(room); broadcast(room);
+      return;
+    }
     room.players = room.players.filter(p => p.id !== player.id);
     if (!room.players.some(p => !p.isBot)) { rooms.delete(room.code); return; }
     if (room.hostId === player.id) room.hostId = (room.players.find(p => !p.isBot && p.connected) ?? room.players.find(p => !p.isBot))!.id;

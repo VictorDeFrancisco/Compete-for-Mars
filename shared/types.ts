@@ -55,6 +55,7 @@ export interface SelfPlayer extends PublicPlayer {
 }
 export interface RoundResult {
   playerId: string; name: string; score: number; healthDelta: number;
+  healthAfter?: number; maxHealth?: number; suitColor?: string;
   resourcesDelta: Resources; rank: number; outcome: Outcome;
   elapsedMs: number; completed: boolean;
 }

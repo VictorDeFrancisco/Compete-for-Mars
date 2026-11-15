@@ -302,7 +302,8 @@ export class SolarStormGame extends BaseMinigame<SolarStormData> {
           if (diff <= shieldWidthDeg / 2 + 8) {
             collected = true;
             ionsCollectedCount++;
-            boostEnergy = Math.min(100, boostEnergy + 12);
+            colonyIntegrity = Math.min(100, colonyIntegrity + 12);
+            lastEventMessage = '¡ORBE VERDE RECOGIDO! +12% VIDA DE LA BASE (+50 pts)';
           }
         }
       }
@@ -314,21 +315,16 @@ export class SolarStormGame extends BaseMinigame<SolarStormData> {
       });
     }
 
-    // 6. Puntuación
-    const basePts = 100;
-    const blockPts = blockedCount * 22 * this.modifiers.scoreMultiplier;
-    const criticalPts = criticalParryCount * 16;
-    const comboBonus = maxCombo * 10;
-    const ionBonus = ionsCollectedCount * 6;
-    const integrityPts = Math.round((colonyIntegrity / 100) * 180);
-    const radiationPenalty = Math.round(totalRadiationDose * 38);
+    // 6. Puntuación limpia en múltiplos exactos de 50
+    const basePts = 200;
+    const blockPts = blockedCount * 100;
+    const criticalPts = criticalParryCount * 50;
+    const ionBonus = ionsCollectedCount * 50;
+    const breachPenalty = breachedCount * 50;
 
     const currentScore = Math.max(
-      50,
-      Math.min(
-        1000,
-        Math.round(basePts + blockPts + criticalPts + comboBonus + ionBonus + integrityPts - radiationPenalty)
-      )
+      0,
+      Math.min(1000, basePts + blockPts + criticalPts + ionBonus - breachPenalty)
     );
     this.setScore(currentScore);
 

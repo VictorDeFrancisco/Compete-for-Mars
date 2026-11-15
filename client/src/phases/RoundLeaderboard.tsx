@@ -85,12 +85,12 @@ export default function RoundLeaderboard({ game, onContinue }: RoundLeaderboardP
       <div className="leaderboard-rows">
         {sortedResults.map((entry, rowIdx) => {
           const playerIndex = Math.max(0, game.players.findIndex(p => p.id === entry.playerId));
-          const player = game.players[playerIndex];
+          const player = game.players.find(p => p.id === entry.playerId);
           const isSelf = entry.playerId === game.self.id;
-          const suitColor = resolvePlayerSuitColor(player, game.self.stats, isSelf, playerIndex);
+          const suitColor = entry.suitColor ?? resolvePlayerSuitColor(player, game.self.stats, isSelf, playerIndex);
           const badge = outcomeBadge(entry.outcome);
-          const currentHp = player?.health ?? 0;
-          const maxHp = player?.maxHealth ?? 100;
+          const currentHp = entry.healthAfter ?? player?.health ?? 0;
+          const maxHp = entry.maxHealth ?? player?.maxHealth ?? 100;
           const hpPct = maxHp > 0 ? Math.max(0, Math.min(100, Math.round((currentHp / maxHp) * 100))) : 0;
 
           return (
