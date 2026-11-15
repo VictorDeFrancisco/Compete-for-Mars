@@ -33,7 +33,7 @@ export abstract class BaseMinigame<T extends object = object> {
   };
   start(initialElapsedMs = 0): void {
     if (this.snapshot.status !== 'idle') return;
-    if (!Number.isFinite(initialElapsedMs) || initialElapsedMs < 0) throw new Error('Tiempo inicial inválido.');
+    if (!Number.isFinite(initialElapsedMs) || initialElapsedMs < 0) throw new Error('Invalid initial elapsed time.');
     this.initialElapsedMs = Math.min(initialElapsedMs, this.definition.durationMs);
     this.startedAt = this.clock(); this.previousElapsedMs = this.initialElapsedMs;
     this.patch({ status: 'running' });
@@ -62,7 +62,7 @@ export abstract class BaseMinigame<T extends object = object> {
   }
   protected setScore(score: number): void {
     if (this.snapshot.status !== 'running') return;
-    if (!Number.isFinite(score)) throw new Error('Puntuación no finita.');
+    if (!Number.isFinite(score)) throw new Error('Score must be finite.');
     this.patch({ score: Math.max(0, Math.min(this.definition.maxScore, Math.round(score))) });
   }
   protected addScore(points: number): void { this.setScore(this.snapshot.score + points); }
@@ -76,7 +76,7 @@ export abstract class BaseMinigame<T extends object = object> {
   }
   protected setProgress(progress: number): void {
     if (this.snapshot.status !== 'running') return;
-    if (!Number.isFinite(progress)) throw new Error('Progreso no finito.');
+    if (!Number.isFinite(progress)) throw new Error('Progress must be finite.');
     this.patch({ progress: Math.max(0, Math.min(1, progress)) });
   }
   protected setData(data: T): void {

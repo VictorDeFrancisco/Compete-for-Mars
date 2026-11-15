@@ -269,6 +269,22 @@ test('los tiempos límite completan elecciones y resultados ausentes', () => {
   assert.equal(room.phase, 'lobby');
 });
 
+test('si vence el tiempo de gracia sin submit final, la leaderboard conserva liveScore del jugador', () => {
+  const a = player('Ana');
+  const room = makeRoom('GRC123', a, 0);
+  a.ready = true;
+  startRound(room, a, 0, () => 0);
+  a.ready = true;
+  advanceIfComplete(room, 100);
+  assert.equal(room.phase, 'playing');
+
+  const expectedScore = Math.min(room.minigame.maxScore, 350);
+  a.liveScore = expectedScore;
+  advanceIfComplete(room, room.deadline! + RESULT_GRACE_MS);
+  assert.equal(room.phase, 'results');
+  assert.equal(room.lastResults[0].score, expectedScore);
+});
+
 test('restartMatch reinicia la sala tras finalizar una partida y permite volver a jugar', () => {
   const host = player('Ana', { energy: 30, food: 0, health: 0 });
   const guest = player('Luis', { energy: 0, food: 30, health: 0 });

@@ -121,7 +121,7 @@ export class SolarStormGame extends BaseMinigame<SolarStormData> {
       shakeIntensity: 0,
       colonyIntegrity: 100,
       totalRadiationDose: 0.0,
-      lastEventMessage: `Base Ares protegida · Alerta DONKI: ${episode.name}`,
+      lastEventMessage: `Ares Base protected · DONKI Alert: ${episode.name}`,
     };
 
     super(definition, initialData, clock, context);
@@ -256,12 +256,12 @@ export class SolarStormGame extends BaseMinigame<SolarStormData> {
               maxCombo = Math.max(maxCombo, combo);
               boostEnergy = Math.min(100, boostEnergy + 24);
               shakeIntensity = 6;
-              lastEventMessage = `¡PARRY CRÍTICO! ${wave.intensity} repelida · COMBO x${combo}! (+${100 + combo * 30} pts)`;
+              lastEventMessage = `CRITICAL PARRY! ${wave.intensity} deflected · COMBO x${combo}! (+150 pts)`;
             } else {
               combo++;
               maxCombo = Math.max(maxCombo, combo);
               shakeIntensity = 3;
-              lastEventMessage = `¡ESCUDO ALINEADO! ${wave.intensity} desviada · Combo x${combo}`;
+              lastEventMessage = `SHIELD ALIGNED! ${wave.intensity} deflected · Combo x${combo}`;
             }
           } else {
             status = 'breached';
@@ -270,7 +270,7 @@ export class SolarStormGame extends BaseMinigame<SolarStormData> {
             shakeIntensity = 10;
             totalRadiationDose += wave.radiationDose;
             colonyIntegrity = Math.max(0, colonyIntegrity - 16);
-            lastEventMessage = `¡IMPACTO EN LA BASE! ${wave.intensity} dañó la cúpula (+${wave.radiationDose.toFixed(1)} mSv).`;
+            lastEventMessage = `BASE IMPACT! ${wave.intensity} damaged the dome (+${wave.radiationDose.toFixed(1)} mSv).`;
           }
         } else {
           const prevWave = snap.data.waves.find(w => w.template.id === wave.id);
@@ -303,7 +303,7 @@ export class SolarStormGame extends BaseMinigame<SolarStormData> {
             collected = true;
             ionsCollectedCount++;
             colonyIntegrity = Math.min(100, colonyIntegrity + 12);
-            lastEventMessage = '¡ORBE VERDE RECOGIDO! +12% VIDA DE LA BASE (+50 pts)';
+            lastEventMessage = 'GREEN ORB COLLECTED! +12% BASE HP (+50 pts)';
           }
         }
       }
@@ -326,7 +326,11 @@ export class SolarStormGame extends BaseMinigame<SolarStormData> {
       0,
       Math.min(1000, basePts + blockPts + criticalPts + ionBonus - breachPenalty)
     );
+    this.setProgress(Math.min(1, elapsedSec / 60));
     this.setScore(currentScore);
+
+    const roundedIntegrity = Math.round(colonyIntegrity);
+    const defeated = roundedIntegrity <= 0;
 
     this.setData({
       episode: this.episode,
@@ -346,10 +350,14 @@ export class SolarStormGame extends BaseMinigame<SolarStormData> {
       totalWavesCount: this.episode.waves.length,
       combo,
       maxCombo,
-      shakeIntensity: Math.round(shakeIntensity * 10) / 10,
-      colonyIntegrity: Math.round(colonyIntegrity),
+      shakeIntensity: defeated ? 0 : Math.round(shakeIntensity * 10) / 10,
+      colonyIntegrity: roundedIntegrity,
       totalRadiationDose: Math.round(totalRadiationDose * 10) / 10,
-      lastEventMessage,
+      lastEventMessage: defeated ? 'MARS BASE DESTROYED · SHIELDS BREACHED' : lastEventMessage,
     });
+
+    if (defeated) {
+      this.fail();
+    }
   }
 }

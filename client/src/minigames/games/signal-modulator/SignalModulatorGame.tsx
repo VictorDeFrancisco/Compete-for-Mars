@@ -11,21 +11,22 @@ function SignalModulatorView({ snapshot }: MinigameViewProps<SignalModulatorData
 
   return (
     <div className="signal-mod">
-      {/* 1. Cabecera compacta estilo consola retro-NASA */}
+      {/* 1. Compact retro-NASA console header */}
       <div className="signal-mod__header">
-        <span className="signal-mod__badge">ENLACE DSN</span>
+        <span className="signal-mod__badge">DSN LINK</span>
         <span className="signal-mod__counter">
-          ONDA #{data.currentPacketIndex + 1} · {data.completedPacketIds.length} ENV.
+          WAVE #{data.currentPacketIndex + 1} · {data.completedPacketIds.length} SENT
         </span>
+        <span className="signal-mod__score">{snapshot.score} PTS</span>
         <span className="signal-mod__station">{currentPacket.station.split(' ')[0]}</span>
       </div>
 
-      {/* 2. Pantalla de osciloscopio */}
+      {/* 2. Oscilloscope screen */}
       <div className="signal-mod__screen">
         <div className="signal-mod__canvas-wrap">
           <SignalCanvas data={data} />
         </div>
-        {/* Barra de progreso de enlace */}
+        {/* Link lock progress bar */}
         <div className="signal-mod__lock-track">
           <div
             className={`signal-mod__lock-fill ${data.isAligned ? 'signal-mod__lock-fill--active' : ''}`}
@@ -34,25 +35,25 @@ function SignalModulatorView({ snapshot }: MinigameViewProps<SignalModulatorData
         </div>
       </div>
 
-      {/* Aviso contextual breve (solo cuando hay evento) */}
+      {/* Brief contextual alert (only when an event is active) */}
       {data.isJammed ? (
         <div className="signal-mod__banner signal-mod__banner--storm">
-          ⚡ TORMENTA SOLAR: MANTÉN [ESPACIO] PARA FILTRAR
+          ⚡ SOLAR STORM: HOLD [SPACE] TO FILTER
         </div>
       ) : data.isAligned ? (
         <div className="signal-mod__banner signal-mod__banner--locked">
-          ✔ ONDAS EN FASE: TRANSMITIENDO...
+          ✔ WAVES IN PHASE: TRANSMITTING...
         </div>
       ) : null}
 
-      {/* 3. Controles compactos: Frecuencia y Potencia */}
+      {/* 3. Compact controls: Frequency & Power */}
       <div className="signal-mod__controls">
-        {/* Frecuencia */}
+        {/* Frequency */}
         <div className="signal-mod__card">
           <div className="signal-mod__card-top">
-            <span className="signal-mod__card-title">FRECUENCIA</span>
+            <span className="signal-mod__card-title">FREQUENCY</span>
             <span className={`signal-mod__status signal-mod__status--${data.freqStatus} ${data.freqStatus}`}>
-              {data.freqStatus === 'MATCH' ? '✔ OK' : data.freqStatus === 'TOO_LOW' ? '▲ SUBIR' : '▼ BAJAR'}
+              {data.freqStatus === 'MATCH' ? '✔ OK' : data.freqStatus === 'TOO_LOW' ? '▲ RAISE' : '▼ LOWER'}
             </span>
           </div>
 
@@ -67,12 +68,12 @@ function SignalModulatorView({ snapshot }: MinigameViewProps<SignalModulatorData
           </div>
         </div>
 
-        {/* Potencia */}
+        {/* Power */}
         <div className="signal-mod__card">
           <div className="signal-mod__card-top">
-            <span className="signal-mod__card-title">POTENCIA</span>
+            <span className="signal-mod__card-title">POWER</span>
             <span className={`signal-mod__status signal-mod__status--${data.ampStatus} ${data.ampStatus}`}>
-              {data.ampStatus === 'MATCH' ? '✔ OK' : data.ampStatus === 'TOO_LOW' ? '▲ SUBIR' : '▼ BAJAR'}
+              {data.ampStatus === 'MATCH' ? '✔ OK' : data.ampStatus === 'TOO_LOW' ? '▲ RAISE' : '▼ LOWER'}
             </span>
           </div>
 
@@ -88,14 +89,14 @@ function SignalModulatorView({ snapshot }: MinigameViewProps<SignalModulatorData
         </div>
       </div>
 
-      {/* 4. Filtro Solar */}
+      {/* 4. Solar Filter */}
       <div className={`signal-mod__filter ${data.isFiltering ? 'signal-mod__filter--active' : ''}`}>
         <div className="signal-mod__filter-left">
           <kbd className={`mod-key mod-key--space ${keys.filterNoise ? 'mod-key--active' : ''}`}>
-            ESPACIO
+            SPACE
           </kbd>
           <span className="signal-mod__filter-label">
-            {data.isFiltering ? 'FILTRO ACTIVO' : 'FILTRO SOLAR'}
+            {data.isFiltering ? 'FILTER ACTIVE' : 'SOLAR FILTER'}
           </span>
         </div>
 

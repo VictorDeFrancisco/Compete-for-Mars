@@ -118,15 +118,15 @@ export interface SuitStep {
  * Se pueden reordenar, modificar o cambiar libremente.
  */
 export const DEFAULT_SUIT_STEPS: readonly SuitStep[] = [
-  // 1. REFRIGERACIÓN LÍQUIDA (Timing QTE)
+  // 1. LIQUID COOLING (Timing QTE)
   {
     id: 'lcvg-cooling',
     partKey: 'cooling',
-    name: 'Prenda de Refrigeración Líquida (LCVG)',
+    name: 'Liquid Cooling Garment (LCVG)',
     code: 'LCVG-T9',
-    prompt: '¡SINCRONIZA EL FLUJO DE REFRIGERANTE!',
-    description: 'Pulsa ESPACIO cuando el indicador de refrigerante entre en el anillo de flujo.',
-    lore: 'El LCVG teje más de 130 metros de tubos capilares de agua helada sobre la piel del astronauta para evitar golpes de calor por esfuerzo.',
+    prompt: 'SYNC THE COOLANT FLOW!',
+    description: 'Press SPACE when the coolant indicator enters the flow ring.',
+    lore: 'The LCVG weaves over 130 meters of chilled water capillary tubes against the astronaut’s skin to prevent heat stroke.',
     qte: {
       type: 'timing',
       actionId: 'action-primary',
@@ -140,15 +140,15 @@ export const DEFAULT_SUIT_STEPS: readonly SuitStep[] = [
     },
   },
 
-  // 2. BOTAS Y PANTALONES (Sequence QTE)
+  // 2. BOOTS AND TROUSERS (Sequence QTE)
   {
     id: 'lta-boots',
     partKey: 'boots',
-    name: 'Pantalones y Botas Presurizadas (LTA)',
+    name: 'Pressurized Boots & Lower Torso (LTA)',
     code: 'LTA-BOOTS',
-    prompt: '¡BLOQUEA LOS ANCLAJES INFERIORES [↓ · ← · → · ↓]!',
-    description: 'Introduce la secuencia con las flechas (↑ ↓ ← →) para asegurar las rodillas y botas de regolito.',
-    lore: 'Las botas de EVA tienen suelas multicapa de silicona y titanio para aislar el calor y resistir el cortante regolito marciano o lunar.',
+    prompt: 'LOCK LOWER ANCHORS [↓ · ← · → · ↓]!',
+    description: 'Enter the arrow sequence (↑ ↓ ← →) to secure knees and regolith boots.',
+    lore: 'EVA boots have multi-layer silicone and titanium soles to insulate heat and withstand sharp Martian or lunar regolith.',
     qte: {
       type: 'sequence',
       sequence: ['action-down', 'action-left', 'action-right', 'action-down'],
@@ -158,15 +158,15 @@ export const DEFAULT_SUIT_STEPS: readonly SuitStep[] = [
     },
   },
 
-  // 3. TORSO RÍGIDO (Mash QTE)
+  // 3. HARD UPPER TORSO (Mash QTE)
   {
     id: 'hut-chest',
     partKey: 'torso',
-    name: 'Torso Rígido Superior (HUT)',
+    name: 'Hard Upper Torso (HUT)',
     code: 'HUT-CHEST',
-    prompt: '¡PULSA RÁPIDO PARA ENCAJAR LAS BISAGRAS BLINDADAS!',
-    description: 'Pulsa repetidamente ESPACIO o el botón central para cerrar los pasadores de fijación del torso.',
-    lore: 'El HUT (Hard Upper Torso) es una coraza de fibra de vidrio y aluminio que soporta impactos de micrometeoritos a 27.000 km/h.',
+    prompt: 'TAP FAST TO LATCH ARMORED HINGES!',
+    description: 'Repeatedly press SPACE or the center button to lock the torso fastening pins.',
+    lore: 'The HUT (Hard Upper Torso) is a fiberglass and aluminum shell built to withstand micrometeoroid impacts at 27,000 km/h.',
     qte: {
       type: 'mash',
       actionId: 'action-primary',
@@ -178,15 +178,15 @@ export const DEFAULT_SUIT_STEPS: readonly SuitStep[] = [
     },
   },
 
-  // 4. GUANTES DE EVA (Timing QTE)
+  // 4. EVA GLOVES (Timing QTE)
   {
     id: 'eva-gloves',
     partKey: 'gloves',
-    name: 'Guantes Presurizados y Aros Giratorios',
+    name: 'Pressurized Gloves & Wrist Bearings',
     code: 'EVA-GLOVES',
-    prompt: '¡BLOQUEA EL ARO DE MUÑECA [ESPACIO]!',
-    description: 'Pulsa ESPACIO cuando la aguja entre en la marca dorada de acople estanco.',
-    lore: 'Los guantes son la pieza más compleja del traje: integran calefactores en las yemas y aros de rodamientos axiales para manipular herramientas en el vacío.',
+    prompt: 'LOCK THE WRIST RING [SPACE]!',
+    description: 'Press SPACE when the needle enters the gold airtight coupling mark.',
+    lore: 'Gloves are the most complex suit part: they include fingertip heaters and axial bearings for tool handling in vacuum.',
     qte: {
       type: 'timing',
       actionId: 'action-primary',
@@ -200,15 +200,15 @@ export const DEFAULT_SUIT_STEPS: readonly SuitStep[] = [
     },
   },
 
-  // 5. CASCO Y VISOR DORADO (Hold QTE)
+  // 5. HELMET AND GOLD VISOR (Hold QTE)
   {
     id: 'helmet-visor',
     partKey: 'helmet',
-    name: 'Casco de Burbuja y Visor Dorado',
+    name: 'Bubble Helmet & Gold Visor',
     code: 'EVVA-HELMET',
-    prompt: '¡MANTÉN PULSADO Y SUELTA EN LA ZONA VERDE PARA SELLAR!',
-    description: 'Mantén presionado ESPACIO y suéltalo justo cuando el medidor alcance la zona de acople estanco.',
-    lore: 'El visor exterior está bañado con una película de oro de 24 quilates tan fina que permite ver hacia afuera pero rechaza el 90% del calor y la radiación UV.',
+    prompt: 'HOLD AND RELEASE IN THE GREEN ZONE TO SEAL!',
+    description: 'Hold SPACE and release right when the gauge reaches the airtight coupling zone.',
+    lore: 'The outer visor is coated in a micro-thin 24-karat gold film that lets you see out while blocking 90% of heat and UV radiation.',
     qte: {
       type: 'hold',
       actionId: 'action-primary',
@@ -223,15 +223,15 @@ export const DEFAULT_SUIT_STEPS: readonly SuitStep[] = [
     },
   },
 
-  // 6. MOCHILA PLSS Y SOPORTE VITAL (Sequence QTE)
+  // 6. PLSS BACKPACK & LIFE SUPPORT (Sequence QTE)
   {
     id: 'plss-backpack',
     partKey: 'backpack',
-    name: 'Soporte Vital y Presurización a 4.3 PSI (PLSS)',
+    name: 'Life Support & 4.3 PSI Pressurization (PLSS)',
     code: 'PLSS-O2',
-    prompt: '¡SECUENCIA DE ACTIVACIÓN DE OXÍGENO [↑ · ESPACIO · ↓ · ESPACIO]!',
-    description: 'Abre válvula de O₂ (↑), presuriza cámara (Espacio), purga filtro CO₂ (↓) y asegura regulador a 4.3 PSI (Espacio).',
-    lore: 'El sistema PLSS genera oxígeno puro al 100% regulado a una presión interna constante de 4.3 PSI (29.6 kPa) con autonomía de hasta 8 horas.',
+    prompt: 'OXYGEN ACTIVATION SEQUENCE [↑ · SPACE · ↓ · SPACE]!',
+    description: 'Open O₂ valve (↑), pressurize chamber (Space), purge CO₂ filter (↓), and lock 4.3 PSI regulator (Space).',
+    lore: 'The PLSS supplies 100% pure oxygen regulated at a steady 4.3 PSI (29.6 kPa) internal pressure for up to 8 hours.',
     qte: {
       type: 'sequence',
       sequence: ['action-up', 'action-primary', 'action-down', 'action-primary'],
@@ -243,47 +243,56 @@ export const DEFAULT_SUIT_STEPS: readonly SuitStep[] = [
 ];
 
 /**
- * Mapeo descriptivo de iconos/etiquetas para cada acción disponible.
+ * Descriptive icon/label mapping for each available action.
  */
 export const ACTION_LABELS: Record<string, { key: string; label: string; icon: string }> = {
-  'action-primary': { key: 'ESPACIO', label: 'Sellar / Acción', icon: '⎵' },
-  'action-up': { key: '↑', label: 'Válvula Sup.', icon: '▲' },
-  'action-down': { key: '↓', label: 'Pestillo Inf.', icon: '▼' },
-  'action-left': { key: '←', label: 'Acople Izq.', icon: '◀' },
-  'action-right': { key: '→', label: 'Acople Der.', icon: '▶' },
+  'action-primary': { key: 'SPACE', label: 'Seal / Action', icon: '⎵' },
+  'action-up': { key: '↑', label: 'Upper Valve', icon: '▲' },
+  'action-down': { key: '↓', label: 'Lower Latch', icon: '▼' },
+  'action-left': { key: '←', label: 'Left Lock', icon: '◀' },
+  'action-right': { key: '→', label: 'Right Lock', icon: '▶' },
 };
 
-const SEQ_POOL = ['action-up', 'action-down', 'action-left', 'action-right', 'action-primary'] as const;
-const QTE_TYPES: readonly QteType[] = ['timing', 'mash', 'sequence', 'hold'];
+const ARROW_SEQ_POOL = ['action-up', 'action-down', 'action-left', 'action-right'] as const;
+
+function shuffleWithRng<T>(items: T[], rng: () => number): T[] {
+  for (let i = items.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  return items;
+}
 
 /**
- * Genera una secuencia aleatoria de montaje del traje espacial (orden, nº de pasos,
- * tipo de QTE y parámetros aleatorios) usando el PRNG indicado.
+ * Picks 6 QTE types with strictly 1 'mash' and no two consecutive identical types.
+ */
+function pickBalancedQteTypes(rng: () => number): QteType[] {
+  const extraHold = rng() < 0.5;
+  const deck: QteType[] = extraHold
+    ? ['mash', 'timing', 'sequence', 'sequence', 'hold', 'hold']
+    : ['mash', 'timing', 'timing', 'sequence', 'sequence', 'hold'];
+
+  for (let attempt = 0; attempt < 24; attempt++) {
+    const candidate = shuffleWithRng([...deck], rng);
+    const hasAdjacentRepeat = candidate.some((t, idx) => idx > 0 && candidate[idx - 1] === t);
+    if (!hasAdjacentRepeat) return candidate;
+  }
+
+  return ['timing', 'sequence', 'hold', 'sequence', 'mash', 'timing'];
+}
+
+/**
+ * Generates a balanced 6-step spacesuit assembly run:
+ * - Dresses all 6 suit parts in logical inside-out order.
+ * - Uses at most ONE 'mash' step and avoids consecutive identical QTE modes.
+ * - Builds directional sequences purely from arrow keys without consecutive repeats.
  */
 export function generateRandomSuitSteps(rng: () => number = Math.random): SuitStep[] {
-  const pool = [...DEFAULT_SUIT_STEPS];
-  for (let i = pool.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [pool[i], pool[j]] = [pool[j], pool[i]];
-  }
+  const orderedParts = [...DEFAULT_SUIT_STEPS];
+  const qteTypes = pickBalancedQteTypes(rng);
 
-  // Varía entre 5 y 6 piezas por montaje + posible doble verificación final (hasta 7 pasos)
-  const stepCount = 5 + Math.floor(rng() * 2); // 5 o 6 pasos base
-  const selected = pool.slice(0, stepCount);
-  const addFinalCheck = rng() < 0.45;
-  if (addFinalCheck) {
-    const base = pool[Math.floor(rng() * pool.length)];
-    selected.push({
-      ...base,
-      id: `${base.id}-verify`,
-      code: `${base.code}-CHK`,
-      name: `Verificación Final · ${base.name}`,
-    });
-  }
-
-  return selected.map((baseStep) => {
-    // Asegura variedad de mecánicas sin repetir exactamente la anterior cuando hay opciones
-    const chosenType = QTE_TYPES[Math.floor(rng() * QTE_TYPES.length)];
+  return orderedParts.map((baseStep, idx) => {
+    const chosenType = qteTypes[idx] ?? 'timing';
 
     if (chosenType === 'timing') {
       const sweetWidth = 0.20 + rng() * 0.08;
@@ -292,8 +301,8 @@ export function generateRandomSuitSteps(rng: () => number = Math.random): SuitSt
       const sweepPeriodMs = 1150 + Math.floor(rng() * 400);
       return {
         ...baseStep,
-        prompt: '¡PULSA ESPACIO EN LA ZONA VERDE!',
-        description: 'Sincroniza el indicador móvil dentro del rango de acople estanco.',
+        prompt: 'PRESS SPACE IN THE GREEN ZONE!',
+        description: 'Sync the moving indicator inside the airtight coupling range.',
         qte: {
           type: 'timing',
           actionId: 'action-primary',
@@ -309,11 +318,11 @@ export function generateRandomSuitSteps(rng: () => number = Math.random): SuitSt
     }
 
     if (chosenType === 'mash') {
-      const targetCount = 5 + Math.floor(rng() * 4); // 5 a 8 pulsaciones limpias
+      const targetCount = 6 + Math.floor(rng() * 3); // 6..8 pumps, max once per run
       return {
         ...baseStep,
-        prompt: `¡PULSA RÁPIDO ${targetCount} VECES!`,
-        description: `Presuriza el acople de ${baseStep.code} con ${targetCount} bombeos.`,
+        prompt: `TAP FAST ${targetCount} TIMES!`,
+        description: `Pressurize ${baseStep.code} coupling with ${targetCount} pumps.`,
         qte: {
           type: 'mash',
           actionId: 'action-primary',
@@ -334,8 +343,8 @@ export function generateRandomSuitSteps(rng: () => number = Math.random): SuitSt
       const mid = (targetMin + targetMax) / 2;
       return {
         ...baseStep,
-        prompt: '¡MANTÉN PULSADO Y SUELTA EN LO VERDE!',
-        description: 'Carga el sello neumático y suelta justo en la franja óptima.',
+        prompt: 'HOLD AND RELEASE IN THE GREEN ZONE!',
+        description: 'Charge the pneumatic seal and release inside the optimal band.',
         qte: {
           type: 'hold',
           actionId: 'action-primary',
@@ -351,17 +360,18 @@ export function generateRandomSuitSteps(rng: () => number = Math.random): SuitSt
       };
     }
 
-    // 'sequence': longitud y teclas aleatorias (3 a 4 teclas)
-    const seqLen = 3 + Math.floor(rng() * 2);
+    const seqLen = 4;
     const sequence: string[] = [];
     for (let k = 0; k < seqLen; k++) {
-      sequence.push(SEQ_POOL[Math.floor(rng() * SEQ_POOL.length)]);
+      const prev = sequence[k - 1];
+      const choices = ARROW_SEQ_POOL.filter(a => a !== prev);
+      sequence.push(choices[Math.floor(rng() * choices.length)]);
     }
     const readable = sequence.map(a => ACTION_LABELS[a]?.key ?? a).join(' · ');
     return {
       ...baseStep,
-      prompt: `¡SECUENCIA: ${readable}!`,
-      description: 'Pulsa las teclas en orden exacto para bloquear los seguros del traje.',
+      prompt: `SEQUENCE: ${readable}!`,
+      description: 'Press the arrow keys in exact order to lock the suit latches.',
       qte: {
         type: 'sequence',
         sequence,

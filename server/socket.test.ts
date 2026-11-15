@@ -93,7 +93,7 @@ test('dos clientes reales: sala, autorizaciones, ronda, reconexión y segunda ro
   assert.equal((await action(b, 'card:choose', { phaseId: cards.phaseId, cardId: 'rest' })).ok, true);
 
   const intro2 = await state(resumed, view => view.phase === 'presentation' && view.round === 2);
-  assert.match(intro2.self.cardOutcome!.summary, /Sabotaje/);
+  assert.match(intro2.self.cardOutcome!.summary, /Sabotage/);
   const bIntro2 = await state(b, view => view.phase === 'presentation' && view.round === 2);
   assert.equal(bIntro2.self.resources.food, bCards.self.resources.food - 20);
   for (const client of [resumed, b]) assert.equal((await action(client, 'phase:ready', { phaseId: intro2.phaseId })).ok, true);

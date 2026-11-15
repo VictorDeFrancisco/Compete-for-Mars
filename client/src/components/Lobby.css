@@ -707,9 +707,21 @@
 .lobby-cta-pair {
   flex-shrink: 0;
   display: flex;
-  align-items: stretch;
+  align-items: flex-end;
   gap: 10px;
   pointer-events: auto;
+}
+
+.lobby-start-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.lobby-start-stack .lobby-ready-pill {
+  justify-content: center;
+  padding: 6px 12px;
 }
 
 .lobby-hud button.lobby-ready-toggle,

@@ -2,19 +2,19 @@ import { defineMinigame } from './types';
 
 export const signalModulatorDefinition = defineMinigame({
   id: 'signal-modulator',
-  title: 'Modulación de Señal: Enlace DSN',
+  title: 'Signal Modulation: DSN Link',
   mode: 'score',
   durationMs: 60_000,
   maxScore: 10_000,
   instructions:
-    'Sintoniza la antena para transmitir tantas ondas de telemetría como puedas a la Red del Espacio Profundo antes de que acabe el tiempo. Ajusta Frecuencia (A/D o ←/→) y Amplitud (W/S o ↑/↓) para alinear tu onda azul sobre la dorada y activa el Filtro Solar (Espacio/Enter) cuando aparezcan interferencias.',
+    'Tune the dish antenna to transmit as many telemetry packets as possible to NASA’s Deep Space Network before time runs out. Adjust Frequency (A/D or ←/→) and Amplitude (W/S or ↑/↓) to align your blue carrier with the gold target wave, and toggle the Solar Filter (Space/Enter) during flare interference.',
   objective:
-    'Alinea y transmite el mayor número posible de paquetes de telemetría en 60 segundos.',
+    'Align and transmit as many telemetry packets as possible within 60 seconds.',
   controls: [
     {
       id: 'freq-down',
-      label: 'Bajar Frecuencia',
-      description: 'Ensancha la onda portadora.',
+      label: 'Decrease Frequency',
+      description: 'Widens the carrier wave.',
       bindings: [
         { device: 'keyboard', code: 'KeyA', label: 'A' },
         { device: 'keyboard', code: 'ArrowLeft', label: '←' },
@@ -23,8 +23,8 @@ export const signalModulatorDefinition = defineMinigame({
     },
     {
       id: 'freq-up',
-      label: 'Subir Frecuencia',
-      description: 'Comprime la onda portadora.',
+      label: 'Increase Frequency',
+      description: 'Compresses the carrier wave.',
       bindings: [
         { device: 'keyboard', code: 'KeyD', label: 'D' },
         { device: 'keyboard', code: 'ArrowRight', label: '→' },
@@ -33,8 +33,8 @@ export const signalModulatorDefinition = defineMinigame({
     },
     {
       id: 'amp-up',
-      label: 'Subir Potencia',
-      description: 'Aumenta la altura de la onda.',
+      label: 'Increase Power',
+      description: 'Increases wave amplitude.',
       bindings: [
         { device: 'keyboard', code: 'KeyW', label: 'W' },
         { device: 'keyboard', code: 'ArrowUp', label: '↑' },
@@ -43,8 +43,8 @@ export const signalModulatorDefinition = defineMinigame({
     },
     {
       id: 'amp-down',
-      label: 'Bajar Potencia',
-      description: 'Reduce la altura de la onda.',
+      label: 'Decrease Power',
+      description: 'Decreases wave amplitude.',
       bindings: [
         { device: 'keyboard', code: 'KeyS', label: 'S' },
         { device: 'keyboard', code: 'ArrowDown', label: '↓' },
@@ -53,12 +53,12 @@ export const signalModulatorDefinition = defineMinigame({
     },
     {
       id: 'filter-noise',
-      label: 'Filtro Solar',
-      description: 'Anula el ruido de llamaradas solares.',
+      label: 'Solar Filter',
+      description: 'Cancels solar flare interference.',
       bindings: [
-        { device: 'keyboard', code: 'Space', label: 'Espacio' },
+        { device: 'keyboard', code: 'Space', label: 'Space' },
         { device: 'keyboard', code: 'Enter', label: 'Enter' },
-        { device: 'pointer', button: 0, label: 'Filtro' },
+        { device: 'pointer', button: 0, label: 'Filter' },
       ],
     },
   ],

@@ -2,7 +2,11 @@ import type { PointerEvent } from 'react';
 import { defineModule, type MinigameViewProps } from '../../core/module';
 import { solarStormDefinition } from '../../../../../shared/minigames/solarStorm';
 import { SolarStormGame, type SolarStormData } from './SolarStormEngine';
-import { SolarStormCanvas } from './SolarStormCanvas';
+import {
+  SOLAR_CANVAS_HEIGHT,
+  SOLAR_CANVAS_WIDTH,
+  SolarStormCanvas,
+} from './SolarStormCanvas';
 import './solarStorm.css';
 
 export { SolarStormGame, type SolarStormData };
@@ -15,13 +19,14 @@ function SolarStormView({ engine, snapshot }: MinigameViewProps<SolarStormData>)
   const timeToImpact = alertWave
     ? Math.max(0, alertWave.impactSec - data.currentSecond)
     : 0;
+  const isDefeated = data.colonyIntegrity <= 0 || snapshot.result?.reason === 'failed';
 
   const integrityColor =
     data.colonyIntegrity > 70
-      ? '#4ade80'
+      ? '#16a34a'
       : data.colonyIntegrity > 35
-      ? '#facc15'
-      : '#f87171';
+      ? '#d97706'
+      : '#dc2626';
 
   const aimShieldFromPointer = (e: PointerEvent<HTMLDivElement>) => {
     if (snapshot.status !== 'running') return;
@@ -30,10 +35,10 @@ function SolarStormView({ engine, snapshot }: MinigameViewProps<SolarStormData>)
     const rect = canvas.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return;
 
-    const normX = ((e.clientX - rect.left) / rect.width) * 680;
-    const normY = ((e.clientY - rect.top) / rect.height) * 480;
-    const dx = normX - 340;
-    const dy = 401 - normY;
+    const normX = ((e.clientX - rect.left) / rect.width) * SOLAR_CANVAS_WIDTH;
+    const normY = ((e.clientY - rect.top) / rect.height) * SOLAR_CANVAS_HEIGHT;
+    const dx = normX - SOLAR_CANVAS_WIDTH / 2;
+    const dy = 351 - normY;
     const angleRad = Math.atan2(dx, Math.max(12, dy));
     const angleDeg = 180 + (angleRad * 180) / Math.PI;
     solarEngine.setDirectAngle(angleDeg);
@@ -41,35 +46,72 @@ function SolarStormView({ engine, snapshot }: MinigameViewProps<SolarStormData>)
 
   return (
     <div className="solar-storm-view">
-      {/* Zona Jugable de la Base Marciana con HUD Integrado en el Interior */}
-      <div
-        className="solar-storm__screen-frame"
-        onPointerDown={aimShieldFromPointer}
-        onPointerMove={e => {
-          if (e.pointerType === 'mouse' || e.buttons > 0) {
-            aimShieldFromPointer(e);
-          }
-        }}
-      >
-        <SolarStormCanvas data={data} />
-
-        {/* Ticker de Alerta DONKI superpuesto en la parte superior del canvas */}
-        {alertWave && (
-          <div className="solar-storm__alert-ticker">
-            <span className="ticker-badge">⚠️ ALERTA DONKI</span>
-            <span className="ticker-desc">
-              <strong>{alertWave.type} ({alertWave.intensity})</strong> · Sector {alertWave.approachAngleDeg}°
-            </span>
-            <span className="ticker-time">Impacto en {timeToImpact.toFixed(1)}s</span>
+      <div className="solar-storm__screen-frame">
+        {/* Top Retro-NASA Telemetry Bar (inside wide game frame) */}
+        <div className="solar-storm__header">
+          <div className="solar-storm__header-left">
+            <span className="solar-storm__badge">DONKI FEED</span>
+            <span className="solar-storm__episode">{data.episode.name}</span>
           </div>
-        )}
 
-        {/* HUD de Datos Mínimos Integrado DEBAJO dentro de la Zona Jugable */}
+          {alertWave ? (
+            <div className="solar-storm__alert-ticker solar-storm__alert-ticker--active">
+              <span className="ticker-badge">ALERT</span>
+              <span className="ticker-desc">
+                <strong>{alertWave.type} ({alertWave.intensity})</strong> · Sector {alertWave.approachAngleDeg}°
+              </span>
+              <span className="ticker-time">T-{timeToImpact.toFixed(1)}s</span>
+            </div>
+          ) : (
+            <div className="solar-storm__alert-ticker">
+              <span className="ticker-clear">SECTOR CLEAR · MOVE SHIELD / [SPACE] BOOST</span>
+            </div>
+          )}
+
+          <div className="solar-storm__header-right">
+            <div
+              className={`solar-storm__combo ${
+                data.combo >= 4
+                  ? 'solar-storm__combo--hot'
+                  : data.combo > 1
+                  ? 'solar-storm__combo--active'
+                  : ''
+              }`}
+            >
+              COMBO x{data.combo}
+            </div>
+            <div className="solar-storm__score">{snapshot.score} PTS</div>
+          </div>
+        </div>
+
+        {/* Wide Mars Dome Viewport */}
+        <div
+          className={`solar-storm__viewport${isDefeated ? ' solar-storm__viewport--defeated' : ''}`}
+          onPointerDown={aimShieldFromPointer}
+          onPointerMove={e => {
+            if (e.pointerType === 'mouse' || e.buttons > 0) {
+              aimShieldFromPointer(e);
+            }
+          }}
+        >
+          <SolarStormCanvas data={data} />
+
+          {isDefeated && (
+            <div className="solar-storm__defeat-overlay" role="status" aria-live="assertive">
+              <span className="solar-storm__defeat-badge">DEFEAT · CRITICAL FAILURE</span>
+              <strong className="solar-storm__defeat-title">MARS BASE DESTROYED</strong>
+              <p className="solar-storm__defeat-sub">
+                Shield defenses breached at 0% HP · Final score: {snapshot.score} PTS
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom Retro-NASA Telemetry Bar (inside wide game frame) */}
         <div className="solar-storm__bottom-hud">
-          {/* Vida de la Base */}
           <div className="hud-metric hud-metric--life">
             <div className="hud-label-row">
-              <span className="hud-title">❤️ VIDA BASE</span>
+              <span className="hud-title">BASE HP</span>
               <span className="hud-value" style={{ color: integrityColor }}>
                 {data.colonyIntegrity}%
               </span>
@@ -80,22 +122,22 @@ function SolarStormView({ engine, snapshot }: MinigameViewProps<SolarStormData>)
                 style={{
                   width: `${data.colonyIntegrity}%`,
                   background: integrityColor,
-                  boxShadow: `0 0 8px ${integrityColor}`,
                 }}
               />
             </div>
           </div>
 
-          {/* Horas / Fecha Simulada NASA */}
           <div className="hud-metric hud-metric--clock">
+            <span className="hud-clock-label">NASA UTC</span>
             <span className="hud-clock-time">{data.simulatedDateTime}</span>
           </div>
 
-          {/* Potencia del Escudo */}
           <div className="hud-metric hud-metric--shield">
             <div className="hud-label-row">
-              <span className="hud-title">⚡ POTENCIA ESCUDO</span>
-              <span className="hud-value" style={{ color: data.isBoosting ? '#c084fc' : '#38bdf8' }}>
+              <span className="hud-title">
+                SHIELD {data.isBoosting ? '· BOOSTING' : '· [SPACE]'}
+              </span>
+              <span className="hud-value" style={{ color: data.isBoosting ? '#7c3aed' : '#0b3d91' }}>
                 {Math.round(data.boostEnergy)}%
               </span>
             </div>
@@ -104,8 +146,7 @@ function SolarStormView({ engine, snapshot }: MinigameViewProps<SolarStormData>)
                 className={`hud-bar-fill ${data.isBoosting ? 'hud-bar-fill--boosting' : ''}`}
                 style={{
                   width: `${data.boostEnergy}%`,
-                  background: data.isBoosting ? '#c084fc' : '#38bdf8',
-                  boxShadow: data.isBoosting ? '0 0 10px #c084fc' : '0 0 8px #38bdf8',
+                  background: data.isBoosting ? '#7c3aed' : '#0b3d91',
                 }}
               />
             </div>
@@ -119,5 +160,5 @@ function SolarStormView({ engine, snapshot }: MinigameViewProps<SolarStormData>)
 export default defineModule(
   solarStormDefinition,
   (definition, context) => new SolarStormGame(definition, undefined, context),
-  SolarStormView
+  SolarStormView,
 );

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { deriveRoundSeed } from '../../../shared/minigames/context';
+import type { MinigameResult } from '../../../shared/minigames/types';
 import type { MinigameProps } from '../../../shared/types';
 import MinigameWrapper from '../minigames/MinigameWrapper';
 import { PipesSceneProvider } from '../minigames/games/pipes/PipesScene';
@@ -40,6 +41,12 @@ export default function PlayMinigame({ game, seconds = null, onSubmit, onProgres
   const [countdown, setCountdown] = useState<number>(shouldCountdown ? 3 : 0);
   const [showGo, setShowGo] = useState(false);
   const [localRemainingMs, setLocalRemainingMs] = useState<number | null>(null);
+  const [submittedResult, setSubmittedResult] = useState<MinigameResult | null>(null);
+
+  const handleMinigameResult = (result: MinigameResult) => {
+    setSubmittedResult(result);
+    onSubmit(result);
+  };
 
   useEffect(() => {
     if (!shouldCountdown) return;
@@ -115,9 +122,9 @@ export default function PlayMinigame({ game, seconds = null, onSubmit, onProgres
               <span
                 className={`nasa-console__timer nasa-console__timer--${timerUrgency}`}
                 role="timer"
-                aria-label={`Quedan ${displaySeconds} segundos`}
+                aria-label={`${displaySeconds} seconds remaining`}
               >
-                ⏱ {countdown > 0 ? 'PREPÁRATE' : `${displaySeconds}s`}
+                ⏱ {countdown > 0 ? 'GET READY' : `${displaySeconds}s`}
               </span>
             )}
           </div>
@@ -129,7 +136,7 @@ export default function PlayMinigame({ game, seconds = null, onSubmit, onProgres
               <p className="phase-playing__state-title">CREWMEMBER OFFLINE</p>
               <p className="phase-playing__state-sub">Spectating the surviving crew…</p>
             </div>
-          ) : game.self.hasSubmitted ? (
+          ) : game.self.hasSubmitted && submittedResult?.reason !== 'failed' ? (
             <div className="phase-playing__state">
               <p className="phase-playing__state-title">TELEMETRY LOGGED</p>
               <p className="phase-playing__state-sub">Waiting for remaining crewmates…</p>
@@ -148,7 +155,7 @@ export default function PlayMinigame({ game, seconds = null, onSubmit, onProgres
                 initialElapsedMs={effectiveInitialElapsedMs}
                 paused={countdown > 0}
                 onRemainingChange={setLocalRemainingMs}
-                onResult={onSubmit}
+                onResult={handleMinigameResult}
                 onScoreChange={onProgress}
                 showChrome={false}
               />
@@ -160,7 +167,7 @@ export default function PlayMinigame({ game, seconds = null, onSubmit, onProgres
               initialElapsedMs={effectiveInitialElapsedMs}
               paused={countdown > 0}
               onRemainingChange={setLocalRemainingMs}
-              onResult={onSubmit}
+              onResult={handleMinigameResult}
               onScoreChange={onProgress}
               showChrome={false}
             />
@@ -168,7 +175,7 @@ export default function PlayMinigame({ game, seconds = null, onSubmit, onProgres
 
           {canPlay && countdown > 0 && (
             <div className="play-countdown-overlay" role="status" aria-live="assertive">
-              <span className="play-countdown-overlay__kicker">EMPEZANDO MINIJUEGO</span>
+              <span className="play-countdown-overlay__kicker">MINIGAME STARTING</span>
               <strong key={countdown} className="play-countdown-overlay__num">
                 {countdown}
               </strong>
@@ -177,7 +184,7 @@ export default function PlayMinigame({ game, seconds = null, onSubmit, onProgres
 
           {canPlay && showGo && countdown === 0 && (
             <div className="play-countdown-overlay play-countdown-overlay--go" aria-hidden="true">
-              <strong className="play-countdown-overlay__go">¡YA!</strong>
+              <strong className="play-countdown-overlay__go">GO!</strong>
             </div>
           )}
         </div>

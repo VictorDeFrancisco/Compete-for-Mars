@@ -34,29 +34,29 @@ function PipesView({ engine, snapshot }: MinigameViewProps<PipesData>) {
   return (
     <section
       className={`pipes-game${embedded ? ' pipes-game--embedded' : ''}${connected ? ' pipes-game--connected' : ''}${seconds <= 10 ? ' pipes-game--urgent' : ''}${finished ? ' pipes-game--finished' : ''}`}
-      aria-label="Circuito de agua"
+      aria-label="Water circuit"
     >
       {!embedded && <LunarBackdrop />}
       <div className="pipes-screen">
         {!embedded ? (
           <header className="pipes-topbar">
-            <div className="pipes-plaque pipes-counter" aria-label={`${solved} circuitos reparados, ${snapshot.score} puntos`}>
+            <div className="pipes-plaque pipes-counter" aria-label={`${solved} circuits repaired, ${snapshot.score} points`}>
               <b>{snapshot.score}</b>
               <span>
                 PTS<br />
-                {solved} {solved === 1 ? 'circuito' : 'circuitos'}
+                {solved} {solved === 1 ? 'circuit' : 'circuits'}
               </span>
             </div>
 
             <div className="pipes-title-text">
               <span className="pipes-kicker">LIFE SUPPORT // WATER GRID</span>
-              <h2>RESTABLECE EL FLUJO</h2>
+              <h2>RESTORE FLOW</h2>
             </div>
 
             <div className="pipes-plaque pipes-timer-panel">
-              <div className="pipes-clock" role="timer" aria-label={`${seconds} segundos restantes`}>
+              <div className="pipes-clock" role="timer" aria-label={`${seconds} seconds remaining`}>
                 <b>{String(seconds).padStart(2, '0')}s</b>
-                <span>TIEMPO</span>
+                <span>TIME</span>
               </div>
               <div className="pipes-time-track">
                 <span style={{ width: `${(snapshot.remainingMs / engine.definition.durationMs) * 100}%` }} />
@@ -67,14 +67,14 @@ function PipesView({ engine, snapshot }: MinigameViewProps<PipesData>) {
           <div className="pipes-embedded-bar">
             <span className="pipes-kicker">WATER GRID</span>
             <p className="pipes-instruction">
-              Clic para girar · Conecta{' '}
-              <span className="pipes-tag pipes-tag--entry">IN AZUL</span>
+              Click to rotate · Connect{' '}
+              <span className="pipes-tag pipes-tag--entry">BLUE IN</span>
               {' → '}
-              <span className="pipes-tag pipes-tag--exit">OUT DORADA</span>
+              <span className="pipes-tag pipes-tag--exit">GOLD OUT</span>
             </p>
-            <div className="pipes-embedded-score" aria-label={`${solved} circuitos reparados, ${snapshot.score} puntos`}>
+            <div className="pipes-embedded-score" aria-label={`${solved} circuits repaired, ${snapshot.score} points`}>
               <b>{snapshot.score} PTS</b>
-              <span>{solved} {solved === 1 ? 'CIRCUITO' : 'CIRCUITOS'}</span>
+              <span>{solved} {solved === 1 ? 'CIRCUIT' : 'CIRCUITS'}</span>
             </div>
           </div>
         )}
@@ -83,10 +83,10 @@ function PipesView({ engine, snapshot }: MinigameViewProps<PipesData>) {
           <div className="pipes-console">
             {!embedded && (
               <p className="pipes-instruction">
-                Clic para girar · Conecta{' '}
-                <span className="pipes-tag pipes-tag--entry">IN AZUL</span>
+                Click to rotate · Connect{' '}
+                <span className="pipes-tag pipes-tag--entry">BLUE IN</span>
                 {' → '}
-                <span className="pipes-tag pipes-tag--exit">OUT DORADA</span>
+                <span className="pipes-tag pipes-tag--exit">GOLD OUT</span>
               </p>
             )}
             <div
@@ -97,14 +97,14 @@ function PipesView({ engine, snapshot }: MinigameViewProps<PipesData>) {
                 '--exit-row': board.exitRow,
               } as CSSProperties}
             >
-              <div className="pipes-port pipes-port--entry" aria-label={`Entrada, fila ${board.entryRow + 1}`}>
+              <div className="pipes-port pipes-port--entry" aria-label={`Entry, row ${board.entryRow + 1}`}>
                 <div className="pipes-port__coupler">
                   <span>IN</span>
                   <b>▸</b>
                 </div>
               </div>
               <div className="pipes-board-frame">
-                <div className="pipes-board" role="group" aria-label={`Tablero de ${board.size} por ${board.size}`}>
+                <div className="pipes-board" role="group" aria-label={`${board.size} by ${board.size} board`}>
                   {board.cells.map((pipe, index) => {
                     const isWet = wetCells.has(index);
                     const texture = TEXTURE[pipe.kind][isWet ? 1 : 0];
@@ -114,7 +114,7 @@ function PipesView({ engine, snapshot }: MinigameViewProps<PipesData>) {
                         type="button"
                         className="pipes-cell"
                         disabled={snapshot.status !== 'running' || connected}
-                        aria-label={`Girar tubería, fila ${Math.floor(index / board.size) + 1}, columna ${(index % board.size) + 1}${isWet ? ', con agua' : ''}`}
+                        aria-label={`Rotate pipe, row ${Math.floor(index / board.size) + 1}, column ${(index % board.size) + 1}${isWet ? ', watered' : ''}`}
                         onClick={() => (engine as PipesEngine).rotateAt(index)}
                       >
                         <img
@@ -131,7 +131,7 @@ function PipesView({ engine, snapshot }: MinigameViewProps<PipesData>) {
               </div>
               <div
                 className={`pipes-port pipes-port--exit${connected ? ' pipes-port--flowing' : ''}`}
-                aria-label={`Salida, fila ${board.exitRow + 1}`}
+                aria-label={`Exit, row ${board.exitRow + 1}`}
               >
                 <div className="pipes-port__coupler">
                   <b>▸</b>
@@ -141,18 +141,18 @@ function PipesView({ engine, snapshot }: MinigameViewProps<PipesData>) {
             </div>
             <div className="pipes-feedback" role="status" aria-live="polite">
               {finished
-                ? `TIEMPO AGOTADO · ${solved} ${solved === 1 ? 'CIRCUITO' : 'CIRCUITOS'} · ${snapshot.score} PTS`
+                ? `TIME'S UP · ${solved} ${solved === 1 ? 'CIRCUIT' : 'CIRCUITS'} · ${snapshot.score} PTS`
                 : connected
-                  ? '¡CIRCUITO CONECTADO! +100 PTS'
+                  ? 'CIRCUIT CONNECTED! +100 PTS'
                   : '\u00a0'}
             </div>
             {engine.modifiers.actionCooldownMs + engine.modifiers.reactionDelayMs > 0 && (
-              <p className="pipes-resource-note">Fatiga y hambre activos: giro ralentizado.</p>
+              <p className="pipes-resource-note">Fatigue and hunger active: slower rotation.</p>
             )}
           </div>
 
           {!embedded && (
-            <aside className="pipes-crew" aria-label="Puntuación en tiempo real">
+            <aside className="pipes-crew" aria-label="Live score">
               <div className="pipes-crew__heading">CREW LIVE SCORE</div>
               {[...crew]
                 .map((member, index) => ({
@@ -165,7 +165,7 @@ function PipesView({ engine, snapshot }: MinigameViewProps<PipesData>) {
                   <div
                     key={member.id}
                     className={`pipes-astronaut pipes-astronaut--${index}${member.isSelf ? ' pipes-astronaut--self' : ''}`}
-                    title={`${member.name}${member.isSelf ? ' · Tú' : ''}`}
+                    title={`${member.name}${member.isSelf ? ' · You' : ''}`}
                   >
                     <div className="pipes-astronaut__avatar">
                       <Astronaut active={!!member.isSelf} />
@@ -190,19 +190,19 @@ function PipesView({ engine, snapshot }: MinigameViewProps<PipesData>) {
 
         {onExit && !finished && (
           <button type="button" className="pipes-back" onClick={onExit}>
-            ← Laboratorio
+            ← Lab
           </button>
         )}
         {finished && (onRestart || onExit) && (
           <div className="pipes-end-actions">
             {onRestart && (
               <button type="button" className="pipes-restart" onClick={onRestart}>
-                Volver a jugar <span>↻</span>
+                Play again <span>↻</span>
               </button>
             )}
             {onExit && (
               <button type="button" className="pipes-back" onClick={onExit}>
-                Volver al laboratorio
+                Back to lab
               </button>
             )}
           </div>

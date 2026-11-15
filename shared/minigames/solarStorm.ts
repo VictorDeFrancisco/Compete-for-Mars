@@ -2,41 +2,41 @@ import { defineMinigame } from './types';
 
 export const solarStormDefinition = defineMinigame({
   id: 'solar-storm',
-  title: 'Alerta DONKI: Deflector de Tormentas Solares',
+  title: 'DONKI Alert: Solar Storm Deflector',
   mode: 'score',
   durationMs: 60_000,
   maxScore: 1000,
   instructions:
-    'La base de datos real NASA DONKI registra llamaradas solares y eyecciones de masa coronal (CME) dirigidas hacia tu cúpula en Marte. Orienta el Escudo Magnético entre 115° y 245° con A/D, las flechas o moviendo el ratón/dedo sobre el domo para interceptar cada onda antes de que impacte (bloquear en el centro exacto activa un Parry Crítico con +50 pts extra). Atrapa también las bolas verdes que caen para curar +12% de vida de la base (+50 pts), y mantén Espacio, W o ↑ para ensanchar el escudo a 48° ante ráfagas múltiples.',
+    'Real NASA DONKI telemetry tracks solar flares and coronal mass ejections (CMEs) heading for your Mars dome. Aim the Magnetic Shield between 115° and 245° using A/D, arrow keys, or pointer/touch over the dome to intercept incoming waves before impact (centering a wave triggers a Critical Parry for +50 bonus pts). Catch falling green orbs to heal +12% base integrity (+50 pts), and hold Space, W, or ↑ to widen the shield to 48° during heavy bursts.',
   objective:
-    'Intercepta las ondas solares de NASA DONKI (+100 pts), encadena Parrys Críticos y recoge bolas verdes para curar la integridad de la base.',
+    'Intercept NASA DONKI solar waves (+100 pts), land Critical Parries, and catch green orbs to repair base integrity.',
   controls: [
     {
       id: 'turn-left',
-      label: 'Girar Escudo Izquierda',
-      description: 'Desplaza el deflector magnético hacia el sector izquierdo del domo (115°–245°).',
+      label: 'Rotate Shield Left',
+      description: 'Moves the magnetic deflector toward the left dome sector (115°–245°).',
       bindings: [
         { device: 'keyboard', code: 'KeyA', label: 'A' },
         { device: 'keyboard', code: 'ArrowLeft', label: '←' },
-        { device: 'pointer', button: 0, label: 'Apuntar sobre el domo' },
+        { device: 'pointer', button: 0, label: 'Aim over dome' },
       ],
     },
     {
       id: 'turn-right',
-      label: 'Girar Escudo Derecha',
-      description: 'Desplaza el deflector magnético hacia el sector derecho del domo.',
+      label: 'Rotate Shield Right',
+      description: 'Moves the magnetic deflector toward the right dome sector.',
       bindings: [
         { device: 'keyboard', code: 'KeyD', label: 'D' },
         { device: 'keyboard', code: 'ArrowRight', label: '→' },
-        { device: 'pointer', button: 0, label: 'Arrastrar en el domo' },
+        { device: 'pointer', button: 0, label: 'Drag on dome' },
       ],
     },
     {
       id: 'boost',
-      label: 'Super-Escudo (48°)',
-      description: 'Mantén pulsado para duplicar la cobertura del escudo de 24° a 48° consumiendo potencia.',
+      label: 'Super-Shield (48°)',
+      description: 'Hold to double shield coverage from 24° to 48° while draining power.',
       bindings: [
-        { device: 'keyboard', code: 'Space', label: 'Espacio' },
+        { device: 'keyboard', code: 'Space', label: 'Space' },
         { device: 'keyboard', code: 'KeyW', label: 'W' },
         { device: 'keyboard', code: 'ArrowUp', label: '↑' },
       ],

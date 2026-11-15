@@ -3,6 +3,7 @@ import type { Card } from '../../../shared/types';
 import { useState } from 'react';
 import { MINIGAMES } from '../../../shared/minigames/catalog';
 import type { GameView, Phase } from '../../../shared/types';
+import { MusicToggleButton } from './BackgroundMusic';
 import './TestPanel.css';
 
 export interface TestPanelProps {
@@ -160,6 +161,7 @@ export default function TestPanel({
           <h1>Control Panel</h1>
         </div>
         <div className="actions">
+          <MusicToggleButton />
           <button type="button" className="secondary" onClick={onBackToStart}>
             Back to start
           </button>

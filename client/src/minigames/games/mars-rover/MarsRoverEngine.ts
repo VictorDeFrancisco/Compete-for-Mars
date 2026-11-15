@@ -68,7 +68,7 @@ export class MarsRoverGame extends BaseMinigame<MarsRoverData> {
       slopeDeg: 0,
       elevation: initialElevation,
       isStalled: false,
-      lastEventMessage: `Rover desplegado en ${sector.sectorName}. Conduce en 3D con suspensión activa.`,
+      lastEventMessage: `Rover deployed at ${sector.sectorName}. Drive in 3D with active suspension.`,
       movesCount: 0,
       path: [{ x: sector.startPos.x, y: sector.startPos.y, heading: sector.startPos.heading }],
       telemetry: null,
@@ -257,7 +257,7 @@ export class MarsRoverGame extends BaseMinigame<MarsRoverData> {
             if (impactSpeed > 0.75) {
               const energyLost = Math.min(2.0, impactSpeed * 0.5);
               energy = Math.max(0, energy - energyLost);
-              lastEventMessage = `¡Roce con roca marciana! Velocidad absorbida (-${energyLost.toFixed(1)}% energía).`;
+              lastEventMessage = `Martian rock scrape! Speed absorbed (-${energyLost.toFixed(1)}% energy).`;
             }
           }
         }
@@ -324,22 +324,23 @@ export class MarsRoverGame extends BaseMinigame<MarsRoverData> {
         energy: Math.round(energy * 10) / 10,
         elevation: Math.round(this.sector.elevationAt(posX, posY) * 10) / 10,
         slopeDeg: Math.round(currentSlopeDeg * 10) / 10,
-        lastEventMessage: `¡Objetivo B alcanzado con éxito! Batería restante: ${energy.toFixed(1)}% · Puntuación: ${totalScore}`,
+        lastEventMessage: `Target B reached! Remaining battery: ${energy.toFixed(1)}% · Score: ${totalScore}`,
       });
       this.complete();
       return;
     }
 
-    // Mensajes de estado
+    // Status messages
     if (isStalled) {
-      lastEventMessage = '¡Alerta! Pared vertical (>30°): busca un paso más llano en el valle.';
+      lastEventMessage = 'Alert! Steep wall (>30°): find a flatter pass through the valley.';
     } else if (energy < 20) {
-      lastEventMessage = '¡Batería crítica! Desciende por laderas para frenado regenerativo.';
+      lastEventMessage = 'Critical battery! Coast down slopes for regenerative braking.';
     } else if (currentSlopeDeg > 18) {
-      lastEventMessage = `Pendiente pronunciada (${currentSlopeDeg.toFixed(1)}°): chasis inclinado, alto consumo.`;
+      lastEventMessage = `Steep slope (${currentSlopeDeg.toFixed(1)}°): chassis tilted, high drain.`;
     }
 
-    const currentScore = Math.min(450, Math.floor(progress * 10) * 50);
+    const progressScore = Math.min(450, Math.floor(progress * 10) * 50);
+    const currentScore = Math.max(this.getSnapshot().score, progressScore);
     this.setScore(currentScore);
 
     this.setData({
@@ -363,7 +364,7 @@ export class MarsRoverGame extends BaseMinigame<MarsRoverData> {
     });
 
     if (energy <= 0) {
-      this.setData({ ...this.getSnapshot().data, lastEventMessage: '¡Batería agotada! Rover varado en Marte.' });
+      this.setData({ ...this.getSnapshot().data, lastEventMessage: 'Battery depleted! Rover stranded on Mars.' });
       this.fail();
     }
   }

@@ -445,7 +445,7 @@
 
 .suit-mash-fill {
   height: 100%;
-  background: linear-gradient(90deg, #fc3d21, #2e8b57, #f5c242);
+  background: #34b86c;
   transition: width 0.08s ease-out;
 }
 
@@ -562,7 +562,7 @@
 
 .suit-hold-meter {
   height: 100%;
-  background: linear-gradient(90deg, #0b3d91, #2e8b57, #f5c242);
+  background: #0b3d91;
   transition: width 0.03s linear;
 }
 

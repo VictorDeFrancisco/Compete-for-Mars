@@ -115,3 +115,24 @@ test('solar-storm: finalización al completar 60s y validación de contrato', ()
   assert.ok(result.score >= 0 && result.score <= 1000);
   assert.doesNotThrow(() => validateResult(solarStormDefinition, result));
 });
+
+test('solar-storm: derrota inmediata si la integridad de la base llega a 0%', () => {
+  let now = 0;
+  const game = new SolarStormGame(solarStormDefinition, () => now, undefined, 606);
+  game.start();
+
+  // Mantener el escudo desalineado (en un extremo) para recibir todas las ondas hasta caer a 0%
+  game.dispatch('turn-left', 'press');
+  for (let sec = 1; sec <= 59 && game.getSnapshot().status === 'running'; sec++) {
+    now = sec * 1000;
+    game.tick();
+  }
+  game.dispatch('turn-left', 'release');
+
+  const snap = game.getSnapshot();
+  assert.equal(snap.data.colonyIntegrity, 0, 'La integridad de la base debe llegar a 0');
+  assert.equal(snap.status, 'finished', 'El juego debe terminar al llegar a 0% HP');
+  assert.equal(snap.result?.reason, 'failed', 'Debe registrar derrota (failed)');
+  assert.equal(snap.result?.completed, false);
+  assert.doesNotThrow(() => validateResult(solarStormDefinition, snap.result!));
+});

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { MAX_PLAYERS } from '../../../shared/constants';
 import type { GameView } from '../../../shared/types';
 import AstronautPortraitSvg, { resolvePlayerSuitColor } from './AstronautPortraitSvg';
+import { MusicToggleButton } from './BackgroundMusic';
 import MarsBase3D from './MarsBase3D';
 import { RadiationIcon } from './RadiationIcon';
 import { playUiClick, playUiConfirm } from '../utils/uiAudio';
@@ -16,7 +17,6 @@ export interface LobbyProps {
   onJoin: (code: string) => void;
   onReady: () => void;
   onStart: () => void;
-  onBots: () => void;
   onRemove: (id: string) => void;
   onBack: () => void;
   onLeave?: () => void;
@@ -38,7 +38,6 @@ export default function Lobby({
   onJoin,
   onReady,
   onStart,
-  onBots,
   onRemove,
   onBack,
   onLeave,
@@ -80,7 +79,6 @@ export default function Lobby({
   const readyCount = alivePlayers.filter(p => p.ready).length;
   const allAliveReady = alivePlayers.length > 0 && alivePlayers.every(p => p.connected && p.ready);
   const canStart = isHost && !disabled && !gameOver && allAliveReady;
-  const canAddBots = isHost && !disabled && !gameOver && game.round === 0 && game.players.length < MAX_PLAYERS;
   const winner = game.winnerId ? game.players.find(p => p.id === game.winnerId) : null;
 
   const selfMaxEnergy = BASE_RESOURCE_CAP + game.self.stats.energy;
@@ -124,11 +122,6 @@ export default function Lobby({
               </div>
             )}
 
-            <div className="lobby-ready-pill" title="Crew ready count">
-              <span className={`lobby-ready-pill__dot ${allAliveReady ? 'is-all' : ''}`} aria-hidden="true" />
-              <span>{readyCount}/{alivePlayers.length} READY</span>
-            </div>
-
             {!connected && (
               <div className="lobby-alert-pill" role="status">
                 RECONNECTING...
@@ -143,6 +136,7 @@ export default function Lobby({
           </div>
 
           <div className="lobby-topbar__right">
+            <MusicToggleButton />
             <button
               type="button"
               className={`lobby-orbit-btn ${orbitPaused ? 'is-paused' : ''}`}
@@ -175,7 +169,7 @@ export default function Lobby({
                 (onLeave ?? onBack)();
               }}
             >
-              LEAVE ROOM
+              LEAVE
             </button>
           </div>
         </header>
@@ -208,23 +202,9 @@ export default function Lobby({
                         </svg>
                       </div>
 
-                      {canAddBots ? (
-                        <button
-                          type="button"
-                          className="crew-add-bot-btn"
-                          disabled={disabled}
-                          onClick={() => {
-                            playUiClick();
-                            onBots();
-                          }}
-                        >
-                          + ADD BOT
-                        </button>
-                      ) : (
-                        <span className="crew-slot__waiting-copy">
-                          {game.round > 0 ? 'NO SEAT IN PLAY' : 'WAITING FOR CREW'}
-                        </span>
-                      )}
+                      <span className="crew-slot__waiting-copy">
+                        {game.round > 0 ? 'NO SEAT IN PLAY' : 'WAITING FOR CREW'}
+                      </span>
                     </div>
                   </article>
                 );
@@ -405,26 +385,33 @@ export default function Lobby({
               )}
             </button>
 
-            <button
-              type="button"
-              className="lobby-start-cta"
-              disabled={!canStart}
-              title={
-                gameOver
-                  ? 'Match finished'
-                  : !isHost
-                    ? 'Only the host can launch the mission'
-                    : !allAliveReady
-                      ? 'Waiting for all crew members to be ready'
-                      : 'Launch mission'
-              }
-              onClick={() => {
-                playUiConfirm();
-                onStart();
-              }}
-            >
-              {game.round === 0 ? 'START MATCH' : `START LEVEL ${game.round + 1}`}
-            </button>
+            <div className="lobby-start-stack">
+              <div className="lobby-ready-pill" title="Crew ready count">
+                <span className={`lobby-ready-pill__dot ${allAliveReady ? 'is-all' : ''}`} aria-hidden="true" />
+                <span>{readyCount}/{alivePlayers.length} READY</span>
+              </div>
+
+              <button
+                type="button"
+                className="lobby-start-cta"
+                disabled={!canStart}
+                title={
+                  gameOver
+                    ? 'Match finished'
+                    : !isHost
+                      ? 'Only the host can launch the mission'
+                      : !allAliveReady
+                        ? 'Waiting for all crew members to be ready'
+                        : 'Launch mission'
+                }
+                onClick={() => {
+                  playUiConfirm();
+                  onStart();
+                }}
+              >
+                {game.round === 0 ? 'START MATCH' : `START LEVEL ${game.round + 1}`}
+              </button>
+            </div>
           </div>
         </footer>
       </div>

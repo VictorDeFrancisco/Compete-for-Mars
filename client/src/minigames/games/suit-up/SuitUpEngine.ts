@@ -78,7 +78,7 @@ export class SuitUpEngine extends BaseMinigame<SuitUpData> {
       generateRandomSuitSteps(
         typeof context.seed === 'number' ? seededPrng(context.seed) : Math.random,
       );
-    if (!resolvedSteps.length) throw new Error('SuitUpEngine requiere al menos un paso.');
+    if (!resolvedSteps.length) throw new Error('SuitUpEngine requires at least one step.');
     const firstStep = resolvedSteps[0];
 
     super(
@@ -133,12 +133,12 @@ export class SuitUpEngine extends BaseMinigame<SuitUpData> {
 
         if (distFromCenter <= perfectHalfWidth) {
           const points = Math.round((qte.basePoints + qte.perfectBonus) * this.modifiers.scoreMultiplier);
-          this.advanceStep('PERFECT', '¡SINCRONIZACIÓN PERFECTA! + ' + points, points);
+          this.advanceStep('PERFECT', 'PERFECT SYNC! + ' + points, points);
         } else if (progress >= qte.sweetSpotStart && progress <= qte.sweetSpotEnd) {
           const points = Math.round(qte.basePoints * this.modifiers.scoreMultiplier);
-          this.advanceStep('GOOD', '¡ACOPLE CORRECTO! + ' + points, points);
+          this.advanceStep('GOOD', 'GOOD LOCK! + ' + points, points);
         } else {
-          const msg = progress < qte.sweetSpotStart ? '¡DEMASIADO PRONTO!' : '¡DEMASIADO TARDE!';
+          const msg = progress < qte.sweetSpotStart ? 'TOO EARLY!' : 'TOO LATE!';
           this.registerMiss(msg);
         }
         return;
@@ -155,7 +155,7 @@ export class SuitUpEngine extends BaseMinigame<SuitUpData> {
             (qte.basePoints + (isFast ? qte.perfectBonus : 0)) * this.modifiers.scoreMultiplier,
           );
           const rating = isFast ? 'PERFECT' : 'GOOD';
-          const msg = isFast ? '¡PRESURIZACIÓN ULTRARRÁPIDA! + ' + points : '¡BISAGRAS SELLADAS! + ' + points;
+          const msg = isFast ? 'ULTRA-FAST PRESSURIZATION! + ' + points : 'HINGES SEALED! + ' + points;
           this.advanceStep(rating, msg, points);
         } else {
           this.setData({
@@ -174,19 +174,19 @@ export class SuitUpEngine extends BaseMinigame<SuitUpData> {
           const nextSeq = data.sequenceIndex + 1;
           if (nextSeq >= qte.sequence.length) {
             const points = Math.round((qte.basePoints + qte.perfectBonus) * this.modifiers.scoreMultiplier);
-            this.advanceStep('PERFECT', '¡SECUENCIA DE CIERRES COMPLETADA! + ' + points, points);
+            this.advanceStep('PERFECT', 'LOCK SEQUENCE COMPLETE! + ' + points, points);
           } else {
             this.setData({
               ...data,
               sequenceIndex: nextSeq,
               qteProgress: nextSeq / qte.sequence.length,
               lastRating: 'GOOD',
-              lastRatingMessage: `¡ANCLAJE ${nextSeq}/${qte.sequence.length} ASEGURADO!`,
+              lastRatingMessage: `LATCH ${nextSeq}/${qte.sequence.length} SECURED!`,
               warningMessage: null,
             });
           }
         } else {
-          this.registerMiss('¡TECLA INCORRECTA! REINICIANDO SECUENCIA');
+          this.registerMiss('WRONG KEY! RESETTING SEQUENCE');
           this.setData({
             ...this.getSnapshot().data,
             sequenceIndex: 0,
@@ -217,12 +217,12 @@ export class SuitUpEngine extends BaseMinigame<SuitUpData> {
 
         if (hold >= qte.perfectMin && hold <= qte.perfectMax) {
           const points = Math.round((qte.basePoints + qte.perfectBonus) * this.modifiers.scoreMultiplier);
-          this.advanceStep('PERFECT', '¡SELLADO DE CUELLO PERFECTO! + ' + points, points);
+          this.advanceStep('PERFECT', 'PERFECT NECK SEAL! + ' + points, points);
         } else if (hold >= qte.targetMin && hold <= qte.targetMax) {
           const points = Math.round(qte.basePoints * this.modifiers.scoreMultiplier);
-          this.advanceStep('GOOD', '¡CASCO BLOQUEADO CON ÉXITO! + ' + points, points);
+          this.advanceStep('GOOD', 'HELMET LOCKED! + ' + points, points);
         } else {
-          const msg = hold < qte.targetMin ? '¡SOLTADO DEMASIADO PRONTO!' : '¡SOBRECARGA DE PRESIÓN!';
+          const msg = hold < qte.targetMin ? 'RELEASED TOO EARLY!' : 'PRESSURE OVERLOAD!';
           this.registerMiss(msg);
           this.setData({
             ...this.getSnapshot().data,
@@ -284,7 +284,7 @@ export class SuitUpEngine extends BaseMinigame<SuitUpData> {
 
         // Si se sobrepasa excesivamente el límite superior, auto-fallar por sobrecarga
         if (newHold > 1.15) {
-          this.registerMiss('¡SOBRECARGA CRÍTICA DE PRESIÓN!');
+          this.registerMiss('CRITICAL PRESSURE OVERLOAD!');
           this.setData({
             ...this.getSnapshot().data,
             isHolding: false,
@@ -345,7 +345,7 @@ export class SuitUpEngine extends BaseMinigame<SuitUpData> {
         completedParts,
         qteProgress: 1,
         lastRating: rating,
-        lastRatingMessage: '¡TRAJE ESPACIAL 100% OPERATIVO Y SELLADO!',
+        lastRatingMessage: 'SPACESUIT 100% SEALED AND OPERATIONAL!',
         combo: newCombo,
         bestCombo,
         suitPressurePsi: 4.3,

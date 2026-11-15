@@ -26,10 +26,10 @@ const QTE_MODE_META: Record<
   'timing' | 'mash' | 'sequence' | 'hold',
   { label: string; colorClass: string }
 > = {
-  timing: { label: 'PRECISIÓN', colorClass: 'suit-qte-mode--timing' },
-  mash: { label: 'BOMBEO', colorClass: 'suit-qte-mode--mash' },
-  sequence: { label: 'SECUENCIA', colorClass: 'suit-qte-mode--sequence' },
-  hold: { label: 'MANTENER', colorClass: 'suit-qte-mode--hold' },
+  timing: { label: 'PRECISION', colorClass: 'suit-qte-mode--timing' },
+  mash: { label: 'PUMP', colorClass: 'suit-qte-mode--mash' },
+  sequence: { label: 'SEQUENCE', colorClass: 'suit-qte-mode--sequence' },
+  hold: { label: 'HOLD', colorClass: 'suit-qte-mode--hold' },
 };
 
 function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
@@ -68,11 +68,11 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
       <header className="suit-header">
         <div className="suit-header__badges">
           <span className="suit-header__phase">
-            PASO {Math.min(data.currentStepIndex + 1, data.totalSteps)} / {data.totalSteps}
+            STEP {Math.min(data.currentStepIndex + 1, data.totalSteps)} / {data.totalSteps}
           </span>
         </div>
 
-        <ol className="suit-step-pipeline" aria-label="Secuencia de montaje del traje">
+        <ol className="suit-step-pipeline" aria-label="Spacesuit assembly sequence">
           {engine instanceof SuitUpEngine &&
             engine.steps.map((s, idx) => {
               const isDone = data.completedStepIds.includes(s.id);
@@ -101,7 +101,7 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
       </header>
 
       <div className="suit-main-layout">
-        <aside className="suit-astronaut-column" aria-label="Visualizador de traje espacial">
+        <aside className="suit-astronaut-column" aria-label="Spacesuit visualizer">
           <div className="suit-astronaut-stage">
             <SuitAstronautSvg
               completedParts={data.completedParts}
@@ -111,10 +111,10 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
             />
           </div>
 
-          <div className="suit-gauges" aria-label="Telemetría del traje">
+          <div className="suit-gauges" aria-label="Suit telemetry">
             <div className="suit-gauge">
               <div className="suit-gauge__row">
-                <span>PRESIÓN</span>
+                <span>PRESSURE</span>
                 <b>{data.suitPressurePsi.toFixed(1)} PSI</b>
               </div>
               <div className="suit-gauge__track">
@@ -127,7 +127,7 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
 
             <div className="suit-gauge">
               <div className="suit-gauge__row">
-                <span>OXÍGENO</span>
+                <span>OXYGEN</span>
                 <b>{data.oxygenPercent}%</b>
               </div>
               <div className="suit-gauge__track">
@@ -152,7 +152,7 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
 
               <div className="suit-qte-prompt-box">
                 {qte.type === 'timing' && (
-                  <div className="suit-timing-track-wrap" aria-label="Pista de sincronización temporal">
+                  <div className="suit-timing-track-wrap" aria-label="Timing synchronization track">
                     <div
                       className="suit-timing-sweet-spot"
                       style={{
@@ -183,7 +183,7 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
                 )}
 
                 {qte.type === 'mash' && (
-                  <div className="suit-mash-container" aria-label="Medidor de presurización rápida">
+                  <div className="suit-mash-container" aria-label="Rapid pressurization gauge">
                     <div className="suit-mash-track">
                       <div
                         className="suit-mash-fill"
@@ -196,14 +196,14 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
                               (qte as MashQteConfig).targetCount - 1,
                               Math.round(data.mashCount),
                             ))}{' '}
-                        / {(qte as MashQteConfig).targetCount} PULSACIONES
+                        / {(qte as MashQteConfig).targetCount} PUMPS
                       </span>
                     </div>
                   </div>
                 )}
 
                 {qte.type === 'sequence' && (
-                  <div className="suit-sequence-list" aria-label="Secuencia direccional">
+                  <div className="suit-sequence-list" aria-label="Directional sequence">
                     {(qte as SequenceQteConfig).sequence.map((actionKey, idx) => {
                       const isDone = idx < data.sequenceIndex;
                       const isActive = idx === data.sequenceIndex;
@@ -250,7 +250,7 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
                 )}
 
                 {qte.type === 'hold' && (
-                  <div className="suit-hold-container" aria-label="Indicador de carga y sellado">
+                  <div className="suit-hold-container" aria-label="Charge and seal indicator">
                     <div className="suit-hold-bar">
                       <div
                         className="suit-hold-target-zone"
@@ -281,7 +281,7 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
                     </span>
                   )}
                   {data.combo >= 2 && (
-                    <span className="suit-combo-badge">RACHA x{data.combo}</span>
+                    <span className="suit-combo-badge">STREAK x{data.combo}</span>
                   )}
                   {data.warningMessage && (
                     <span className="suit-warning-text" role="alert">
@@ -301,23 +301,23 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
                   onMouseUp={handlePrimaryUp}
                   onTouchStart={handlePrimaryDown}
                   onTouchEnd={handlePrimaryUp}
-                  aria-label="Acción principal Espacio"
+                  aria-label="Primary action Space"
                 >
                   <kbd className="suit-keycap-tag">SPACE</kbd>
                   <span>
                     {qte.type === 'hold'
                       ? data.isHolding
-                        ? 'SUELTA EN LA ZONA VERDE'
-                        : 'MANTÉN PULSADO'
+                        ? 'RELEASE IN GREEN ZONE'
+                        : 'HOLD DOWN'
                       : qte.type === 'mash'
-                        ? '¡PULSA RÁPIDO!'
+                        ? 'TAP FAST!'
                         : qte.type === 'sequence'
-                          ? 'SOLO FLECHAS ARRIBA'
-                          : 'SELLAR AHORA'}
+                          ? 'ARROWS ONLY ABOVE'
+                          : 'SEAL NOW'}
                   </span>
                 </button>
 
-                <div className="suit-dpad" aria-label="Teclas direccionales grandes">
+                <div className="suit-dpad" aria-label="Large directional keys">
                   {DIRECTION_KEYS.map(dir => {
                     const isTarget = activeSeqTarget === dir.id;
                     return (
@@ -327,7 +327,7 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
                         className={`suit-key-arrow suit-key-arrow--${dir.mod}${isTarget ? ' suit-key-arrow--target' : ''}`}
                         disabled={!isRunning}
                         onClick={() => handleDirectionPress(dir.id)}
-                        aria-label={`Flecha ${dir.key}`}
+                        aria-label={`Arrow ${dir.key}`}
                       >
                         <span className="suit-key-arrow__glyph">{dir.arrow}</span>
                       </button>
@@ -340,30 +340,30 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
             <div className="suit-finish-screen">
               <h3 className="suit-finish-title">
                 {snapshot.result?.completed
-                  ? 'TRAJE TOTALMENTE HERMÉTICO'
-                  : 'TIEMPO AGOTADO'}
+                  ? 'SUIT FULLY AIRTIGHT'
+                  : "TIME'S UP"}
               </h3>
               <p className="suit-finish-subtitle">
                 {snapshot.result?.completed
-                  ? 'Todos los sellos verificados. Autorización EVA concedida.'
-                  : 'Presurización parcial registrada en telemetría.'}
+                  ? 'All seals verified. EVA clearance granted.'
+                  : 'Partial pressurization logged in telemetry.'}
               </p>
 
               <div className="suit-finish-stats">
                 <div className="suit-finish-stat-box">
-                  <span>PUNTOS</span>
+                  <span>SCORE</span>
                   <b>{score} PTS</b>
                 </div>
                 <div className="suit-finish-stat-box">
-                  <span>TIEMPO</span>
+                  <span>TIME</span>
                   <b>{((snapshot.result?.elapsedMs ?? 0) / 1000).toFixed(2)}s</b>
                 </div>
                 <div className="suit-finish-stat-box">
-                  <span>PROGRESO</span>
+                  <span>PROGRESS</span>
                   <b>{Math.round(progress * 100)}%</b>
                 </div>
                 <div className="suit-finish-stat-box">
-                  <span>RACHA</span>
+                  <span>STREAK</span>
                   <b>{data.bestCombo}x</b>
                 </div>
               </div>

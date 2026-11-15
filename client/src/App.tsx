@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CARDS_MS, PHASE_LABELS, RESULTS_MS } from '../../shared/constants';
 import type { Phase, Stats } from '../../shared/types';
 import { socket, useGame } from './hooks/useGame';
@@ -11,6 +11,8 @@ import StartScreen from './components/StartScreen';
 import RoomEntryScreen from './components/RoomEntryScreen';
 import MarsBackdrop from './components/MarsBackdrop';
 import MarsMenuBackdrop, { type MenuTransitionDirection } from './components/MarsMenuBackdrop';
+import { BackgroundMusicProvider } from './components/BackgroundMusic';
+import HowToPlayModal from './components/HowToPlayModal';
 import { PROFESSIONS } from './components/professions';
 import TestPanel, { buildPreviewGame } from './components/TestPanel';
 import MinigamePresentation from './phases/MinigamePresentation';
@@ -35,10 +37,30 @@ export default function App() {
   const [previewPhase, setPreviewPhase] = useState<Exclude<Phase, 'stats'>>('lobby');
   const [previewMinigameId, setPreviewMinigameId] = useState('pipes');
   const [previewReady, setPreviewReady] = useState(false);
+  const [howToPlayOpen, setHowToPlayOpen] = useState(false);
 
   const seconds = useCountdown(game?.deadline ?? null, serverOffset);
   const phase: Phase = game?.phase ?? (prepared ? 'lobby' : 'stats');
   const entry = { name, stats };
+  const isPlayingPhase = game ? game.phase === 'playing' : view === 'preview' && previewPhase === 'playing';
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.repeat) return;
+      const target = event.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable)) {
+        return;
+      }
+      if (event.altKey && event.shiftKey && !event.ctrlKey && !event.metaKey && event.code === 'KeyK') {
+        event.preventDefault();
+        if (game) return;
+        setMenuTransition(null);
+        setView(current => (current === 'test-panel' ? 'start' : 'test-panel'));
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [game]);
 
   const quickLiveLobby = () => {
     const quickName = name.trim() || 'Tester';
@@ -53,6 +75,7 @@ export default function App() {
     );
   };
 
+  const renderScreen = () => {
   if (game) {
     if (phase === 'lobby' && (game.matchFinished || game.winnerId != null)) {
       return (
@@ -79,7 +102,6 @@ export default function App() {
           onJoin={code => act(reply => socket.emit('room:join', { ...entry, code }, reply))}
           onReady={() => act(reply => socket.emit('player:ready', !game.self.ready, reply))}
           onStart={() => act(reply => socket.emit('game:start', reply))}
-          onBots={() => act(reply => socket.emit('room:add-bots', reply))}
           onRemove={id => act(reply => socket.emit('room:remove-player', id, reply))}
         />
       );
@@ -157,7 +179,6 @@ export default function App() {
             onJoin={() => {}}
             onReady={() => setPreviewReady(value => !value)}
             onStart={() => setPreviewPhase('presentation')}
-            onBots={() => {}}
             onRemove={() => {}}
           />
           {previewBanner}
@@ -263,10 +284,7 @@ export default function App() {
             exiting={menuTransition?.direction === 'forward'}
             onCreateScreen={() => startMenuTransition('forward', 'create')}
             onJoinScreen={() => startMenuTransition('forward', 'join')}
-            onOpenTest={() => {
-              setMenuTransition(null);
-              setView('test-panel');
-            }}
+            onOpenHowToPlay={() => setHowToPlayOpen(true)}
           />
         ) : (
           <RoomEntryScreen
@@ -338,7 +356,6 @@ export default function App() {
             onJoin={code => act(reply => socket.emit('room:join', { ...entry, code }, reply))}
             onReady={() => {}}
             onStart={() => {}}
-            onBots={() => {}}
             onRemove={() => {}}
           />
         )}
@@ -347,5 +364,13 @@ export default function App() {
         Prototype · <a href="/?minigame=pipes">Local minigame lab</a>
       </footer>
     </main>
+  );
+  };
+
+  return (
+    <BackgroundMusicProvider ducked={isPlayingPhase}>
+      <HowToPlayModal open={howToPlayOpen} onClose={() => setHowToPlayOpen(false)} />
+      {renderScreen()}
+    </BackgroundMusicProvider>
   );
 }

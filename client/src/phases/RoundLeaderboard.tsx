@@ -13,13 +13,13 @@ export interface RoundLeaderboardProps {
 function outcomeBadge(outcome: string): { label: string; mod: string } {
   switch (outcome) {
     case 'winner':
-      return { label: 'GANADOR', mod: 'winner' };
+      return { label: 'WINNER', mod: 'winner' };
     case 'loser':
-      return { label: 'ÚLTIMO', mod: 'loser' };
+      return { label: 'LAST', mod: 'loser' };
     case 'draw':
-      return { label: 'EMPATE', mod: 'draw' };
+      return { label: 'TIE', mod: 'draw' };
     default:
-      return { label: 'SUPERVIVIENTE', mod: 'neutral' };
+      return { label: 'SURVIVOR', mod: 'neutral' };
   }
 }
 
@@ -46,7 +46,7 @@ export default function RoundLeaderboard({ game, onContinue }: RoundLeaderboardP
     return (
       <section
         className="round-ended-splash"
-        aria-label="Ronda terminada"
+        aria-label="Round complete"
         onClick={dismissSplash}
       >
         <div className="round-ended-splash__card">
@@ -54,29 +54,29 @@ export default function RoundLeaderboard({ game, onContinue }: RoundLeaderboardP
             {game.minigame.title.toUpperCase()}
           </span>
           <h2 className="round-ended-splash__title">
-            {matchOver ? '¡EXPEDICIÓN FINALIZADA!' : `¡RONDA ${String(game.round).padStart(2, '0')} TERMINADA!`}
+            {matchOver ? 'EXPEDITION COMPLETE!' : `ROUND ${String(game.round).padStart(2, '0')} COMPLETE!`}
           </h2>
-          <p className="round-ended-splash__sub">Calculando clasificación y bajas…</p>
+          <p className="round-ended-splash__sub">Calculating standings and casualties…</p>
         </div>
       </section>
     );
   }
 
   return (
-    <section className="leaderboard-sheet" aria-label="Resultados de la ronda">
+    <section className="leaderboard-sheet" aria-label="Round results">
       <header className="leaderboard-sheet__head">
         <div>
           <span className="leaderboard-sheet__kicker">
-            {matchOver ? 'EXPEDICIÓN FINALIZADA' : `RONDA ${String(game.round).padStart(2, '0')} · ${game.minigame.title.toUpperCase()}`}
+            {matchOver ? 'EXPEDITION COMPLETE' : `ROUND ${String(game.round).padStart(2, '0')} · ${game.minigame.title.toUpperCase()}`}
           </span>
           <h2 className="leaderboard-sheet__title">
-            {matchOver ? 'CLASIFICACIÓN FINAL DE MARTE' : 'RESULTADOS DEL MINIJUEGO'}
+            {matchOver ? 'FINAL MARS STANDINGS' : 'MINIGAME RESULTS'}
           </h2>
         </div>
 
         {matchOver && matchWinner && (
           <div className="leaderboard-champion">
-            <span className="leaderboard-champion__label">CAMPEÓN DE LA MISIÓN</span>
+            <span className="leaderboard-champion__label">MISSION CHAMPION</span>
             <strong className="leaderboard-champion__name">{matchWinner.name}</strong>
           </div>
         )}
@@ -113,37 +113,37 @@ export default function RoundLeaderboard({ game, onContinue }: RoundLeaderboardP
                 <div className="leaderboard-row__name-line">
                   <strong>
                     {entry.name}
-                    {isSelf ? ' (TÚ)' : ''}
+                    {isSelf ? ' (YOU)' : ''}
                   </strong>
                   <span className={`leaderboard-outcome leaderboard-outcome--${badge.mod}`}>
-                    {currentHp <= 0 ? 'ELIMINADO' : badge.label}
+                    {currentHp <= 0 ? 'ELIMINATED' : badge.label}
                   </span>
                 </div>
 
                 <div className="leaderboard-row__deltas">
                   <span className={`leaderboard-delta leaderboard-delta--hp ${entry.healthDelta < 0 ? 'is-neg' : 'is-neutral'}`}>
                     <HealthIcon className="leaderboard-delta__icon" />
-                    {entry.healthDelta >= 0 ? `+${entry.healthDelta}` : entry.healthDelta} VIDA
+                    {entry.healthDelta >= 0 ? `+${entry.healthDelta}` : entry.healthDelta} HP
                   </span>
                   {isSelf && (
                     <>
                       <span className="leaderboard-delta leaderboard-delta--energy">
                         <EnergyIcon className="leaderboard-delta__icon" />
-                        {entry.resourcesDelta.energy >= 0 ? `+${entry.resourcesDelta.energy}` : entry.resourcesDelta.energy} ENERGÍA
+                        {entry.resourcesDelta.energy >= 0 ? `+${entry.resourcesDelta.energy}` : entry.resourcesDelta.energy} ENERGY
                       </span>
                       <span className="leaderboard-delta leaderboard-delta--food">
                         <FoodIcon className="leaderboard-delta__icon" />
-                        {entry.resourcesDelta.food >= 0 ? `+${entry.resourcesDelta.food}` : entry.resourcesDelta.food} COMIDA
+                        {entry.resourcesDelta.food >= 0 ? `+${entry.resourcesDelta.food}` : entry.resourcesDelta.food} FOOD
                       </span>
                       {game.self.resources.food === 0 && (
-                        <span className="leaderboard-delta is-neg">SIN COMIDA (-15 VIDA)</span>
+                        <span className="leaderboard-delta is-neg">OUT OF FOOD (-15 HP)</span>
                       )}
                       {game.self.resources.energy === 0 && (
-                        <span className="leaderboard-delta is-neg">SIN ENERGÍA (-15 VIDA)</span>
+                        <span className="leaderboard-delta is-neg">OUT OF ENERGY (-15 HP)</span>
                       )}
                       {game.self.resources.radiation > 0 && (
                         <span className="leaderboard-delta leaderboard-delta--rad">
-                          RADIACIÓN (-{game.self.resources.radiation * 10} VIDA)
+                          RADIATION (-{game.self.resources.radiation * 10} HP)
                         </span>
                       )}
                     </>
@@ -178,10 +178,10 @@ export default function RoundLeaderboard({ game, onContinue }: RoundLeaderboardP
           }}
         >
           {selfConfirmed
-            ? 'ESPERANDO TRIPULACIÓN ✓'
+            ? 'WAITING FOR CREW ✓'
             : matchOver
-              ? 'VER PANTALLA FINAL →'
-              : 'SIGUIENTE RONDA →'}
+              ? 'VIEW FINAL SCREEN →'
+              : 'NEXT ROUND →'}
         </button>
       </footer>
     </section>

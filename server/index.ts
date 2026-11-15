@@ -47,7 +47,7 @@ export function createGameServer() {
   }
   io.use((socket, next) => {
     const token = socket.handshake.auth.token;
-    if (typeof token !== 'string' || token.length < 16 || token.length > 128) return next(new Error('Sesión inválida. Recarga la página.'));
+    if (typeof token !== 'string' || token.length < 16 || token.length > 128) return next(new Error('Invalid session. Please reload the page.'));
     next();
   });
   io.on('connection', socket => {
@@ -66,24 +66,24 @@ export function createGameServer() {
     function handle(reply: Reply, action: () => void) {
       try {
         if (Date.now() - windowStart > 1000) { requests = 0; windowStart = Date.now(); }
-        requireRule(++requests <= 40, 'Demasiadas acciones. Espera un segundo.');
+        requireRule(++requests <= 40, 'Too many actions. Wait a moment.');
         action();
         if (typeof reply === 'function') reply({ ok: true });
       } catch (error) {
-        if (typeof reply === 'function') reply({ ok: false, error: error instanceof Error ? error.message : 'Acción inválida.' });
+        if (typeof reply === 'function') reply({ ok: false, error: error instanceof Error ? error.message : 'Invalid action.' });
       }
     }
     function membership(): [Room, Player] {
       const room = rooms.get(socket.data.code ?? '');
       const player = room?.players.find(p => p.id === socket.data.playerId && p.socketId === socket.id);
-      requireRule(room && player, 'Ya no estás en una sala. Vuelve a entrar.');
+      requireRule(room && player, 'You are no longer in a room. Please rejoin.');
       room.lastActive = Date.now();
       if (advanceIfComplete(room)) broadcast(room);
       return [room, player];
     }
     socket.on('room:create', (input, reply) => handle(reply, () => {
-      requireRule(!socket.data.code, 'Ya estás en una sala.');
-      requireRule(rooms.size < 200, 'No hay más salas disponibles.');
+      requireRule(!socket.data.code, 'You are already in a room.');
+      requireRule(rooms.size < 200, 'No rooms available.');
       const entry = validateEntry(input);
       let code: string;
       do { code = randomBytes(3).toString('hex').toUpperCase(); } while (rooms.has(code));
@@ -92,13 +92,13 @@ export function createGameServer() {
       socket.data = { code, playerId: player.id }; broadcast(room);
     }));
     socket.on('room:join', (input, reply) => handle(reply, () => {
-      requireRule(!socket.data.code, 'Ya estás en una sala.');
+      requireRule(!socket.data.code, 'You are already in a room.');
       const entry = validateEntry(input);
-      requireRule(typeof input.code === 'string', 'Introduce un código de sala.');
+      requireRule(typeof input.code === 'string', 'Enter a room code.');
       const room = rooms.get(input.code.trim().toUpperCase());
-      requireRule(room, 'No existe esa sala.');
-      requireRule(room.phase === 'lobby' && room.round === 0 && !room.matchFinished, 'La partida ya ha comenzado.');
-      requireRule(room.players.length < MAX_PLAYERS, 'La sala está llena.');
+      requireRule(room, 'Room not found.');
+      requireRule(room.phase === 'lobby' && room.round === 0 && !room.matchFinished, 'The match has already started.');
+      requireRule(room.players.length < MAX_PLAYERS, 'The room is full.');
       const player = makePlayer(entry, token, socket.id, false, undefined, room.players.length);
       room.players.push(player); room.lastActive = Date.now();
       socket.data = { code: room.code, playerId: player.id }; broadcast(room);
@@ -108,18 +108,18 @@ export function createGameServer() {
     }));
     socket.on('room:add-bots', reply => handle(reply, () => {
       const [room, player] = membership();
-      requireRule(room.phase === 'lobby' && room.round === 0 && !room.matchFinished && room.hostId === player.id, 'Solo el anfitrión puede añadir bots antes de iniciar la partida.');
+      requireRule(room.phase === 'lobby' && room.round === 0 && !room.matchFinished && room.hostId === player.id, 'Only the host can add bots before the match starts.');
       fillBots(room); broadcast(room);
     }));
     socket.on('room:remove-player', (id, reply) => handle(reply, () => {
       const [room, player] = membership();
       const target = room.players.find(p => p.id === id);
-      requireRule(room.phase === 'lobby' && room.hostId === player.id && target && (target.isBot || !target.connected), 'Solo puedes retirar bots o jugadores desconectados desde el lobby.');
+      requireRule(room.phase === 'lobby' && room.hostId === player.id && target && (target.isBot || !target.connected), 'You can only remove bots or disconnected players from the lobby.');
       remove(room, target);
     }));
     socket.on('player:ready', (ready, reply) => handle(reply, () => {
       const [room, player] = membership();
-      requireRule(room.phase === 'lobby' && !room.matchFinished && typeof ready === 'boolean' && player.health > 0, 'Acción inválida en esta fase.');
+      requireRule(room.phase === 'lobby' && !room.matchFinished && typeof ready === 'boolean' && player.health > 0, 'Invalid action in this phase.');
       player.ready = ready; broadcast(room);
     }));
     socket.on('game:start', reply => handle(reply, () => {

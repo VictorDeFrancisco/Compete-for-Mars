@@ -150,23 +150,23 @@ export function SignalCanvas({ data }: SignalCanvasProps) {
         ctx.restore();
       }
 
-      // 6. Rótulos en esquinas con tipografía del proyecto (Archivo)
+      // 6. Corner labels
       ctx.save();
       ctx.font = '800 14px "Archivo", sans-serif';
 
       ctx.fillStyle = '#f59e0b';
-      ctx.fillText('● DSN TIERRA', 18, 26);
+      ctx.fillText('● DSN EARTH', 18, 26);
 
       ctx.fillStyle = '#38bdf8';
-      ctx.fillText('● TU SEÑAL', 148, 26);
+      ctx.fillText('● YOUR SIGNAL', 148, 26);
 
       ctx.textAlign = 'right';
       if (d.isAligned) {
         ctx.fillStyle = '#22c55e';
-        ctx.fillText('● SINTONIZADO', width - 18, 26);
+        ctx.fillText('● LOCKED', width - 18, 26);
       } else if (isStorm) {
         ctx.fillStyle = '#fc3d21';
-        ctx.fillText('⚡ RUIDO SOLAR', width - 18, 26);
+        ctx.fillText('⚡ SOLAR NOISE', width - 18, 26);
       }
 
       ctx.restore();
@@ -187,7 +187,7 @@ export function SignalCanvas({ data }: SignalCanvasProps) {
       width={1080}
       height={320}
       className="signal-canvas"
-      aria-label="Osciloscopio de modulación"
+      aria-label="Modulation oscilloscope"
     />
   );
 }

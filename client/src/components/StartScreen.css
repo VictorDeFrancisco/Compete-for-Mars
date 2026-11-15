@@ -34,34 +34,8 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  gap: 10px;
   animation: startFadeDown 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.08s backwards;
-}
-
-.start-screen__test-btn {
-  padding: 9px 16px;
-  background: var(--paper-cream, #F5EFE0);
-  color: var(--ink-black, #1A1817);
-  border: 3px solid var(--ink-black, #1A1817);
-  border-radius: 6px;
-  box-shadow: 0 5px 0 var(--ink-black, #1A1817);
-  font-family: 'Archivo', sans-serif;
-  font-size: 0.8rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.1s ease;
-}
-
-.start-screen__test-btn:hover {
-  background: #FFF9EB;
-  transform: translateY(-2px);
-  box-shadow: 0 7px 0 var(--ink-black, #1A1817);
-}
-
-.start-screen__test-btn:active {
-  transform: translateY(3px);
-  box-shadow: 0 2px 0 var(--ink-black, #1A1817);
 }
 
 /* Composición asimétrica arriba a la izquierda sobre el cielo despejado de mars-bg.jpeg */

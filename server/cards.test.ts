@@ -186,7 +186,7 @@ test('a disappeared target cancels the action rather than corrupting card resolu
   const { room, players: p } = fixture(3, ['sabotage', 'rest', 'eat']);
   chooseCard(room, p[0], 'sabotage', p[1].id); chooseCard(room, p[2], 'rest');
   room.players = [p[0], p[2]]; assert.doesNotThrow(() => resolveCards(room));
-  assert.match(p[0].cardOutcome!.summary, /ya no está/);
+  assert.match(p[0].cardOutcome!.summary, /no longer/);
 });
 
 test('resolution is independent of seating order and the suit is consumed only by the round-end damage', () => {

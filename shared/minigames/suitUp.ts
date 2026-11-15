@@ -2,59 +2,59 @@ import { defineMinigame } from './types';
 
 export const suitUpDefinition = defineMinigame({
   id: 'suit-up',
-  title: 'Ponerse el Traje Espacial',
+  title: 'Suit-Up Sequence',
   mode: 'race',
   durationMs: 60_000,
   maxScore: 1000,
   instructions:
-    'Vístete con el traje espacial de la NASA antes de que se acabe el tiempo completando los Quick Time Events (QTE) de cada componente: sincroniza anillos de sellado, pulsa rápido para presurizar, mantén y suelta en la zona verde o introduce secuencias de acople. Usa las flechas (↑ ↓ ← →), Espacio o toca los controles en pantalla. Menos energía reduce tu margen de tiempo; menos comida reduce tus puntos.',
+    'Suit up and seal your NASA EVA suit before time expires by completing each Quick Time Event (QTE): hit timing zones, mash to pressurize, hold and release inside the green zone, or enter directional latch sequences. Use arrow keys (↑ ↓ ← →), Space, or the on-screen controls. Low energy speeds up targets; low food reduces score.',
   objective:
-    'Gana quien complete y selle el traje en menor tiempo. Si nadie lo completa antes del límite, se compara el progreso de componentes.',
+    'First astronaut to fully seal their EVA suit wins. If no one finishes in time, component progress breaks ties.',
   controls: [
     {
       id: 'action-primary',
-      label: 'Acción Principal / Sellar',
-      description: 'Pulsa para sincronizar QTE, presurizar rápidamente o mantener/soltar sellos.',
+      label: 'Primary Action / Seal',
+      description: 'Press to sync timing rings, pump latches, or hold/release seals.',
       bindings: [
-        { device: 'keyboard', code: 'Space', label: 'Espacio' },
-        { device: 'pointer', button: 0, label: 'Clic principal' },
-        { device: 'touch', label: 'Tocar área QTE' },
+        { device: 'keyboard', code: 'Space', label: 'Space' },
+        { device: 'pointer', button: 0, label: 'Primary click' },
+        { device: 'touch', label: 'Tap QTE area' },
       ],
     },
     {
       id: 'action-up',
-      label: 'Válvula Superior / Arriba',
-      description: 'Acción direccional superior para secuencias de cierre.',
+      label: 'Top Valve / Up',
+      description: 'Upper directional key for latch sequences.',
       bindings: [
         { device: 'keyboard', code: 'ArrowUp', label: '↑' },
-        { device: 'touch', label: 'Botón Arriba' },
+        { device: 'touch', label: 'Up button' },
       ],
     },
     {
       id: 'action-down',
-      label: 'Pestillo Inferior / Abajo',
-      description: 'Acción direccional inferior para botas y fijaciones.',
+      label: 'Lower Latch / Down',
+      description: 'Lower directional key for boots and locks.',
       bindings: [
         { device: 'keyboard', code: 'ArrowDown', label: '↓' },
-        { device: 'touch', label: 'Botón Abajo' },
+        { device: 'touch', label: 'Down button' },
       ],
     },
     {
       id: 'action-left',
-      label: 'Acople Izquierdo / Izquierda',
-      description: 'Acción lateral izquierda para guantes y cierres.',
+      label: 'Left Lock / Left',
+      description: 'Left directional key for wrist rings.',
       bindings: [
         { device: 'keyboard', code: 'ArrowLeft', label: '←' },
-        { device: 'touch', label: 'Botón Izquierda' },
+        { device: 'touch', label: 'Left button' },
       ],
     },
     {
       id: 'action-right',
-      label: 'Acople Derecho / Derecha',
-      description: 'Acción lateral derecha para girar aros y válvulas.',
+      label: 'Right Lock / Right',
+      description: 'Right directional key for rotating couplings.',
       bindings: [
         { device: 'keyboard', code: 'ArrowRight', label: '→' },
-        { device: 'touch', label: 'Botón Derecha' },
+        { device: 'touch', label: 'Right button' },
       ],
     },
   ],

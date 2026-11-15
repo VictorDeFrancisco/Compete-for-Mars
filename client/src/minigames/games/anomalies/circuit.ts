@@ -15,8 +15,8 @@ export interface CircuitBoard {
 }
 
 const PREFIX: Record<ComponentKind, string> = { resistor: 'R', lamp: 'LED', switch: 'SW', capacitor: 'C', diode: 'D', fuse: 'F', coil: 'K', meter: 'M', battery: 'B' };
-export const COMPONENT_NAMES: Record<ComponentKind, string> = { resistor: 'Resistencia', lamp: 'LED', switch: 'Interruptor', capacitor: 'Condensador', diode: 'Diodo', fuse: 'Fusible', coil: 'Bobina', meter: 'Indicador', battery: 'Batería' };
-const SYSTEMS = ['DISTRIBUCIÓN ELÉCTRICA', 'CONTROL DEL HÁBITAT', 'ALIMENTACIÓN DEL ROVER', 'REGULADOR SOLAR'];
+export const COMPONENT_NAMES: Record<ComponentKind, string> = { resistor: 'Resistor', lamp: 'LED', switch: 'Switch', capacitor: 'Capacitor', diode: 'Diode', fuse: 'Fuse', coil: 'Coil', meter: 'Meter', battery: 'Battery' };
+const SYSTEMS = ['POWER DISTRIBUTION', 'HABITAT CONTROL', 'ROVER POWER SUPPLY', 'SOLAR REGULATOR'];
 
 export function seededRandom(seed: number): () => number {
   let value = seed >>> 0;

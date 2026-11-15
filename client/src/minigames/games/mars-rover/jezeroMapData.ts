@@ -47,42 +47,42 @@ export interface SectorScenario {
 
 const SECTOR_SCENARIOS: SectorScenario[] = [
   {
-    name: 'Sector Jezero · Valle de Neretva y Abanico Deltaico',
+    name: 'Jezero Sector · Neretva Vallis & Delta Fan',
     biome: 'canyon_delta',
     centerLat: 18.38,
     centerLon: 77.58,
     nasaTileUrl: '/assets/mars_tile_jezero.jpg',
   },
   {
-    name: 'Sector Gale · Cañón Fluvial de Aeolis Mons',
+    name: 'Gale Sector · Aeolis Mons Fluvial Canyon',
     biome: 'crater_basin',
     centerLat: -5.36,
     centerLon: 137.81,
     nasaTileUrl: '/assets/mars_tile_gale.jpg',
   },
   {
-    name: 'Sector Valles Marineris · Desfiladero de Candor Chasma',
+    name: 'Valles Marineris Sector · Candor Chasma Gorge',
     biome: 'volcanic_chasma',
     centerLat: -14.22,
     centerLon: 301.08,
     nasaTileUrl: '/assets/mars_tile_valles.jpg',
   },
   {
-    name: 'Sector Meridiani Planum · Planicie de Dunas de Hematita',
+    name: 'Meridiani Planum Sector · Hematite Dune Plain',
     biome: 'dune_sea',
     centerLat: -0.19,
     centerLon: 357.95,
     nasaTileUrl: '/assets/mars_tile_meridiani.jpg',
   },
   {
-    name: 'Sector Elysium Planitia · Laberinto de Fosas Volcánicas',
+    name: 'Elysium Planitia Sector · Volcanic Trough Labyrinth',
     biome: 'volcanic_chasma',
     centerLat: 4.50,
     centerLon: 135.90,
     nasaTileUrl: '/assets/mars_tile_elysium.jpg',
   },
   {
-    name: 'Sector Utopia Planitia · Cuenca de Depresión Glaciar',
+    name: 'Utopia Planitia Sector · Glacial Depression Basin',
     biome: 'crater_basin',
     centerLat: 46.70,
     centerLon: 117.50,
@@ -433,7 +433,7 @@ export function calculateMarsCoordinates(
   const latMin = Math.floor(latMinFloat);
   const latSec = ((latMinFloat - latMin) * 60).toFixed(1);
 
-  const lonCard = lon <= 180 ? 'E' : 'O';
+  const lonCard = lon <= 180 ? 'E' : 'W';
   const displayLon = lon <= 180 ? lon : 360 - lon;
   const lonDeg = Math.floor(displayLon);
   const lonMinFloat = (displayLon - lonDeg) * 60;

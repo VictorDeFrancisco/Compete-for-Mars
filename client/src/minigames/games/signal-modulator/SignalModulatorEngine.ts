@@ -79,7 +79,7 @@ export class SignalModulatorEngine extends BaseMinigame<SignalModulatorData> {
     context: MinigameContext = DEFAULT_MINIGAME_CONTEXT,
     packets: readonly TelemetryPacket[] = TELEMETRY_PACKETS,
   ) {
-    if (!packets.length) throw new Error('SignalModulatorEngine requiere al menos un paquete.');
+    if (!packets.length) throw new Error('SignalModulatorEngine requires at least one packet.');
     const firstPacket = packets[0];
 
     const initialFreq = 1.6;
@@ -297,18 +297,18 @@ export class SignalModulatorEngine extends BaseMinigame<SignalModulatorData> {
     let lastRatingMessage: string | null = data.lastRatingMessage;
 
     if (isJammed && freqMatched && ampMatched) {
-      warningMessage = 'PORTADORA ENGANCHADA · RUIDO SOLAR DETECTADO: MANTÉN [ESPACIO] PARA ACTIVAR FILTRO';
+      warningMessage = 'CARRIER LOCKED · SOLAR NOISE DETECTED: HOLD [SPACE] TO ENABLE FILTER';
       lastRating = 'JAMMED';
-      lastRatingMessage = 'SEÑAL BLOQUEADA POR RUIDO CÓSMICO';
+      lastRatingMessage = 'SIGNAL JAMMED BY COSMIC NOISE';
     } else if (isJammed) {
-      warningMessage = 'ALERTA DONKI: Viento solar ionizante. Activa FILTRO PASOBANDA [ESPACIO] al sintonizar.';
+      warningMessage = 'DONKI ALERT: Ionizing solar wind. Enable BANDPASS FILTER [SPACE] while tuning.';
     } else if (transmitterTempC > 85) {
-      warningMessage = 'AVISO TÉRMICO: Amplificador de antena sobrecalentándose.';
+      warningMessage = 'THERMAL WARNING: Antenna amplifier overheating.';
     }
 
     if (isAligned) {
       lastRating = 'LOCKED';
-      lastRatingMessage = 'ENLACE ESTABLECIDO (CARRIER LOCK) · TRANSMITIENDO TELEMETRÍA...';
+      lastRatingMessage = 'CARRIER LOCK ESTABLISHED · TRANSMITTING TELEMETRY...';
     }
 
     this.setData({
@@ -389,7 +389,7 @@ export class SignalModulatorEngine extends BaseMinigame<SignalModulatorData> {
       lockProgress: 0,
       lockQuality: 0,
       lastRating: 'SENT',
-      lastRatingMessage: `PAQUETE ENVIADO A DSN · SIGUIENTE: ${nextPacket.station}`,
+      lastRatingMessage: `PACKET SENT TO DSN · NEXT: ${nextPacket.station}`,
       warningMessage: nextPacket.hasSolarFlare ? nextPacket.flareMessage ?? null : null,
     });
   }

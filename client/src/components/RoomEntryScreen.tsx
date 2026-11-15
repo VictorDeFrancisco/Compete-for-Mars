@@ -2,6 +2,7 @@ import { useRef, useState, type CSSProperties } from 'react';
 import type { Stats } from '../../../shared/types';
 import { playUiClick, playUiConfirm } from '../utils/uiAudio';
 import AstronautPortraitSvg, { CLASS_SUIT_COLORS } from './AstronautPortraitSvg';
+import { MusicToggleButton } from './BackgroundMusic';
 import MarsBackdrop from './MarsBackdrop';
 import { PROFESSIONS, sameStats, type Profession } from './professions';
 import './RoomEntryScreen.css';
@@ -235,9 +236,12 @@ export default function RoomEntryScreen({
             </div>
           </div>
 
-          <button type="button" className="entry-back" onClick={handleBack}>
-            ← BACK
-          </button>
+          <div className="entry-top__actions">
+            <MusicToggleButton />
+            <button type="button" className="entry-back" onClick={handleBack}>
+              ← BACK
+            </button>
+          </div>
         </div>
 
         {/* Bottom Dock: 4 Class Cards on Mars Ground + ENTER BASE on Right */}

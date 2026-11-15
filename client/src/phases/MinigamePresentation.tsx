@@ -6,103 +6,52 @@ import { playUiClick, playUiConfirm } from '../utils/uiAudio';
 import { CardCategoryPatchSvg, categoryLabels, getCardHighlights } from './CardSelection';
 import './MinigamePresentation.css';
 
-function resolveCardVerdict(summary: string): { label: 'ACIERTO' | 'FALLO'; tone: 'success' | 'fail' } | null {
-  if (summary.includes('ha tenido éxito') || summary.includes('Descontaminación completada')) {
-    return { label: 'ACIERTO', tone: 'success' };
+function resolveCardVerdict(summary: string): { label: 'SUCCESS' | 'FAILED'; tone: 'success' | 'fail' } | null {
+  if (summary.includes('Mission succeeded') || summary.includes('Decontamination complete')) {
+    return { label: 'SUCCESS', tone: 'success' };
   }
   if (
-    summary.includes('ha fracasado') ||
-    summary.includes('Descontaminación cancelada') ||
-    summary.includes('Entraste sin contaminación') ||
-    summary.includes('Sin efecto') ||
-    summary.includes('cancelados') ||
-    summary.includes('No hay otra persona')
+    summary.includes('Mission failed') ||
+    summary.includes('Decontamination cancelled') ||
+    summary.includes('Entered clean') ||
+    summary.includes('No effect') ||
+    summary.includes('cancelled') ||
+    summary.includes('No valid target')
   ) {
-    return { label: 'FALLO', tone: 'fail' };
+    return { label: 'FAILED', tone: 'fail' };
   }
   return null;
 }
 
-function MinigamePreviewSvg({ id }: { id: string }) {
-  switch (id) {
-    case 'pipes':
-      return (
-        <svg className="briefing-card__svg" viewBox="0 0 200 130" aria-hidden="true">
-          <rect width="200" height="130" fill="#EAE0CA" />
-          <path d="M18 38 H72 V92 H128 V44 H182" fill="none" stroke="#1F7A8C" strokeWidth="14" strokeLinejoin="round" strokeLinecap="round" />
-          <path d="M18 38 H72 V92 H128 V44 H182" fill="none" stroke="#7AE5F5" strokeWidth="4" strokeLinejoin="round" />
-          <circle cx="24" cy="38" r="11" fill="#0B3D91" stroke="#1A1817" strokeWidth="2.5" />
-          <circle cx="176" cy="44" r="11" fill="#D97706" stroke="#1A1817" strokeWidth="2.5" />
-          <rect x="60" y="80" width="24" height="24" rx="3" fill="none" stroke="#FC3D21" strokeWidth="2.5" strokeDasharray="4 3" />
-        </svg>
-      );
-    case 'mars-rover':
-      return (
-        <svg className="briefing-card__svg" viewBox="0 0 200 130" aria-hidden="true">
-          <rect width="200" height="130" fill="#E8B99B" />
-          <circle cx="152" cy="34" r="18" fill="#E67A45" stroke="#1A1817" strokeWidth="2.5" />
-          <path d="M0 82 Q60 62 118 80 T200 72 V130 H0 Z" fill="#C1440E" stroke="#1A1817" strokeWidth="2.5" />
-          <rect x="58" y="62" width="54" height="20" rx="4" fill="#F5EFE0" stroke="#1A1817" strokeWidth="3" />
-          <rect x="78" y="46" width="18" height="16" fill="#0B3D91" stroke="#1A1817" strokeWidth="2.5" />
-          <circle cx="67" cy="88" r="9" fill="#2B2D2A" stroke="#1A1817" strokeWidth="2.5" />
-          <circle cx="85" cy="88" r="9" fill="#2B2D2A" stroke="#1A1817" strokeWidth="2.5" />
-          <circle cx="103" cy="88" r="9" fill="#2B2D2A" stroke="#1A1817" strokeWidth="2.5" />
-        </svg>
-      );
-    case 'suit-up':
-      return (
-        <svg className="briefing-card__svg" viewBox="0 0 200 130" aria-hidden="true">
-          <rect width="200" height="130" fill="#EAE0CA" />
-          <circle cx="100" cy="65" r="44" fill="none" stroke="#C7B99D" strokeWidth="10" />
-          <path d="M62 42 A44 44 0 0 1 138 42" fill="none" stroke="#22C55E" strokeWidth="10" strokeLinecap="round" />
-          <circle cx="100" cy="65" r="26" fill="#F5EFE0" stroke="#1A1817" strokeWidth="3" />
-          <rect x="82" y="54" width="36" height="20" rx="9" fill="#334155" stroke="#1A1817" strokeWidth="2" />
-          <rect x="148" y="92" width="36" height="20" rx="3" fill="#FC3D21" stroke="#1A1817" strokeWidth="2.5" />
-        </svg>
-      );
-    case 'signal-modulator':
-      return (
-        <svg className="briefing-card__svg" viewBox="0 0 200 130" aria-hidden="true">
-          <rect width="200" height="130" fill="#0B1320" />
-          <path d="M10 65 Q35 20 60 65 T110 65 T160 65 T195 65" fill="none" stroke="#F59E0B" strokeWidth="4" />
-          <path d="M10 65 Q35 24 60 65 T110 65 T160 65 T195 65" fill="none" stroke="#38BDF8" strokeWidth="3" strokeDasharray="6 4" />
-          <rect x="14" y="14" width="64" height="16" rx="4" fill="#17253B" stroke="#38BDF8" strokeWidth="1.8" />
-        </svg>
-      );
-    case 'anomalies':
-      return (
-        <svg className="briefing-card__svg" viewBox="0 0 200 130" aria-hidden="true">
-          <rect width="200" height="130" fill="#EAE0CA" />
-          <rect x="16" y="18" width="76" height="94" rx="6" fill="#1A2622" stroke="#1A1817" strokeWidth="2.5" />
-          <rect x="108" y="18" width="76" height="94" rx="6" fill="#1A2622" stroke="#1A1817" strokeWidth="2.5" />
-          <path d="M28 52 H80 M28 78 H80" stroke="#4D6659" strokeWidth="4" />
-          <path d="M120 52 H172 M120 78 H172" stroke="#4D6659" strokeWidth="4" />
-          <circle cx="146" cy="52" r="14" fill="none" stroke="#FC3D21" strokeWidth="3" />
-        </svg>
-      );
-    case 'solar-storm':
-      return (
-        <svg className="briefing-card__svg" viewBox="0 0 200 130" aria-hidden="true">
-          <rect width="200" height="130" fill="#2A1118" />
-          <circle cx="38" cy="36" r="24" fill="#F97316" stroke="#FDE047" strokeWidth="3" />
-          <path d="M84 110 L108 66 L132 110 Z" fill="#F5EFE0" stroke="#1A1817" strokeWidth="3" />
-          <path d="M138 30 L176 46 M146 58 L184 72" stroke="#FACC15" strokeWidth="4" strokeLinecap="round" />
-        </svg>
-      );
-    case 'trivia':
-    default:
-      return (
-        <svg className="briefing-card__svg" viewBox="0 0 200 130" aria-hidden="true">
-          <rect width="200" height="130" fill="#EAE0CA" />
-          <rect x="20" y="18" width="160" height="30" rx="4" fill="#F5EFE0" stroke="#1A1817" strokeWidth="2.5" />
-          <rect x="34" y="29" width="104" height="8" rx="3" fill="#1A1817" />
-          <rect x="20" y="60" width="74" height="22" rx="4" fill="#2E8B57" stroke="#1A1817" strokeWidth="2" />
-          <rect x="106" y="60" width="74" height="22" rx="4" fill="#FFF9EB" stroke="#1A1817" strokeWidth="2" />
-          <rect x="20" y="90" width="74" height="22" rx="4" fill="#FFF9EB" stroke="#1A1817" strokeWidth="2" />
-          <rect x="106" y="90" width="74" height="22" rx="4" fill="#FFF9EB" stroke="#1A1817" strokeWidth="2" />
-        </svg>
-      );
-  }
+const MINIGAME_PREVIEW_IMAGES: Record<string, { src: string; width: number; height: number }> = {
+  pipes: { src: '/assets/minigames-preview/tuberias_water_grid.svg', width: 520, height: 420 },
+  'mars-rover': { src: '/assets/minigames-preview/rover.svg', width: 3507, height: 2956 },
+  'suit-up': { src: '/assets/minigames-preview/traje.svg', width: 520, height: 420 },
+  'signal-modulator': { src: '/assets/minigames-preview/modulacion.svg', width: 1280, height: 720 },
+  anomalies: { src: '/assets/minigames-preview/circuito.svg', width: 1280, height: 720 },
+  'solar-storm': { src: '/assets/minigames-preview/donki.svg', width: 500, height: 320 },
+  trivia: { src: '/assets/minigames-preview/trivia.svg', width: 1280, height: 720 },
+};
+
+const TARGET_PREVIEW_HEIGHT = 225;
+const FRAME_CHROME_PX = 18;
+
+function MinigamePreviewSvg({ id, title }: { id: string; title: string }) {
+  const preview = MINIGAME_PREVIEW_IMAGES[id] ?? MINIGAME_PREVIEW_IMAGES.trivia;
+  const maxFrameWidth = Math.round(TARGET_PREVIEW_HEIGHT * (preview.width / preview.height)) + FRAME_CHROME_PX;
+  return (
+    <div className="briefing-card__frame" style={{ maxWidth: `${maxFrameWidth}px` }}>
+      <img
+        className="briefing-card__svg"
+        src={preview.src}
+        width={preview.width}
+        height={preview.height}
+        style={{ aspectRatio: `${preview.width} / ${preview.height}` }}
+        alt={title}
+        draggable={false}
+      />
+    </div>
+  );
 }
 
 // Phase 2/3: Mario Party-inspired Retro-NASA Briefing Card with DESCRIPTION & CONTROLS tabs.
@@ -174,9 +123,7 @@ export default function MinigamePresentation({ game, onReady }: PresentationProp
           <div className="briefing-card__body">
             {/* Left Zone (35%): Minigame SVG preview only (controls live exclusively in CONTROLS tab) */}
             <div className="briefing-card__visual">
-              <div className="briefing-card__frame">
-                <MinigamePreviewSvg id={game.minigame.id} />
-              </div>
+              <MinigamePreviewSvg id={game.minigame.id} title={game.minigame.title} />
             </div>
 
             {/* Right Zone (65%): Big Title + Concise Objective + Stakes Strip */}
@@ -207,15 +154,15 @@ export default function MinigamePresentation({ game, onReady }: PresentationProp
                   ? [
                       {
                         id: 'answer-group',
-                        label: 'Elegir respuesta',
-                        description: 'Selecciona la opción correcta (1–4) con teclado o pulsando la tarjeta.',
+                        label: 'Choose answer',
+                        description: 'Pick the correct option (1–4) with the keyboard or by clicking.',
                         bindings: [
                           ...answerGroup.map((_, idx) => ({
                             device: 'keyboard' as const,
                             code: `Digit${idx + 1}`,
                             label: `${idx + 1}`,
                           })),
-                          { device: 'pointer' as const, label: 'Clic en una opción' },
+                          { device: 'pointer' as const, label: 'Click an option' },
                         ],
                       },
                       ...rawControls.filter(c => !/^answer-[1-4]$/.test(c.id)),
@@ -319,8 +266,8 @@ export default function MinigamePresentation({ game, onReady }: PresentationProp
             data-category={resolvedCard?.category ?? 'supply'}
           >
             <div className="briefing-played-card__top">
-              <span>{resolvedCard?.category ? categoryLabels[resolvedCard.category] : 'Carta jugada'}</span>
-              <span>RONDA {String(game.round).padStart(2, '0')}</span>
+              <span>{resolvedCard?.category ? categoryLabels[resolvedCard.category] : 'Card played'}</span>
+              <span>ROUND {String(game.round).padStart(2, '0')}</span>
             </div>
 
             <div className="briefing-played-card__patch">
@@ -344,7 +291,7 @@ export default function MinigamePresentation({ game, onReady }: PresentationProp
             <span
               className={`briefing-played-card__stamp briefing-played-card__stamp--${cardVerdict?.tone ?? 'neutral'}`}
             >
-              {cardVerdict ? cardVerdict.label : 'ELEGIDA'}
+              {cardVerdict ? cardVerdict.label : 'CHOSEN'}
             </span>
           </article>
         </div>

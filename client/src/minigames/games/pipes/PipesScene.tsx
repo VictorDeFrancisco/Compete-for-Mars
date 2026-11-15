@@ -13,7 +13,7 @@ interface PipesSceneContext {
   onExit?: () => void;
   onRestart?: () => void;
 }
-const SceneContext = createContext<PipesSceneContext>({ crew: [{ id: 'local', name: 'Tú', isSelf: true }] });
+const SceneContext = createContext<PipesSceneContext>({ crew: [{ id: 'local', name: 'You', isSelf: true }] });
 export function PipesSceneProvider({ children, ...value }: PipesSceneContext & { children: ReactNode }) {
   return <SceneContext.Provider value={value}>{children}</SceneContext.Provider>;
 }

@@ -13,7 +13,7 @@ function pct(value: number, max: number): number {
 
 export default function CrewSidebar({ game }: CrewSidebarProps) {
   return (
-    <aside className="crew-sidebar" aria-label="Tripulación">
+    <aside className="crew-sidebar" aria-label="Crew">
       <div className="crew-sidebar__head">CREW ({game.players.filter(p => p.health > 0).length}/{game.players.length})</div>
       <div className="crew-sidebar__list">
         {game.players.map((player, index) => {

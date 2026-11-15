@@ -18,14 +18,14 @@ export async function fetchNasaMarsTelemetry(): Promise<NasaMarsTelemetry> {
     surfaceRadiationFlux: 31.8,
     molaResolutionMeters: 463,
     satelliteName: 'NASA MRO HiRISE / MGS MOLA Altimeter',
-    statusNote: 'Datos MOLA & RAD sincronizados localmente.',
+    statusNote: 'MOLA & RAD data synced locally.',
   };
 
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 2500);
 
-    // Intentamos consultar el endpoint público de la NASA (DEMO_KEY) o Trek API
+    // Attempt to query the NASA public endpoint (DEMO_KEY) or Trek API
     const response = await fetch(
       'https://api.nasa.gov/insight_weather/?api_key=DEMO_KEY&feedtype=json&ver=1.0',
       { signal: controller.signal }
@@ -43,12 +43,12 @@ export async function fetchNasaMarsTelemetry(): Promise<NasaMarsTelemetry> {
           surfaceRadiationFlux: 29.4,
           molaResolutionMeters: 463,
           satelliteName: 'NASA Live Telemetry (InSight / MOLA)',
-          statusNote: `Conexión en directo con NASA API (Sol ${solKeys[solKeys.length - 1]}).`,
+          statusNote: `Live connection to NASA API (Sol ${solKeys[solKeys.length - 1]}).`,
         };
       }
     }
   } catch {
-    // Si no hay conexión o la API no responde, el fallback calibrado garantiza que no se rompa nada
+    // Calibrated fallback ensures telemetry remains intact when offline
   }
 
   return fallback;

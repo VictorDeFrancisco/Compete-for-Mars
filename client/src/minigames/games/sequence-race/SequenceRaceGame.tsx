@@ -14,8 +14,8 @@ export class SequenceRaceGame extends BaseMinigame<{ step: number }> {
   }
 }
 function SequenceRaceView({ engine, snapshot }: MinigameViewProps<{ step: number }>) {
-  return <><p>Tiempo mínimo entre cierres por energía/comida: {engine.modifiers.actionCooldownMs + engine.modifiers.reactionDelayMs} ms.</p><div className="actions">{Array.from({ length: 5 }, (_, index) => <button key={index}
+  return <><p>Minimum time between locks from energy/food: {engine.modifiers.actionCooldownMs + engine.modifiers.reactionDelayMs} ms.</p><div className="actions">{Array.from({ length: 5 }, (_, index) => <button key={index}
     disabled={snapshot.status !== 'running' || snapshot.data.step !== index}
-    onClick={() => engine.dispatch(`step-${index + 1}`)}>Cierre {index + 1} {snapshot.data.step > index ? '✓' : ''}</button>)}</div></>;
+    onClick={() => engine.dispatch(`step-${index + 1}`)}>Lock {index + 1} {snapshot.data.step > index ? '✓' : ''}</button>)}</div></>;
 }
 export default defineModule(sequenceRaceDefinition, (definition, context) => new SequenceRaceGame(definition, undefined, context), SequenceRaceView);

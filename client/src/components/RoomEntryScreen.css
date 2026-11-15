@@ -15,9 +15,7 @@
   height: 100dvh;
   max-height: 100dvh;
   width: 100%;
-  max-width: 1380px;
-  margin: 0 auto;
-  padding: clamp(14px, 2.2vh, 26px) clamp(18px, 3vw, 36px) clamp(14px, 2.2vh, 24px);
+  padding: clamp(14px, 2.2vh, 26px) 28px clamp(14px, 2.2vh, 24px);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -52,6 +50,13 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
+}
+
+.entry-top__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
 .entry-top__left {

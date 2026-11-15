@@ -1,12 +1,12 @@
 import { defineMinigame } from './types';
 export const sequenceRaceDefinition = defineMinigame({
-  id: 'sequence-race', title: 'Secuencia de traje', mode: 'race', durationMs: 30_000, maxScore: 5,
-  instructions: 'Activa en orden los cinco cierres del traje. Puedes usar las teclas 1 a 5 o tocar el cierre indicado. Con menos energía o comida debes esperar más entre cierres.',
-  objective: 'Gana quien termine antes. Si nadie termina, se compara el progreso.',
+  id: 'sequence-race', title: 'Suit Latch Sequence', mode: 'race', durationMs: 30_000, maxScore: 5,
+  instructions: 'Engage all five suit latches in order using keys 1–5 or tapping the highlighted latch. Lower energy or food increases the cooldown between latches.',
+  objective: 'First astronaut to finish wins. On timeout, progress breaks ties.',
   controls: Array.from({ length: 5 }, (_, index) => ({
-    id: `step-${index + 1}`, label: `Cierre ${index + 1}`, description: 'Activar cuando sea el siguiente cierre.',
+    id: `step-${index + 1}`, label: `Latch ${index + 1}`, description: 'Engage when highlighted next.',
     bindings: [{ device: 'keyboard' as const, code: `Digit${index + 1}`, label: `${index + 1}` },
-      { device: 'touch' as const, label: `Clic o toque en cierre ${index + 1}` }],
+      { device: 'touch' as const, label: `Click or tap latch ${index + 1}` }],
   })),
   rewards: { winner: { resources: { food: 20 } }, loser: {}, ties: 'share' },
 });

@@ -169,19 +169,19 @@ test('Timeout al alcanzar durationMs preserva puntuación y razón timeout', () 
   assert.equal(snap.result?.completed, false);
 });
 
-test('La batería del filtro solar se descarga rápido incluso con ticks de 60 FPS', () => {
+test('La batería del filtro solar se descarga de forma continua e independiente del FPS', () => {
   let now = 0;
   const engine = new SignalModulatorEngine(signalModulatorDefinition, () => now, DEFAULT_MINIGAME_CONTEXT);
   engine.start();
 
   engine.dispatch('filter-noise', 'press');
-  // Simulamos 1 segundo exacto a ~60 FPS (60 ticks de ~16.67ms)
+  // Simulamos 1 segundo exacto a ~60 FPS (60 ticks de ~16.67ms): tasa deltaMs / 80 -> ~12.5% en 1s
   for (let i = 1; i <= 60; i++) {
     now = Math.round((i * 1000) / 60);
     engine.tick();
   }
 
   const snap = engine.getSnapshot();
-  assert.ok(snap.data.filterBattery <= 65, `Batería esperada <= 65% tras 1s, fue ${snap.data.filterBattery}%`);
-  assert.ok(snap.data.filterBattery >= 50, `Batería esperada >= 50% tras 1s, fue ${snap.data.filterBattery}%`);
+  assert.ok(snap.data.filterBattery <= 90, `Batería esperada <= 90% tras 1s, fue ${snap.data.filterBattery}%`);
+  assert.ok(snap.data.filterBattery >= 85, `Batería esperada >= 85% tras 1s, fue ${snap.data.filterBattery}%`);
 });

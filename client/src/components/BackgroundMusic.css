@@ -1,0 +1,54 @@
+button.bgm-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+  border-radius: 6px;
+  border: 2.5px solid var(--ink-black, #1a1817);
+  background: var(--paper-cream, #f5efe0);
+  color: var(--ink-black, #1a1817);
+  box-shadow: 0 3px 0 var(--ink-black, #1a1817);
+  flex-shrink: 0;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.12s ease;
+}
+
+button.bgm-toggle:hover {
+  background: #fffaf0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 var(--ink-black, #1a1817);
+}
+
+button.bgm-toggle:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--ink-black, #1a1817);
+}
+
+button.bgm-toggle.bgm-toggle--muted {
+  background: #e5dac3;
+  color: #5b5144;
+}
+
+button.bgm-toggle.bgm-toggle--muted:hover {
+  background: #ece2cd;
+}
+
+.bgm-toggle__icon {
+  width: 19px;
+  height: 19px;
+  display: block;
+}
+
+.bgm-toggle--victory {
+  position: fixed;
+  top: 14px;
+  right: 16px;
+  z-index: 60;
+}

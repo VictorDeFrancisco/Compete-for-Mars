@@ -1,8 +1,8 @@
 [
   {
     "id": "rest",
-    "title": "Descansar",
-    "description": "Reparte 20 de energía por cada jugador vivo entre quienes elijan esta carta.",
+    "title": "Rest",
+    "description": "Distribute 20 energy per living player evenly among everyone who picks this card.",
     "category": "supply",
     "effect": {},
     "rules": {
@@ -12,8 +12,8 @@
   },
   {
     "id": "eat",
-    "title": "Comer",
-    "description": "Reparte 20 de comida por cada jugador vivo entre quienes elijan esta carta.",
+    "title": "Eat Rations",
+    "description": "Distribute 20 food per living player evenly among everyone who picks this card.",
     "category": "supply",
     "effect": {},
     "rules": {
@@ -23,8 +23,8 @@
   },
   {
     "id": "expedition",
-    "title": "Expedición",
-    "description": "Éxito: gana 40 de comida y 40 de energía. Fracaso: recibe 1 de radiación. Probabilidad: jugadores vivos / 5.",
+    "title": "Expedition",
+    "description": "Success: gain 40 food and 40 energy. Failure: suffer 1 radiation. Odds: living players / 5.",
     "category": "risk",
     "effect": {
       "food": 40,
@@ -40,8 +40,8 @@
   },
   {
     "id": "decontamination",
-    "title": "Descontaminación",
-    "description": "Si solo la eliges tú, elimina tu radiación. Si la eligen varios, se cancela. Quien la elija estando limpio recibe 1 de radiación, aunque se cancele.",
+    "title": "Decontamination",
+    "description": "If only you pick it, clear all your radiation. If multiple pick it, it cancels. Clean visitors receive 1 radiation even if cancelled.",
     "category": "defense",
     "effect": {},
     "rules": {
@@ -50,8 +50,8 @@
   },
   {
     "id": "radiation-shield",
-    "title": "Escudo antirradiación",
-    "description": "Bloquea la próxima recepción de radiación. Permanece hasta usarse; no se acumula.",
+    "title": "Radiation Shield",
+    "description": "Block the next incoming radiation hit. Persists until triggered; does not stack.",
     "category": "defense",
     "effect": {},
     "rules": {
@@ -60,8 +60,8 @@
   },
   {
     "id": "reinforced-suit",
-    "title": "Traje reforzado",
-    "description": "Anula el próximo daño de radiación al final de una ronda. No elimina la radiación. Permanece hasta usarse; no se acumula.",
+    "title": "Reinforced Suit",
+    "description": "Negate the next round-end radiation damage. Does not remove radiation. Persists until triggered; does not stack.",
     "category": "defense",
     "effect": {},
     "rules": {
@@ -70,8 +70,8 @@
   },
   {
     "id": "recycle-food",
-    "title": "Reciclaje · comida",
-    "description": "Paga 15 de energía y gana 15 de comida.",
+    "title": "Recycle · Food",
+    "description": "Pay 15 energy to gain 15 food.",
     "category": "supply",
     "effect": {
       "food": 15
@@ -85,8 +85,8 @@
   },
   {
     "id": "recycle-energy",
-    "title": "Reciclaje · energía",
-    "description": "Paga 15 de comida y gana 15 de energía.",
+    "title": "Recycle · Energy",
+    "description": "Pay 15 food to gain 15 energy.",
     "category": "supply",
     "effect": {
       "energy": 15
@@ -100,8 +100,8 @@
   },
   {
     "id": "sabotage",
-    "title": "Sabotaje",
-    "description": "Quita hasta 20 de comida a otro jugador. Si os saboteáis mutuamente, ambos sabotajes se cancelan.",
+    "title": "Sabotage",
+    "description": "Drain up to 20 food from another player. Mutual sabotage cancels both attacks.",
     "category": "interaction",
     "effect": {},
     "rules": {
@@ -112,8 +112,8 @@
   },
   {
     "id": "supply-theft",
-    "title": "Robo de suministros",
-    "description": "Roba hasta 30 de comida al jugador con más comida que no haya elegido robar. Si roban varios, comparten el botín.",
+    "title": "Supply Theft",
+    "description": "Steal up to 30 food from the player with the most food who is not stealing. Multiple thieves split the loot.",
     "category": "interaction",
     "effect": {},
     "rules": {
@@ -123,8 +123,8 @@
   },
   {
     "id": "dust-storm",
-    "title": "Tormenta de polvo",
-    "description": "60 %: gana 45 de energía. Si falla, pierde 10 de comida o de energía, al azar.",
+    "title": "Dust Storm",
+    "description": "60% chance: gain 45 energy. Failure: lose 10 food or 10 energy at random.",
     "category": "risk",
     "effect": {
       "energy": 45
@@ -140,8 +140,8 @@
   },
   {
     "id": "ice-cave",
-    "title": "Cueva de hielo",
-    "description": "60 %: gana 55 de comida. Si falla, pierde 15 de vida por un derrumbe.",
+    "title": "Ice Cave",
+    "description": "60% chance: gain 55 food. Failure: lose 15 health in a cave-in.",
     "category": "risk",
     "effect": {
       "food": 55
@@ -154,8 +154,8 @@
   },
   {
     "id": "all-in",
-    "title": "Todo o nada",
-    "description": "Paga 15 de energía. Con probabilidad del 50 %, gana 65 de comida y 20 de energía. Si falla, no recuperas el coste.",
+    "title": "All In",
+    "description": "Pay 15 energy. 50% chance: gain 65 food and 20 energy. Failure: cost is not refunded.",
     "category": "risk",
     "effect": {
       "food": 65,
@@ -171,8 +171,8 @@
   },
   {
     "id": "mysterious-signal",
-    "title": "Señal misteriosa",
-    "description": "65 %: encuentra 35 de comida y 35 de energía. Si falla, recibe 1 de radiación.",
+    "title": "Mysterious Signal",
+    "description": "65% chance: find 35 food and 35 energy. Failure: receive 1 radiation.",
     "category": "risk",
     "effect": {
       "food": 35,
@@ -188,8 +188,8 @@
   },
   {
     "id": "exchange",
-    "title": "Intercambio",
-    "description": "Los participantes intercambian sus cantidades de comida y energía mediante una rotación al azar. Con un único participante no pasa nada.",
+    "title": "Supply Exchange",
+    "description": "Participants swap their food and energy reserves in a random rotation. Does nothing if only one player joins.",
     "category": "interaction",
     "effect": {},
     "rules": {
@@ -198,8 +198,8 @@
   },
   {
     "id": "contagion",
-    "title": "Contagio",
-    "description": "Si tienes radiación, añade 1 a otro jugador limpio. Tú conservas la tuya. Si el objetivo ya estaba contaminado, no tiene efecto.",
+    "title": "Contagion",
+    "description": "If irradiated, add 1 radiation to a clean player. You keep yours. No effect if the target is already contaminated.",
     "category": "interaction",
     "effect": {},
     "rules": {
@@ -210,8 +210,8 @@
   },
   {
     "id": "emergency-landing",
-    "title": "Aterrizaje de emergencia",
-    "description": "Gana 35 de comida y 35 de energía, pero recibe 1 de radiación. Cada participante recibe estas cantidades.",
+    "title": "Emergency Drop",
+    "description": "Gain 35 food and 35 energy, but suffer 1 radiation. Every participant receives these amounts.",
     "category": "risk",
     "effect": {
       "food": 35,
@@ -224,8 +224,8 @@
   },
   {
     "id": "nuclear-battery",
-    "title": "Pila nuclear",
-    "description": "Gana 45 de energía de reserva, pero recibe 1 de radiación por fuga térmica.",
+    "title": "Nuclear Cell",
+    "description": "Gain 45 reserve energy, but suffer 1 radiation from thermal leakage.",
     "category": "risk",
     "effect": {
       "energy": 45,
@@ -237,8 +237,8 @@
   },
   {
     "id": "solar-flare-harvest",
-    "title": "Cosecha solar",
-    "description": "Capta 55 de energía de la tormenta solar, pero recibe 1 de radiación.",
+    "title": "Solar Flare Harvest",
+    "description": "Harvest 55 energy from the solar storm, but suffer 1 radiation.",
     "category": "risk",
     "effect": {
       "energy": 55,
@@ -250,8 +250,8 @@
   },
   {
     "id": "crater-excavation",
-    "title": "Excavación en cráter",
-    "description": "65 %: gana 55 de comida. Si falla, recibe 1 de radiación y pierde 10 de vida.",
+    "title": "Crater Excavation",
+    "description": "65% chance: gain 55 food. Failure: suffer 1 radiation and lose 10 health.",
     "category": "risk",
     "effect": {
       "food": 55
@@ -267,8 +267,8 @@
   },
   {
     "id": "isotope-leak",
-    "title": "Fuga de isótopos",
-    "description": "Añade 1 de radiación a otro jugador y recupera 15 de energía del núcleo.",
+    "title": "Isotope Leak",
+    "description": "Add 1 radiation to another player and recover 15 core energy.",
     "category": "interaction",
     "effect": {},
     "rules": {

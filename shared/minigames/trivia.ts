@@ -2,31 +2,31 @@ import { defineMinigame } from './types';
 
 export const triviaDefinition = defineMinigame({
   id: 'trivia',
-  title: 'Misión Trivia NASA',
+  title: 'NASA Survival Trivia',
   mode: 'score',
   durationMs: 180_000,
   maxScore: 100,
   instructions:
-    'Responde a 5 preguntas aleatorias de supervivencia espacial (hasta 30 s por pregunta; poca energía reduce el tiempo y poca comida reduce los puntos) sobre soporte vital, radiación, energía y cultivos. Pulsa 1–4 o haz clic en una opción y confirma con Espacio, Enter o Siguiente.',
-  objective: 'Consigue 20 puntos por cada respuesta correcta. Quien logre más puntuación al terminar las 5 preguntas o agotarse el tiempo gana.',
+    'Answer 5 random space survival questions (up to 30s each; low energy trims time and low food reduces points) covering life support, radiation, power, and Mars farming. Press 1–4 or click an option, then continue with Space, Enter, or Next.',
+  objective: 'Earn 20 points per correct answer. Highest total score across the 5 questions wins.',
   controls: [
     ...Array.from({ length: 4 }, (_, index) => ({
       id: `answer-${index + 1}`,
-      label: `Opción ${index + 1}`,
-      description: `Selecciona la respuesta ${index + 1}.`,
+      label: `Option ${index + 1}`,
+      description: `Select answer ${index + 1}.`,
       bindings: [
         { device: 'keyboard' as const, code: `Digit${index + 1}`, label: `${index + 1}` },
-        { device: 'pointer' as const, button: 0, label: `Clic en opción ${index + 1}` },
+        { device: 'pointer' as const, button: 0, label: `Click option ${index + 1}` },
       ],
     })),
     {
       id: 'next',
-      label: 'Siguiente pregunta',
-      description: 'Avanza inmediatamente tras ver la explicación científica.',
+      label: 'Next Question',
+      description: 'Advance immediately after reviewing the science note.',
       bindings: [
-        { device: 'keyboard', code: 'Space', label: 'Espacio' },
+        { device: 'keyboard', code: 'Space', label: 'Space' },
         { device: 'keyboard', code: 'Enter', label: 'Enter' },
-        { device: 'pointer', button: 0, label: 'Botón Siguiente' },
+        { device: 'pointer', button: 0, label: 'Next button' },
       ],
     },
   ],

@@ -2,53 +2,53 @@ import { defineMinigame } from './types';
 
 export const marsRoverDefinition = defineMinigame({
   id: 'mars-rover',
-  title: 'Travesía Rover: Altimetría y Físicas en Marte',
+  title: 'Mars Rover Traverse: Elevation & Physics',
   mode: 'score',
   durationMs: 120_000,
   maxScore: 1000,
   instructions:
-    'Expedición de exploración marciana de larga distancia (2 minutos) con cámara orbital de seguimiento. La batería se consume de forma realista al acelerar y al escalar pendientes pronunciadas. Elige sabiamente entre varios caminos (el valle llano más largo, las crestas directas de alto consumo o el paso del cráter) para alcanzar la baliza B sin agotar la batería.',
+    'Long-range Martian exploration traverse (2 minutes) with orbital follow camera. Battery drains realistically when accelerating and climbing steep ridges. Choose wisely between routes — the longer flat valley, steep high-drain ridges, or crater pass — to reach Beacon B without running out of power.',
   objective:
-    'Alcanza la baliza B optimizando el consumo de batería en la ruta elegida antes de que se agote la energía.',
+    'Reach Beacon B while conserving battery across Martian terrain before power or time runs out.',
   controls: [
     {
       id: 'forward',
-      label: 'Acelerar',
-      description: 'Aplica tracción motriz hacia adelante en las orugas.',
+      label: 'Accelerate',
+      description: 'Apply forward drive torque to the rover treads.',
       bindings: [
         { device: 'keyboard', code: 'KeyW', label: 'W' },
         { device: 'keyboard', code: 'ArrowUp', label: '↑' },
-        { device: 'touch', label: '▲ Acelerar' },
+        { device: 'touch', label: '▲ Drive' },
       ],
     },
     {
       id: 'reverse',
-      label: 'Marcha atrás',
-      description: 'Aplica tracción inversa hacia atrás en las orugas.',
+      label: 'Reverse',
+      description: 'Apply reverse drive torque to brake or back up.',
       bindings: [
         { device: 'keyboard', code: 'KeyS', label: 'S' },
         { device: 'keyboard', code: 'ArrowDown', label: '↓' },
-        { device: 'touch', label: '▼ Reversa' },
+        { device: 'touch', label: '▼ Reverse' },
       ],
     },
     {
       id: 'turn-left',
-      label: 'Girar a babor',
-      description: 'Gira el rover hacia la izquierda.',
+      label: 'Steer Left',
+      description: 'Turn the rover left.',
       bindings: [
         { device: 'keyboard', code: 'KeyA', label: 'A' },
         { device: 'keyboard', code: 'ArrowLeft', label: '←' },
-        { device: 'touch', label: '◀ Izquierda' },
+        { device: 'touch', label: '◀ Left' },
       ],
     },
     {
       id: 'turn-right',
-      label: 'Girar a estribor',
-      description: 'Gira el rover hacia la derecha.',
+      label: 'Steer Right',
+      description: 'Turn the rover right.',
       bindings: [
         { device: 'keyboard', code: 'KeyD', label: 'D' },
         { device: 'keyboard', code: 'ArrowRight', label: '→' },
-        { device: 'touch', label: '▶ Derecha' },
+        { device: 'touch', label: '▶ Right' },
       ],
     },
   ],

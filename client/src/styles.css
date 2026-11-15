@@ -432,9 +432,9 @@ nav span[aria-current='step'] {
   box-shadow: 0 4px 0 var(--ink-black);
 }
 
-/* Tactile retro buttons (scoped away from StartScreen, Dossier and CRT minigame area) */
-main button:not(.minigame-area button),
-.lobby-hud button,
+/* Tactile retro buttons (scoped away from StartScreen, Dossier, CRT minigame area and global BGM toggle; :where keeps original specificity so component buttons stay unchanged) */
+main button:not(.minigame-area button):where(:not(.bgm-toggle)),
+.lobby-hud button:where(:not(.bgm-toggle)),
 .preview-banner button {
   font: inherit;
   font-family: 'Archivo', sans-serif;
@@ -451,37 +451,37 @@ main button:not(.minigame-area button),
   transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.12s ease, opacity 0.12s ease;
 }
 
-main button:not(.minigame-area button):hover:not(:disabled),
-.lobby-hud button:hover:not(:disabled),
+main button:not(.minigame-area button):where(:not(.bgm-toggle)):hover:not(:disabled),
+.lobby-hud button:where(:not(.bgm-toggle)):hover:not(:disabled),
 .preview-banner button:hover:not(:disabled) {
   background: var(--nasa-orange-hover);
   transform: translateY(-1px);
   box-shadow: 0 5px 0 var(--ink-black);
 }
 
-main button:not(.minigame-area button):active:not(:disabled),
-.lobby-hud button:active:not(:disabled),
+main button:not(.minigame-area button):where(:not(.bgm-toggle)):active:not(:disabled),
+.lobby-hud button:where(:not(.bgm-toggle)):active:not(:disabled),
 .preview-banner button:active:not(:disabled) {
   transform: translateY(3px);
   box-shadow: 0 1px 0 var(--ink-black);
 }
 
-main button.secondary:not(.minigame-area button),
-.lobby-hud button.secondary,
+main button.secondary:not(.minigame-area button):where(:not(.bgm-toggle)),
+.lobby-hud button.secondary:where(:not(.bgm-toggle)),
 .preview-banner button.secondary {
   background: var(--paper-cream);
   color: var(--ink-black);
   border-color: var(--ink-black);
 }
 
-main button.secondary:not(.minigame-area button):hover:not(:disabled),
-.lobby-hud button.secondary:hover:not(:disabled),
+main button.secondary:not(.minigame-area button):where(:not(.bgm-toggle)):hover:not(:disabled),
+.lobby-hud button.secondary:where(:not(.bgm-toggle)):hover:not(:disabled),
 .preview-banner button.secondary:hover:not(:disabled) {
   background: #fff9ee;
 }
 
-main button:not(.minigame-area button):disabled,
-.lobby-hud button:disabled,
+main button:not(.minigame-area button):where(:not(.bgm-toggle)):disabled,
+.lobby-hud button:where(:not(.bgm-toggle)):disabled,
 .preview-banner button:disabled {
   background: var(--nasa-orange);
   color: var(--paper-cream);
@@ -492,8 +492,8 @@ main button:not(.minigame-area button):disabled,
   transform: none;
 }
 
-main button.secondary:not(.minigame-area button):disabled,
-.lobby-hud button.secondary:disabled {
+main button.secondary:not(.minigame-area button):where(:not(.bgm-toggle)):disabled,
+.lobby-hud button.secondary:where(:not(.bgm-toggle)):disabled {
   background: #d5cab6;
   color: #4f483d;
   opacity: 0.72;

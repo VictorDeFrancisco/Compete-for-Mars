@@ -806,7 +806,8 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
   const slopeClass =
     data.slopeDeg > 22 ? 'slope-danger' : data.slopeDeg > 12 ? 'slope-warning' : 'slope-safe';
 
-  const speedKmh = (data.speed * 3.6).toFixed(1);
+  // Map gameplay speed (0..10.5 m/s) to realistic Mars rover telemetry (0.00..0.18 km/h) without altering physics.
+  const speedKmh = Math.min(0.18, (Math.abs(data.speed) / 10.5) * 0.18).toFixed(2);
   const roverCoords = calculateMarsCoordinates(
     data.posX,
     data.posY,
@@ -823,9 +824,9 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
   const targetBearingDeg = Math.round(((targetAngleRad * 180) / Math.PI + 360) % 360);
   const relBearing = ((targetBearingDeg - data.heading + 540) % 360) - 180;
   const isAligned = Math.abs(relBearing) <= 15;
-  let targetNavHint = 'Al frente';
-  if (relBearing > 18) targetNavHint = `Der (+${Math.round(relBearing)}°)`;
-  else if (relBearing < -18) targetNavHint = `Izq (${Math.round(relBearing)}°)`;
+  let targetNavHint = 'Straight ahead';
+  if (relBearing > 18) targetNavHint = `Right (+${Math.round(relBearing)}°)`;
+  else if (relBearing < -18) targetNavHint = `Left (${Math.round(relBearing)}°)`;
 
   const bindTouch = (action: string) => ({
     onPointerDown: () => isRunning && engine.dispatch(action, 'press'),
@@ -849,14 +850,14 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
             <span className={`rover-hud-pill ${energyClass}`}>BAT {data.energy.toFixed(0)}%</span>
             <span className="rover-hud-pill">{speedKmh} KM/H</span>
             <span className={`rover-hud-pill ${slopeClass}`}>
-              PEND {data.pitchDeg > 0 ? `+${data.pitchDeg}°` : `${data.pitchDeg}°`}
+              SLOPE {data.pitchDeg > 0 ? `+${data.pitchDeg}°` : `${data.pitchDeg}°`}
             </span>
           </div>
 
-          {/* Brújula rotatoria grande hacia la Baliza B */}
+          {/* Large rotating compass toward Beacon B */}
           <div
             className={`rover-compass-dial${isAligned ? ' is-aligned' : ''}`}
-            aria-label={`Dirección hacia la baliza: ${targetNavHint}, ${targetDist} metros`}
+            aria-label={`Heading to beacon: ${targetNavHint}, ${targetDist} meters`}
           >
             <div className="rover-compass-ring">
               <svg
@@ -876,7 +877,7 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
             </div>
             <div className="rover-compass-text">
               <span className="rover-compass-label">
-                {isAligned ? 'ALINEADO' : 'OBJETIVO'} · {targetNavHint}
+                {isAligned ? 'ALIGNED' : 'TARGET'} · {targetNavHint}
               </span>
               <strong className="rover-compass-dist">{targetDist} M</strong>
             </div>
@@ -890,19 +891,19 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
           </div>
         </div>
 
-        {/* Franja inferior flotante: mensaje fijo de 1 línea + cruceta WASD compacta */}
+        {/* Bottom floating strip: 1-line status message + compact WASD pad */}
         <div className="rover-bottom-overlay">
           <div className="rover-status-banner" title={data.lastEventMessage}>
             <span>{data.lastEventMessage}</span>
           </div>
 
-          <div className="tank-controls-cluster" aria-label="Controles del rover">
+          <div className="tank-controls-cluster" aria-label="Rover controls">
             <button
               type="button"
               className="tank-btn tank-btn--w"
               disabled={!isRunning}
               {...bindTouch('forward')}
-              aria-label="Acelerar hacia adelante"
+              aria-label="Accelerate forward"
             >
               <kbd>W</kbd>
               <span>▲</span>
@@ -912,7 +913,7 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
               className="tank-btn tank-btn--a"
               disabled={!isRunning}
               {...bindTouch('turn-left')}
-              aria-label="Girar izquierda"
+              aria-label="Turn left"
             >
               <kbd>A</kbd>
               <span>◀</span>
@@ -922,7 +923,7 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
               className="tank-btn tank-btn--s"
               disabled={!isRunning}
               {...bindTouch('reverse')}
-              aria-label="Marcha atrás"
+              aria-label="Reverse"
             >
               <kbd>S</kbd>
               <span>▼</span>
@@ -932,7 +933,7 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
               className="tank-btn tank-btn--d"
               disabled={!isRunning}
               {...bindTouch('turn-right')}
-              aria-label="Girar derecha"
+              aria-label="Turn right"
             >
               <kbd>D</kbd>
               <span>▶</span>
@@ -943,16 +944,16 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
         {isGameOver && (
           <div className="mission-debrief-card">
             <div className="debrief-header">
-              <h3>{isMissionCompleted ? 'OBJETIVO ALCANZADO' : 'MISIÓN FINALIZADA'}</h3>
-              <p>{isMissionCompleted ? 'Posición asegurada en la Baliza B.' : 'Operación concluida.'}</p>
+              <h3>{isMissionCompleted ? 'TARGET REACHED' : 'MISSION ENDED'}</h3>
+              <p>{isMissionCompleted ? 'Position secured at Beacon B.' : 'Operation concluded.'}</p>
             </div>
             <div className="debrief-grid">
               <div className="debrief-metric">
-                <span className="debrief-label">BATERÍA</span>
+                <span className="debrief-label">BATTERY</span>
                 <span className="debrief-val">{data.energy.toFixed(0)}%</span>
               </div>
               <div className="debrief-metric">
-                <span className="debrief-label">TIEMPO</span>
+                <span className="debrief-label">TIME</span>
                 <span className="debrief-val">{(snapshot.elapsedMs / 1000).toFixed(1)}s</span>
               </div>
               <div className="debrief-metric">

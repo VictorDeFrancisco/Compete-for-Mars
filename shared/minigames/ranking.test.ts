@@ -41,6 +41,6 @@ test('controles: teclado, ratón y presentación proceden de la misma definició
   assert.deepEqual(controls.forKey('KeyX'), []);
   assert.deepEqual(controls.forPointer(0), ['activate']);
   assert.equal(controls.hasAction('activate'), true);
-  assert.equal(controls.getAction('activate')?.label, 'Activar panel');
-  assert.match(controls.describe()[0].inputs, /Espacio/);
+  assert.equal(controls.getAction('activate')?.label, 'Trigger Panel');
+  assert.match(controls.describe()[0].inputs, /Space/);
 });

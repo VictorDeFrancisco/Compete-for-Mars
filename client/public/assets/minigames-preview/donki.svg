@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 500 320" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:affinity="https://www.affinity.studio/" style="fill-rule:evenodd;clip-rule:evenodd;">
+    <g id="fondo-espacio">
+        <path d="M488,0C494.623,0 500,5.377 500,12L500,308C500,314.623 494.623,320 488,320L12,320C5.377,320 0,314.623 0,308L0,12C0,5.377 5.377,0 12,0L488,0Z" style="fill:rgb(20,24,36);stroke:rgb(26,29,32);stroke-width:4px;"/>
+        <g opacity="0.6">
+            <circle cx="210" cy="35" r="1.5" style="fill:rgb(250,246,238);"/>
+            <circle cx="260" cy="70" r="2" style="fill:rgb(250,246,238);"/>
+            <circle cx="180" cy="110" r="1.5" style="fill:rgb(250,246,238);"/>
+            <circle cx="310" cy="40" r="1.5" style="fill:rgb(250,246,238);"/>
+            <circle cx="470" cy="65" r="2" style="fill:rgb(250,246,238);"/>
+            <g transform="matrix(1,0,0,1,5.611432,101.26097)">
+                <circle cx="470" cy="65" r="2" style="fill:rgb(250,246,238);"/>
+            </g>
+            <g transform="matrix(1,0,0,1,-38.514885,163.241866)">
+                <circle cx="470" cy="65" r="2" style="fill:rgb(250,246,238);"/>
+            </g>
+            <g transform="matrix(1,0,0,1,1.611432,217.060667)">
+                <circle cx="470" cy="65" r="2" style="fill:rgb(250,246,238);"/>
+            </g>
+            <g transform="matrix(1,0,0,1,-58.328942,46.613201)">
+                <circle cx="470" cy="65" r="2" style="fill:rgb(250,246,238);"/>
+            </g>
+            <g transform="matrix(1,0,0,1,-120.850571,90.362016)">
+                <circle cx="470" cy="65" r="2" style="fill:rgb(250,246,238);"/>
+            </g>
+            <g transform="matrix(1,0,0,1,-112.560951,167.241866)">
+                <circle cx="470" cy="65" r="2" style="fill:rgb(250,246,238);"/>
+            </g>
+            <g transform="matrix(1,0,0,1,-58.328942,97)">
+                <circle cx="470" cy="65" r="2" style="fill:rgb(250,246,238);"/>
+            </g>
+            <g transform="matrix(1,0,0,1,-202.440875,140.679948)">
+                <circle cx="470" cy="65" r="2" style="fill:rgb(250,246,238);"/>
+            </g>
+            <circle cx="430" cy="25" r="1.5" style="fill:rgb(250,246,238);"/>
+            <circle cx="240" cy="285" r="2" style="fill:rgb(250,246,238);"/>
+            <circle cx="290" cy="295" r="1.5" style="fill:rgb(250,246,238);"/>
+            <circle cx="160" cy="290" r="1.5" style="fill:rgb(250,246,238);"/>
+            <g transform="matrix(1,0,0,1,-71.622762,8.04152)">
+                <circle cx="160" cy="290" r="1.5" style="fill:rgb(250,246,238);"/>
+            </g>
+            <g transform="matrix(1,0,0,1,-106.230074,-30.810083)">
+                <circle cx="160" cy="290" r="1.5" style="fill:rgb(250,246,238);"/>
+            </g>
+            <g transform="matrix(1,0,0,1,-136.756333,5.04152)">
+                <circle cx="160" cy="290" r="1.5" style="fill:rgb(250,246,238);"/>
+            </g>
+            <g transform="matrix(1,0,0,1,-131.369342,-59.214191)">
+                <circle cx="160" cy="290" r="1.5" style="fill:rgb(250,246,238);"/>
+            </g>
+            <g transform="matrix(-1,0,0,1,38.109149,188.924415)">
+                <circle cx="1.5" cy="1.5" r="1.5" style="fill:rgb(250,246,238);"/>
+            </g>
+            <g transform="matrix(-1,0,0,1,13.222439,112.463932)">
+                <circle cx="1.5" cy="1.5" r="1.5" style="fill:rgb(250,246,238);"/>
+            </g>
+            <g transform="matrix(1,0,0,1,34.110315,-17.749117)">
+                <g transform="matrix(-1,0,0,1,13.222439,112.463932)">
+                    <circle cx="1.5" cy="1.5" r="1.5" style="fill:rgb(250,246,238);"/>
+                </g>
+            </g>
+            <g transform="matrix(1,0,0,1,58.40072,-51.311662)">
+                <g transform="matrix(-1,0,0,1,13.222439,112.463932)">
+                    <circle cx="1.5" cy="1.5" r="1.5" style="fill:rgb(250,246,238);"/>
+                </g>
+                <g transform="matrix(-1,0,0,1,-26.847473,79.276204)">
+                    <circle cx="1.5" cy="1.5" r="1.5" style="fill:rgb(250,246,238);"/>
+                </g>
+            </g>
+        </g>
+    </g>
+    <g id="sol-tormenta" transform="matrix(1.279878,0,0,1.279878,123.27765,130.288844)">
+        <path d="M15,-35C61.667,-48.333 78.333,-31.667 65,15" style="fill:none;fill-rule:nonzero;stroke:rgb(255,87,34);stroke-width:6px;stroke-linecap:round;"/>
+        <path d="M35,45C75,58.333 72.422,92.795 28.24,75.89" style="fill:none;fill-rule:nonzero;stroke:rgb(255,160,0);stroke-width:5px;stroke-linecap:round;"/>
+        <circle cx="0" cy="20" r="68" style="fill:rgb(230,81,0);stroke:rgb(26,29,32);stroke-width:4px;"/>
+        <g transform="matrix(0.878334,0,0,0.878334,-0,2.687994)">
+            <circle cx="0" cy="20" r="54" style="fill:rgb(255,143,0);stroke:rgb(26,29,32);stroke-width:3px;"/>
+        </g>
+        <g transform="matrix(0.781377,0,0,0.781377,-0,4.37246)">
+            <circle cx="0" cy="20" r="38" style="fill:rgb(255,213,79);"/>
+        </g>
+    </g>
+    <g id="ondas-radiacion-solar" transform="matrix(1,0,0,1,119.698687,42.043796)">
+        <g transform="matrix(1,0,0,1,35.223695,7.622488)">
+            <path d="M145,75C201.667,85 245,106.667 275,140" style="fill:none;fill-rule:nonzero;stroke:rgb(255,202,40);stroke-width:8px;stroke-linecap:round;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,35.223695,7.622488)">
+            <path d="M145,75C201.667,85 245,106.667 275,140" style="fill:none;fill-rule:nonzero;stroke:white;stroke-width:2.5px;stroke-linecap:round;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,-15,-9.877512)">
+            <path d="M135,125C188.333,135 236.667,153.333 280,180" style="fill:none;fill-rule:nonzero;stroke:rgb(255,87,34);stroke-width:9px;stroke-linecap:round;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,-15,-11.15739)">
+            <path d="M135,125C188.333,135 236.667,153.333 280,180" style="fill:none;fill-rule:nonzero;stroke:rgb(255,202,40);stroke-width:3px;stroke-linecap:round;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,-19.926961,-11.231998)">
+            <path d="M130.301,176.868C196.755,194.16 241.889,211.042 270,230" style="fill:none;fill-rule:nonzero;stroke:rgb(255,160,0);stroke-width:7px;stroke-linecap:round;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,0,-19.129898)">
+            <path d="M150,50C150,50 189.711,57.606 208.432,64.932C227.599,72.432 265,95 265,95" style="fill-opacity:0;fill-rule:nonzero;stroke:rgb(255,61,0);stroke-width:4px;stroke-linecap:round;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,-22.818594,-117.210912)">
+            <path d="M160,105C200.88,105.787 231.126,117.208 255,135" style="fill-opacity:0;fill-rule:nonzero;stroke:rgb(255,224,130);stroke-width:3px;stroke-linecap:round;"/>
+        </g>
+        <path d="M130,205L245,240" style="fill:none;fill-rule:nonzero;stroke:rgb(255,61,0);stroke-width:4px;stroke-linecap:round;"/>
+    </g>
+    <g id="escudo-magnetico">
+    </g>
+    <g id="base-colonia">
+    </g>
+    <g id="hud-telemetria">
+    </g>
+</svg>

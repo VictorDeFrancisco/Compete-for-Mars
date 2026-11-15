@@ -1,6 +1,9 @@
 import { useEffect, useRef } from 'react';
 import type { SolarStormData } from './SolarStormEngine';
 
+export const SOLAR_CANVAS_WIDTH = 1200;
+export const SOLAR_CANVAS_HEIGHT = 420;
+
 interface SolarStormCanvasProps {
   data: SolarStormData;
 }
@@ -53,11 +56,11 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
 
   // Manejo de eventos de partículas y efectos visuales temporales
   useEffect(() => {
-    const w = 680;
-    const baseX = w / 2; // 340
-    const groundY = 415;
+    const w = SOLAR_CANVAS_WIDTH;
+    const baseX = w / 2;
+    const groundY = 365;
     const baseCenterY = groundY - 14;
-    const canopyR = 135;
+    const canopyR = 138;
 
     // 1. Deflexión Crítica (Parry)
     if (data.criticalParryCount > prevCriticalCount.current) {
@@ -78,7 +81,7 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
       floatingTextsRef.current.push({
         x: hitX - 50,
         y: hitY - 20,
-        text: `¡PARRY CRÍTICO! x${data.combo}`,
+        text: `CRITICAL PARRY! x${data.combo}`,
         color: '#fef08a',
         life: 0,
         maxLife: 40,
@@ -117,7 +120,7 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
       floatingTextsRef.current.push({
         x: hitX - 40,
         y: hitY - 18,
-        text: data.combo > 1 ? `COMBO x${data.combo}!` : '¡DEFLECTADO!',
+        text: data.combo > 1 ? `COMBO x${data.combo}!` : 'DEFLECTED!',
         color: '#38bdf8',
         life: 0,
         maxLife: 30,
@@ -160,7 +163,7 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
       floatingTextsRef.current.push({
         x: hitX - 40,
         y: hitY - 25,
-        text: '¡DAÑO EN BASE!',
+        text: 'BASE DAMAGED!',
         color: '#f87171',
         life: 0,
         maxLife: 35,
@@ -192,7 +195,7 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
       floatingTextsRef.current.push({
         x: px - 38,
         y: py - 18,
-        text: '+12% VIDA',
+        text: '+12% HP',
         color: '#22c55e',
         life: 0,
         maxLife: 28,
@@ -229,10 +232,11 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
       const currentData = dataRef.current;
       const w = canvas.width;
       const h = canvas.height;
-      const baseX = w / 2; // 340
-      const groundY = 415;
+      const baseX = w / 2;
+      const baseOffset = baseX - 340;
+      const groundY = 365;
       const baseCenterY = groundY - 14;
-      const canopyR = 135;
+      const canopyR = 138;
 
       ctx.save();
 
@@ -282,8 +286,8 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
       ctx.restore();
 
       // El Sol visto desde Marte
-      const sunX = 100;
-      const sunY = 65;
+      const sunX = Math.round(w * 0.11);
+      const sunY = 58;
       const sunGlow = ctx.createRadialGradient(sunX, sunY, 6, sunX, sunY, 70);
       sunGlow.addColorStop(0, 'rgba(255, 255, 240, 0.95)');
       sunGlow.addColorStop(0.25, 'rgba(251, 191, 36, 0.6)');
@@ -299,29 +303,30 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
       ctx.arc(sunX, sunY, 14, 0, Math.PI * 2);
       ctx.fill();
 
-      // 2. Montañas y cráteres marcianos en el horizonte
+      // 2. Montañas y cráteres marcianos panorámicos en el horizonte
       ctx.fillStyle = '#3f1306';
       ctx.beginPath();
       ctx.moveTo(0, groundY);
-      ctx.lineTo(0, groundY - 65);
-      ctx.lineTo(85, groundY - 90);
-      ctx.lineTo(170, groundY - 62);
-      ctx.lineTo(270, groundY - 95);
-      ctx.lineTo(370, groundY - 68);
-      ctx.lineTo(470, groundY - 92);
-      ctx.lineTo(570, groundY - 64);
-      ctx.lineTo(w, groundY - 75);
+      ctx.lineTo(0, groundY - 62);
+      ctx.lineTo(w * 0.09, groundY - 88);
+      ctx.lineTo(w * 0.2, groundY - 58);
+      ctx.lineTo(w * 0.33, groundY - 92);
+      ctx.lineTo(w * 0.47, groundY - 64);
+      ctx.lineTo(w * 0.61, groundY - 94);
+      ctx.lineTo(w * 0.74, groundY - 60);
+      ctx.lineTo(w * 0.87, groundY - 86);
+      ctx.lineTo(w, groundY - 68);
       ctx.lineTo(w, groundY);
       ctx.closePath();
       ctx.fill();
 
-      // Capa media de dunas
+      // Capa media de dunas panorámicas
       ctx.fillStyle = '#5c1d09';
       ctx.beginPath();
       ctx.moveTo(0, groundY);
-      ctx.lineTo(0, groundY - 38);
-      ctx.bezierCurveTo(110, groundY - 52, 220, groundY - 28, 340, groundY - 44);
-      ctx.bezierCurveTo(460, groundY - 56, 570, groundY - 32, w, groundY - 42);
+      ctx.lineTo(0, groundY - 36);
+      ctx.bezierCurveTo(w * 0.17, groundY - 52, w * 0.34, groundY - 26, baseX, groundY - 42);
+      ctx.bezierCurveTo(w * 0.68, groundY - 54, w * 0.84, groundY - 30, w, groundY - 40);
       ctx.lineTo(w, groundY);
       ctx.closePath();
       ctx.fill();
@@ -336,40 +341,40 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
 
       // Rocas en el terreno
       ctx.fillStyle = 'rgba(67, 20, 7, 0.7)';
-      for (let r = 0; r < 28; r++) {
-        const rx = (r * 73 + 23) % w;
-        const ry = groundY + ((r * 19) % (h - groundY - 40));
+      for (let r = 0; r < 34; r++) {
+        const rx = (r * 83 + 23) % w;
+        const ry = groundY + ((r * 17) % Math.max(12, h - groundY - 12));
         ctx.beginPath();
         ctx.ellipse(rx, ry, 7 + (r % 4), 3.5, 0, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      // 3. LA BASE MARCIANA (Ares Base Alpha) en el suelo
-      // Módulo 1 (Izquierda, x = 180..220): Paneles Solares
+      // 3. LA BASE MARCIANA (Ares Base Alpha) centrada en baseX
+      // Módulo 1 (Izquierda): Paneles Solares
       ctx.fillStyle = '#1e293b';
-      ctx.fillRect(180, groundY - 24, 38, 24);
+      ctx.fillRect(baseOffset + 180, groundY - 24, 38, 24);
       ctx.strokeStyle = '#38bdf8';
       ctx.lineWidth = 1;
       for (let p = 0; p < 4; p++) {
-        ctx.strokeRect(182 + p * 9, groundY - 22, 7, 20);
+        ctx.strokeRect(baseOffset + 182 + p * 9, groundY - 22, 7, 20);
       }
       ctx.fillStyle = currentData.colonyIntegrity > 30 ? '#4ade80' : '#ef4444';
-      ctx.fillRect(222, groundY - 14, 5, 12);
+      ctx.fillRect(baseOffset + 222, groundY - 14, 5, 12);
 
-      // Módulo 2 (Medio-Izq, x = 235..280): Soporte Vital / Tanques O2
+      // Módulo 2 (Medio-Izq): Soporte Vital / Tanques O2
       ctx.fillStyle = '#94a3b8';
       ctx.beginPath();
-      ctx.roundRect(238, groundY - 32, 18, 32, 4);
-      ctx.roundRect(260, groundY - 28, 16, 28, 4);
+      ctx.roundRect(baseOffset + 238, groundY - 32, 18, 32, 4);
+      ctx.roundRect(baseOffset + 260, groundY - 28, 16, 28, 4);
       ctx.fill();
       ctx.strokeStyle = '#64748b';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(256, groundY - 18);
-      ctx.lineTo(294, groundY - 18);
+      ctx.moveTo(baseOffset + 256, groundY - 18);
+      ctx.lineTo(baseOffset + 294, groundY - 18);
       ctx.stroke();
 
-      // Módulo 3 (CENTRO, x = 295..385): CÚPULA BIOCLIMÁTICA CENTRAL
+      // Módulo 3 (CENTRO): CÚPULA BIOCLIMÁTICA CENTRAL
       const domeGlow = ctx.createRadialGradient(baseX, groundY - 14, 10, baseX, groundY - 14, 52);
       domeGlow.addColorStop(0, 'rgba(254, 240, 138, 0.85)');
       domeGlow.addColorStop(0.5, 'rgba(56, 189, 248, 0.4)');
@@ -402,36 +407,36 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
       ctx.fillStyle = currentData.colonyIntegrity > 30 ? '#38bdf8' : '#ef4444';
       ctx.fillRect(baseX - 5, groundY - 16, 10, 8);
 
-      // Módulo 4 (Medio-Der, x = 398..446): Laboratorio y Hábitat
+      // Módulo 4 (Medio-Der): Laboratorio y Hábitat
       ctx.fillStyle = '#e2e8f0';
       ctx.beginPath();
-      ctx.roundRect(398, groundY - 30, 48, 30, 5);
+      ctx.roundRect(baseOffset + 398, groundY - 30, 48, 30, 5);
       ctx.fill();
       ctx.fillStyle = '#fef08a';
-      ctx.fillRect(406, groundY - 24, 8, 7);
-      ctx.fillRect(420, groundY - 24, 8, 7);
-      ctx.fillRect(434, groundY - 24, 8, 7);
+      ctx.fillRect(baseOffset + 406, groundY - 24, 8, 7);
+      ctx.fillRect(baseOffset + 420, groundY - 24, 8, 7);
+      ctx.fillRect(baseOffset + 434, groundY - 24, 8, 7);
 
-      // Módulo 5 (Derecha, x = 460..495): Torre de Telecomunicaciones
+      // Módulo 5 (Derecha): Torre de Telecomunicaciones
       ctx.strokeStyle = '#94a3b8';
       ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.moveTo(475, groundY);
-      ctx.lineTo(475, groundY - 65);
-      ctx.moveTo(466, groundY);
-      ctx.lineTo(475, groundY - 40);
-      ctx.moveTo(484, groundY);
-      ctx.lineTo(475, groundY - 40);
+      ctx.moveTo(baseOffset + 475, groundY);
+      ctx.lineTo(baseOffset + 475, groundY - 65);
+      ctx.moveTo(baseOffset + 466, groundY);
+      ctx.lineTo(baseOffset + 475, groundY - 40);
+      ctx.moveTo(baseOffset + 484, groundY);
+      ctx.lineTo(baseOffset + 475, groundY - 40);
       ctx.stroke();
 
       ctx.fillStyle = '#cbd5e1';
       ctx.beginPath();
-      ctx.arc(475, groundY - 62, 12, -Math.PI / 1.5, Math.PI / 4);
+      ctx.arc(baseOffset + 475, groundY - 62, 12, -Math.PI / 1.5, Math.PI / 4);
       ctx.stroke();
 
       ctx.fillStyle = Math.sin(tick * 8) > 0 ? '#ef4444' : '#7f1d1d';
       ctx.beginPath();
-      ctx.arc(475, groundY - 68, 4, 0, Math.PI * 2);
+      ctx.arc(baseOffset + 475, groundY - 68, 4, 0, Math.PI * 2);
       ctx.fill();
 
       // 4. EL ESCUDO DEFLECTOR CANOPY (Cubre ~30% de la base, nunca el 90%)
@@ -669,23 +674,6 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
         ctx.restore();
       }
 
-      // 10. Insignia de Combo Activo en el Canvas
-      if (currentData.combo > 1) {
-        ctx.save();
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-        ctx.strokeStyle = currentData.combo >= 4 ? '#f59e0b' : '#38bdf8';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.roundRect(w - 130, 12, 118, 28, 6);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.font = '800 13px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace';
-        ctx.fillStyle = currentData.combo >= 4 ? '#fef08a' : '#38bdf8';
-        ctx.fillText(`⚡ COMBO x${currentData.combo}`, w - 120, 31);
-        ctx.restore();
-      }
-
       ctx.restore();
       animFrameRef.current = requestAnimationFrame(render);
     };
@@ -698,8 +686,8 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
     <div className="solar-canvas-wrapper">
       <canvas
         ref={canvasRef}
-        width={680}
-        height={480}
+        width={SOLAR_CANVAS_WIDTH}
+        height={SOLAR_CANVAS_HEIGHT}
         className="solar-canvas"
       />
     </div>

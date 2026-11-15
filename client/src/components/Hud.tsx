@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { GameView, PublicPlayer } from '../../../shared/types';
 import AstronautPortraitSvg, { resolvePlayerSuitColor } from './AstronautPortraitSvg';
+import { MusicToggleButton } from './BackgroundMusic';
 import { EnergyIcon, FoodIcon, RadiationIcon } from './ResourceIcons';
 import './Hud.css';
 
@@ -42,7 +43,7 @@ function playerStatusTag(player: PublicPlayer, phase: GameView['phase']): {
   tone: 'neutral' | 'ready' | 'score' | 'offline' | 'dead';
 } {
   if (player.health <= 0) {
-    return { label: 'MUERTO', tone: 'dead' };
+    return { label: 'DEAD', tone: 'dead' };
   }
   if (!player.connected) {
     return { label: 'OFFLINE', tone: 'offline' };
@@ -80,15 +81,16 @@ export default function Hud({
           <strong
             className={`top-hud__timer${seconds <= 10 ? ' top-hud__timer--low' : ''}`}
             role="timer"
-            aria-label={`Tiempo restante: ${seconds} segundos`}
+            aria-label={`Time remaining: ${seconds} seconds`}
           >
-            <span className="top-hud__timer-label">TIEMPO</span>
+            <span className="top-hud__timer-label">TIME</span>
             <span>{seconds}s</span>
           </strong>
         )}
       </div>
 
       <div className="top-hud__right">
+        <MusicToggleButton />
         {onLeave && (
           <button
             type="button"
@@ -323,7 +325,7 @@ export function BottomCrewDock({ game }: { game: GameView }) {
             <div key={item.id} className="crew-death-callout">
               <SkullSvg className="crew-death-callout__skull" />
               <span className="crew-death-callout__label">
-                {item.playerName.toUpperCase()} HA MUERTO
+                {item.playerName.toUpperCase()} DIED
               </span>
             </div>
           ))}

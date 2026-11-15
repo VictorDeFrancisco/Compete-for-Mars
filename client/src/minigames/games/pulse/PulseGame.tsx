@@ -15,8 +15,8 @@ export class PulseGame extends BaseMinigame<{ hits: number }> {
   }
 }
 function PulseView({ engine, snapshot }: MinigameViewProps<{ hits: number }>) {
-  return <><p>Cadencia mínima: {engine.modifiers.actionCooldownMs + engine.modifiers.reactionDelayMs} ms. Multiplicador de puntos por comida: {engine.modifiers.scoreMultiplier.toFixed(2)}.</p>
+  return <><p>Minimum cadence: {engine.modifiers.actionCooldownMs + engine.modifiers.reactionDelayMs} ms. Food score multiplier: {engine.modifiers.scoreMultiplier.toFixed(2)}.</p>
     <button disabled={snapshot.status !== 'running' || snapshot.data.hits >= 20}
-    onClick={() => engine.dispatch('activate')}>Activar panel ({snapshot.data.hits}/20)</button></>;
+    onClick={() => engine.dispatch('activate')}>Activate panel ({snapshot.data.hits}/20)</button></>;
 }
 export default defineModule(pulseDefinition, (definition: MinigameDefinition, context) => new PulseGame(definition, undefined, context), PulseView);

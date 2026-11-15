@@ -82,7 +82,7 @@ interface CircuitDiagramProps {
 }
 export const CircuitDiagram = memo(function CircuitDiagram({ board, side, found, lastMistake, disabled, onInspect }: CircuitDiagramProps) {
   const patternId = useId().replace(/:/g, '');
-  return <svg className="anomaly-circuit" viewBox="0 0 600 650" role="group" aria-label={side === 'reference' ? 'Circuito de referencia' : 'Circuito de inspección'}>
+  return <svg className="anomaly-circuit" viewBox="0 0 600 650" role="group" aria-label={side === 'reference' ? 'Reference circuit' : 'Inspected circuit'}>
     <defs><pattern id={patternId} width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r=".8" fill="#6b9580" opacity=".2" /></pattern></defs>
     <rect width="600" height="650" fill="#153c32" /><rect x="14" y="14" width="572" height="622" fill={`url(#${patternId})`} stroke="#4c7661" strokeWidth="2" />
     {[28, 572].flatMap(x => [28, 622].map(y => <g key={`${x}-${y}`}><circle cx={x} cy={y} r="7" fill="#172d27" stroke="#6c8870" strokeWidth="2" /><path d={`M${x - 3} ${y - 3}l6 6`} stroke="#78917a" strokeWidth="2" /></g>))}
@@ -97,7 +97,7 @@ export const CircuitDiagram = memo(function CircuitDiagram({ board, side, found,
       const selected = found.includes(index), wrong = lastMistake === index, inactive = disabled || selected;
       return <g key={part.id} transform={`translate(${part.x} ${part.y})`} className={`anomaly-part${selected ? ' anomaly-part--found' : ''}${wrong ? ' anomaly-part--wrong' : ''}`}
         role="button" tabIndex={inactive ? -1 : 0} aria-disabled={inactive} aria-pressed={selected}
-        aria-label={`${COMPONENT_NAMES[part.kind]} ${part.id}, ${side === 'reference' ? 'referencia' : 'inspección'}${selected ? ', encontrada' : ''}`}
+        aria-label={`${COMPONENT_NAMES[part.kind]} ${part.id}, ${side === 'reference' ? 'reference' : 'inspection'}${selected ? ', found' : ''}`}
         onClick={() => { if (!inactive) onInspect(index); }}
         onKeyDown={event => { if (!event.repeat && !inactive && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); onInspect(index); } }}>
         <rect className="anomaly-part-target" x={part.rotation ? -43 : -63} y={part.rotation ? -73 : -48} width={part.rotation ? 86 : 126} height={part.rotation ? 146 : 103} rx="3" />

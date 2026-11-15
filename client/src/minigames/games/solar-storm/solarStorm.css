@@ -2,186 +2,380 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 700px;
+  height: 100%;
+  min-height: 0;
   margin: 0 auto;
-  font-family: inherit;
-  color: #f1f5f9;
   user-select: none;
-  box-sizing: border-box;
+  font-family: 'Archivo', system-ui, sans-serif;
+  color: var(--ink-black, #1a1817);
 }
 
-/* Marco Integral de la Zona Jugable */
+/* Unified Wide Console Frame containing Top Bar + Viewport + Bottom Bar */
 .solar-storm__screen-frame {
-  position: relative;
+  display: flex;
+  flex-direction: column;
   width: 100%;
+  height: 100%;
+  min-height: 0;
   background: #090308;
-  border: 1px solid #334155;
-  border-radius: 10px;
+  border: 3px solid var(--ink-black, #1a1817);
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.95), 0 8px 24px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 4px 0 var(--ink-black, #1a1817);
+}
+
+/* Full-width Top Retro-NASA Telemetry Bar inside frame */
+.solar-storm__header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 16px;
+  background: var(--paper-cream, #f5efe0);
+  border-bottom: 3px solid var(--ink-black, #1a1817);
+  flex-shrink: 0;
+}
+
+.solar-storm__header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.solar-storm__badge {
+  background: var(--nasa-blue, #0b3d91);
+  color: #ffffff;
+  border: 2px solid var(--ink-black, #1a1817);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.solar-storm__episode {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--ink-black, #1a1817);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Inline DONKI Alert Strip */
+.solar-storm__alert-ticker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 4px 14px;
+  background: #ede1ca;
+  border: 2px solid var(--ink-black, #1a1817);
+  border-radius: 4px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #4a4236;
+  white-space: nowrap;
+}
+
+.solar-storm__alert-ticker--active {
+  background: #fad6cf;
+  border-color: #9e210e;
+  color: #7f1d1d;
+  animation: donkiAlertPulse 0.85s ease-in-out infinite alternate;
+}
+
+@keyframes donkiAlertPulse {
+  from {
+    background: #fad6cf;
+  }
+  to {
+    background: #fecaca;
+  }
+}
+
+.ticker-badge {
+  background: #dc2626;
+  color: #ffffff;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 900;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  padding: 1px 6px;
+  border: 1.5px solid var(--ink-black, #1a1817);
+  border-radius: 3px;
+}
+
+.ticker-desc {
+  color: #1a1817;
+}
+
+.ticker-time {
+  color: #b91c1c;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.ticker-clear {
+  letter-spacing: 0.03em;
+}
+
+.solar-storm__header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.solar-storm__combo {
+  background: #ede1ca;
+  color: #5c5243;
+  border: 2px solid var(--ink-black, #1a1817);
+  border-radius: 4px;
+  padding: 3px 9px;
+  font-family: 'JetBrains Mono', 'Courier Prime', monospace;
+  font-size: 0.8rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.solar-storm__combo--active {
+  background: #dbeafe;
+  color: #0b3d91;
+}
+
+.solar-storm__combo--hot {
+  background: #fef08a;
+  color: #92400e;
+}
+
+.solar-storm__score {
+  background: #dcfce7;
+  color: #166534;
+  border: 2px solid var(--ink-black, #1a1817);
+  border-radius: 4px;
+  padding: 3px 10px;
+  font-family: 'JetBrains Mono', 'Courier Prime', monospace;
+  font-size: 0.85rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Panoramic Mars Dome Canvas filling full console width */
+.solar-storm__viewport {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  cursor: crosshair;
+  touch-action: none;
 }
 
 .solar-canvas-wrapper {
   width: 100%;
-  display: flex;
-  justify-content: center;
+  height: 100%;
 }
 
 .solar-canvas {
-  width: 100%;
-  height: auto;
-  max-height: 480px;
   display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  touch-action: none;
+  transition: opacity 0.35s ease, filter 0.35s ease;
+}
+
+.solar-storm__viewport--defeated {
   cursor: default;
 }
 
-/* Ticker de Alerta DONKI superpuesto en la parte superior */
-.solar-storm__alert-ticker {
+.solar-storm__viewport--defeated .solar-canvas {
+  opacity: 0.24;
+  filter: grayscale(0.55) brightness(0.7);
+  cursor: default;
+}
+
+.solar-storm__defeat-overlay {
   position: absolute;
-  top: 10px;
-  left: 12px;
-  right: 12px;
+  inset: 0;
+  z-index: 5;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 8px;
-  background: rgba(15, 23, 42, 0.92);
-  backdrop-filter: blur(6px);
-  border: 1px solid rgba(245, 158, 11, 0.7);
-  border-radius: 6px;
-  padding: 5px 12px;
-  font-size: 0.74rem;
-  color: #f1f5f9;
-  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25);
-  animation: ticker-slide 0.25s ease-out;
-  z-index: 10;
+  padding: 18px;
+  text-align: center;
+  background: rgba(9, 3, 8, 0.58);
 }
 
-@keyframes ticker-slide {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
+.solar-storm__defeat-badge {
+  padding: 4px 12px;
+  background: #dc2626;
+  color: #ffffff;
+  border: 2.5px solid var(--ink-black, #1a1817);
+  border-radius: 5px;
+  box-shadow: 0 3px 0 var(--ink-black, #1a1817);
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
 }
 
-.ticker-badge {
-  font-size: 0.66rem;
+.solar-storm__defeat-title {
+  margin-top: 2px;
+  padding: 8px 20px;
+  background: var(--paper-cream, #f5efe0);
+  color: #991b1b;
+  border: 3px solid var(--ink-black, #1a1817);
+  border-radius: 7px;
+  box-shadow: 0 4px 0 var(--ink-black, #1a1817);
+  font-family: 'Archivo', sans-serif;
+  font-size: clamp(1.25rem, 2.5vw, 1.85rem);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.solar-storm__defeat-sub {
+  margin: 2px 0 0;
+  padding: 5px 14px;
+  background: rgba(245, 239, 224, 0.94);
+  color: var(--ink-black, #1a1817);
+  border: 2px solid var(--ink-black, #1a1817);
+  border-radius: 5px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.86rem;
   font-weight: 800;
-  padding: 2px 7px;
-  border-radius: 4px;
-  background: #78350f;
-  color: #fef08a;
-  white-space: nowrap;
 }
 
-.ticker-desc {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.ticker-desc strong {
-  color: #fbbf24;
-}
-
-.ticker-time {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.70rem;
-  font-weight: 800;
-  color: #f87171;
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.4);
-  padding: 2px 6px;
-  border-radius: 4px;
-  white-space: nowrap;
-}
-
-/* HUD de Datos Mínimos Integrado DEBAJO dentro de la Zona Jugable */
+/* Full-width Bottom Retro-NASA Telemetry Bar inside frame */
 .solar-storm__bottom-hud {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  width: 100%;
   display: grid;
-  grid-template-columns: 1.2fr 1fr 1.2fr;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 12px;
-  background: rgba(11, 17, 32, 0.90);
-  backdrop-filter: blur(8px);
-  border-top: 1px solid rgba(56, 189, 248, 0.35);
-  padding: 8px 14px;
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.6);
-  z-index: 10;
+  gap: 18px;
+  padding: 8px 16px;
+  background: var(--paper-cream, #f5efe0);
+  border-top: 3px solid var(--ink-black, #1a1817);
+  flex-shrink: 0;
 }
 
 .hud-metric {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
 }
 
 .hud-label-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: baseline;
+  gap: 8px;
 }
 
 .hud-title {
-  font-size: 0.65rem;
-  font-weight: 800;
-  color: #94a3b8;
-  letter-spacing: 0.04em;
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  color: #4a4236;
 }
 
 .hud-value {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.82rem;
-  font-weight: 800;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.88rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
 }
 
 .hud-bar-track {
   width: 100%;
-  height: 6px;
-  background: #1e293b;
-  border-radius: 3px;
+  height: 12px;
+  background: #dfd3bc;
+  border: 2px solid var(--ink-black, #1a1817);
+  border-radius: 999px;
   overflow: hidden;
 }
 
 .hud-bar-fill {
   height: 100%;
-  border-radius: 3px;
-  transition: width 0.15s ease, background 0.2s ease;
+  border-radius: 999px;
+  transition: width 0.1s linear, background-color 0.2s ease;
 }
 
 .hud-bar-fill--boosting {
-  animation: pulse-energy 0.4s infinite alternate;
+  animation: boostPulse 0.35s infinite alternate;
 }
 
-@keyframes pulse-energy {
-  from { opacity: 0.8; }
-  to { opacity: 1; filter: brightness(1.3); }
+@keyframes boostPulse {
+  from {
+    opacity: 0.82;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-/* Reloj / Horas Simuladas NASA (Centro del HUD inferior) */
 .hud-metric--clock {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  border-radius: 6px;
-  padding: 4px 6px;
-}
-
-.hud-clock-time {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.76rem;
-  font-weight: 800;
-  color: #38bdf8;
+  justify-content: center;
+  padding: 4px 16px;
+  background: #ede1ca;
+  border: 2px solid var(--ink-black, #1a1817);
+  border-radius: 5px;
   white-space: nowrap;
 }
 
-.hud-clock-sub {
+.hud-clock-label {
+  font-family: 'Archivo', sans-serif;
   font-size: 0.62rem;
-  color: #94a3b8;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: #5c5243;
+}
+
+.hud-clock-time {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.84rem;
+  font-weight: 900;
+  color: var(--ink-black, #1a1817);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 720px) {
+  .solar-storm__header {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 6px 10px;
+  }
+
+  .solar-storm__episode {
+    display: none;
+  }
+
+  .solar-storm__bottom-hud {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 6px 10px;
+  }
+
+  .hud-metric--clock {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    gap: 8px;
+  }
 }

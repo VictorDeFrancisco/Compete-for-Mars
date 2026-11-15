@@ -160,6 +160,8 @@ main .briefing-tabs button.briefing-tab.is-active {
 }
 
 .briefing-card__frame {
+  width: 100%;
+  margin: 0 auto;
   padding: 6px;
   background: #1A1817;
   border: 3px solid var(--ink-black, #1A1817);

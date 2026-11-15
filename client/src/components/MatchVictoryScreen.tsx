@@ -1,5 +1,6 @@
 import type { GameView, PublicPlayer } from '../../../shared/types';
 import AstronautPortraitSvg, { resolvePlayerSuitColor } from './AstronautPortraitSvg';
+import { MusicToggleButton } from './BackgroundMusic';
 import { playUiClick, playUiConfirm } from '../utils/uiAudio';
 import './MatchVictoryScreen.css';
 
@@ -46,7 +47,8 @@ export default function MatchVictoryScreen({
   const confettiPieces = Array.from({ length: 28 }, (_, i) => i);
 
   return (
-    <main className="victory-screen" aria-label="Fin de la partida">
+    <main className="victory-screen" aria-label="Match complete">
+      <MusicToggleButton className="bgm-toggle--victory" />
       <div className="victory-backdrop" aria-hidden="true">
         <div className="victory-stars" />
         <div className="victory-horizon" />
@@ -71,21 +73,21 @@ export default function MatchVictoryScreen({
       <section className="victory-card">
         <header className="victory-card__header">
           <div className="victory-card__kicker">
-            <span>EXPEDICIÓN {game.code}</span>
+            <span>EXPEDITION {game.code}</span>
             <span>·</span>
-            <span>{game.round} {game.round === 1 ? 'RONDA' : 'RONDAS'} EN MARTE</span>
+            <span>{game.round} {game.round === 1 ? 'ROUND' : 'ROUNDS'} ON MARS</span>
           </div>
           {!noSurvivor && winner && (
             <div className="victory-winner-callout">
-              GANADOR DE LA EXPEDICIÓN
+              EXPEDITION WINNER
             </div>
           )}
           <h1 className="victory-card__title victory-card__title--hero">
             {noSurvivor
-              ? 'BASE PERDIDA EN MARTE'
+              ? 'MARS BASE LOST'
               : winner
-                ? `¡HA GANADO ${winner.name.toUpperCase()}!`
-                : 'EXPEDICIÓN FINALIZADA'}
+                ? `${winner.name.toUpperCase()} WINS!`
+                : 'EXPEDITION COMPLETE'}
           </h1>
         </header>
 
@@ -93,7 +95,7 @@ export default function MatchVictoryScreen({
           {winner && (
             <div className="victory-champion">
               <div className="victory-champion__badge">
-                {noSurvivor ? 'ÚLTIMO EN PIE' : 'CAMPEÓN DE ARES'}
+                {noSurvivor ? 'LAST STANDING' : 'CHAMPION OF ARES'}
               </div>
               <div className="victory-champion__portrait">
                 <AstronautPortraitSvg
@@ -105,7 +107,7 @@ export default function MatchVictoryScreen({
               <div className="victory-champion__identity">
                 <strong className="victory-champion__name">
                   {winner.name}
-                  {winner.id === game.self.id ? ' (TÚ)' : ''}
+                  {winner.id === game.self.id ? ' (YOU)' : ''}
                 </strong>
                 <div className="victory-champion__stats">
                   <span>♥ {Math.max(0, winner.health)}/{winner.maxHealth} HP</span>
@@ -116,7 +118,7 @@ export default function MatchVictoryScreen({
           )}
 
           <div className="victory-standings">
-            <h2 className="victory-standings__heading">CLASIFICACIÓN FINAL DE LA TRIPULACIÓN</h2>
+            <h2 className="victory-standings__heading">FINAL CREW STANDINGS</h2>
             <div className="victory-standings__list">
               {standings.map((player, rankIdx) => {
                 const slotIdx = Math.max(0, game.players.findIndex(p => p.id === player.id));
@@ -141,10 +143,10 @@ export default function MatchVictoryScreen({
                     />
                     <div className="victory-row__info">
                       <div className="victory-row__name">
-                        <strong>{player.name}{isSelf ? ' (TÚ)' : ''}</strong>
+                        <strong>{player.name}{isSelf ? ' (YOU)' : ''}</strong>
                         {player.isBot && <span className="victory-pill">BOT</span>}
-                        {isWinner && <span className="victory-pill victory-pill--gold">GANADOR</span>}
-                        {player.health <= 0 && <span className="victory-pill victory-pill--dead">CAÍDO</span>}
+                        {isWinner && <span className="victory-pill victory-pill--gold">WINNER</span>}
+                        {player.health <= 0 && <span className="victory-pill victory-pill--dead">DEAD</span>}
                       </div>
                       <div className="victory-row__hp">
                         <div className="victory-row__hp-bar">
@@ -175,7 +177,7 @@ export default function MatchVictoryScreen({
               onLeave();
             }}
           >
-            SALIR DE LA SALA
+            LEAVE ROOM
           </button>
 
           {isHost ? (
@@ -188,11 +190,11 @@ export default function MatchVictoryScreen({
                 onRestart();
               }}
             >
-              ▶ JUGAR OTRA PARTIDA
+              ▶ PLAY AGAIN
             </button>
           ) : (
             <div className="victory-waiting">
-              ESPERANDO A QUE EL ANFITRIÓN INICIE OTRA PARTIDA...
+              WAITING FOR HOST TO START A NEW MATCH...
             </div>
           )}
         </footer>

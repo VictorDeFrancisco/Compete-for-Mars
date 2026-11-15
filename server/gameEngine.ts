@@ -10,7 +10,7 @@ import type { Card, Entry, GameView, MinigameDefinition, PublicPlayer, Resources
 
 export const CARDS: Card[] = CARD_CATALOG;
 export { MINIGAMES, ROUND_RESOURCE_UPKEEP };
-export const RESULT_GRACE_MS = 1500;
+export const RESULT_GRACE_MS = 3500;
 export const BASE_WIN_RESOURCE_BONUS = 24;
 export const WIN_BONUS_ROUND_DECAY = 2;
 export const RADIATION_HEALTH_DAMAGE = 10;
@@ -74,15 +74,15 @@ export function pickNextMinigame(room: Room, random: () => number = Math.random)
 
 export function validateEntry(input: unknown): Entry {
   const entry = input as Partial<Entry> | null;
-  requireRule(entry && typeof entry.name === 'string', 'Introduce un nombre.');
+  requireRule(entry && typeof entry.name === 'string', 'Enter a callsign.');
   const name = entry.name.trim();
-  requireRule(name.length >= 1 && name.length <= 24, 'El nombre debe tener entre 1 y 24 caracteres.');
+  requireRule(name.length >= 1 && name.length <= 24, 'Name must be between 1 and 24 characters.');
   const stats = entry.stats;
   requireRule(stats && ['energy', 'food', 'health'].every(key => {
     const value = stats[key as keyof Stats];
     return Number.isInteger(value) && value >= 0 && value <= STAT_BUDGET;
-  }), `Cada estadística debe ser un entero entre 0 y ${STAT_BUDGET}.`);
-  requireRule(stats.energy + stats.food + stats.health === STAT_BUDGET, `Reparte exactamente ${STAT_BUDGET} puntos.`);
+  }), `Each stat must be an integer between 0 and ${STAT_BUDGET}.`);
+  requireRule(stats.energy + stats.food + stats.health === STAT_BUDGET, `Allocate exactly ${STAT_BUDGET} points.`);
   return { name, stats: { energy: stats.energy, food: stats.food, health: stats.health } };
 }
 
@@ -182,10 +182,10 @@ function transition(room: Room, phase: Room['phase'], duration: number | null, n
 }
 
 export function startRound(room: Room, actor: Player, now = Date.now(), random: () => number = Math.random) {
-  requireRule(room.phase === 'lobby' && room.hostId === actor.id, 'Solo el anfitrión puede iniciar desde el lobby.');
+  requireRule(room.phase === 'lobby' && room.hostId === actor.id, 'Only the host can start from the lobby.');
   const alivePlayers = room.players.filter(p => p.health > 0);
-  requireRule(alivePlayers.length > 0 && !room.matchFinished && room.winnerId === null, 'La partida ya ha terminado.');
-  requireRule(room.players.length <= MAX_PLAYERS && alivePlayers.every(p => p.connected && p.ready), 'Todos los supervivientes deben estar conectados y listos.');
+  requireRule(alivePlayers.length > 0 && !room.matchFinished && room.winnerId === null, 'The match has already finished.');
+  requireRule(room.players.length <= MAX_PLAYERS && alivePlayers.every(p => p.connected && p.ready), 'All surviving players must be connected and ready.');
   room.round++;
   room.minigame = pickNextMinigame(room, random);
   const hasCardsPhase = room.round > 1;
@@ -205,19 +205,19 @@ export function startRound(room: Room, actor: Player, now = Date.now(), random: 
 }
 
 export function currentPhase(room: Room, expected: Room['phase'], phaseId: unknown) {
-  requireRule(room.phase === expected && phaseId === room.phaseId, 'Esta acción ya no corresponde a la fase actual.');
+  requireRule(room.phase === expected && phaseId === room.phaseId, 'This action is no longer valid for the current phase.');
 }
 
 export function chooseCard(room: Room, player: Player, cardId: unknown, targetId?: unknown) {
-  requireRule(room.phase === 'cards' && room.players.includes(player), 'No puedes elegir cartas en esta fase.');
-  requireRule(!player.hasChosenCard, 'Ya has elegido una carta.');
+  requireRule(room.phase === 'cards' && room.players.includes(player), 'You cannot choose cards during this phase.');
+  requireRule(!player.hasChosenCard, 'You have already chosen a card.');
   const card = room.cards.find(c => c.id === cardId);
-  requireRule(card, 'Esta carta no está disponible en la ronda.');
+  requireRule(card, 'This card is not available in this round.');
   const unavailable = cardUnavailable(player, card);
-  requireRule(!unavailable, unavailable ?? 'Carta no disponible.');
+  requireRule(!unavailable, unavailable ?? 'Card unavailable.');
   if (card.targetRequired) {
-    requireRule(typeof targetId === 'string' && room.players.some(p => p.id === targetId && p.id !== player.id && p.health > 0), 'Elige a otro jugador vivo como objetivo.');
-  } else requireRule(targetId === undefined || targetId === null, 'Esta carta no admite objetivo.');
+    requireRule(typeof targetId === 'string' && room.players.some(p => p.id === targetId && p.id !== player.id && p.health > 0), 'Choose another living player as the target.');
+  } else requireRule(targetId === undefined || targetId === null, 'This card does not accept a target.');
   player.selectedCardId = card.id; player.selectedTargetId = card.targetRequired ? targetId as string : null; player.hasChosenCard = true;
 }
 export function updateLiveProgress(room: Room, player: Player, rawScore: unknown): boolean {
@@ -230,10 +230,10 @@ export function updateLiveProgress(room: Room, player: Player, rawScore: unknown
 }
 
 export function submitResult(room: Room, player: Player, input: unknown) {
-  requireRule(player.health > 0 && room.phase === 'playing', 'Los jugadores eliminados no pueden enviar resultado.');
-  requireRule(!player.hasSubmitted, 'Ya has enviado tu resultado.');
+  requireRule(player.health > 0 && room.phase === 'playing', 'Eliminated players cannot submit results.');
+  requireRule(!player.hasSubmitted, 'You have already submitted your result.');
   const result = validateResult(room.minigame, input);
-  requireRule(result.reason !== 'aborted', 'Un intento abortado no se puede enviar.');
+  requireRule(result.reason !== 'aborted', 'An aborted attempt cannot be submitted.');
   player.result = result; player.score = result.score; player.liveScore = result.score; player.hasSubmitted = true;
 }
 
@@ -279,7 +279,13 @@ export function advanceIfComplete(room: Room, now = Date.now()): boolean {
   ) {
     const ranking = rankResults(
       room.minigame,
-      alivePlayers.map(player => ({ playerId: player.id, result: player.result ?? timeoutResult(room.minigame) })),
+      alivePlayers.map(player => ({
+        playerId: player.id,
+        result: player.result ?? {
+          ...timeoutResult(room.minigame),
+          score: clamp(Math.round(player.liveScore ?? 0), 0, room.minigame.maxScore),
+        },
+      })),
     );
     const deathsBefore = room.players.filter(p => p.health <= 0).length;
     const rewardResource = minigameRewardResource(room.minigame);
@@ -370,8 +376,8 @@ function finishMatchIfNeeded(room: Room, fallbackWinner: string | null = null): 
 }
 
 export function restartMatch(room: Room, actor: Player, now = Date.now()): void {
-  requireRule(room.hostId === actor.id, 'Solo el anfitrión puede reiniciar la partida.');
-  requireRule(room.matchFinished || room.winnerId !== null, 'La partida todavía está en curso.');
+  requireRule(room.hostId === actor.id, 'Only the host can restart the match.');
+  requireRule(room.matchFinished || room.winnerId !== null, 'The match is still in progress.');
   room.players = room.players.filter(p => p.isBot || p.connected);
   room.round = 0;
   room.matchFinished = false;

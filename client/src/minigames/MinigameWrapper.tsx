@@ -15,7 +15,7 @@ export interface MinigameWrapperProps {
 }
 export default function MinigameWrapper(props: MinigameWrapperProps) {
   const module = getMinigameModule(props.definition.id);
-  if (!module) return <p role="alert">No está registrado el minijuego «{props.definition.id}».</p>;
+  if (!module) return <p role="alert">Minigame "{props.definition.id}" is not registered.</p>;
   return <Runner {...props} module={module} />;
 }
 function Runner({

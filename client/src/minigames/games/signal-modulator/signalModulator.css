@@ -53,6 +53,18 @@
   color: var(--ink-black, #1a1817);
 }
 
+.signal-mod__score {
+  padding: 4px 12px;
+  border-radius: 4px;
+  background: #dcfce7;
+  border: 2px solid var(--ink-black, #1a1817);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.98rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: #166534;
+}
+
 .signal-mod__station {
   padding: 4px 12px;
   border-radius: 4px;

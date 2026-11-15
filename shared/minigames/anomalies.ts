@@ -1,12 +1,12 @@
 import { defineMinigame } from './types';
 
 export const anomaliesDefinition = defineMinigame({
-  id: 'anomalies', title: 'Detección de anomalías', mode: 'score', durationMs: 60_000, maxScore: 10_000,
-  instructions: 'Compara los dos circuitos dibujados y marca las 3 piezas que son distintas: interruptores, pilotos, resistencias, fusibles, diodos y otros componentes. Puedes pulsar en cualquiera de los dos circuitos: cada pareja cuenta una vez. Cada acierto suma 10 puntos; encontrar las tres diferencias añade 30 y abre otro panel sin reiniciar el minuto. Un error resta 10 puntos y bloquea todas las selecciones durante 3 segundos mientras el reloj sigue corriendo. La energía y la comida bajas ralentizan la cadencia de selección.',
-  objective: 'Detecta tantas anomalías como puedas durante un minuto.',
+  id: 'anomalies', title: 'Anomaly Detection', mode: 'score', durationMs: 60_000, maxScore: 10_000,
+  instructions: 'Compare the two circuit boards and mark the 3 mismatched components: switches, indicators, resistors, fuses, diodes, and relays. You can click on either board — each pair counts once. Every correct match awards 10 points; finding all three clears the panel for +30 bonus points and opens a new board without resetting the 60s timer. A mistake deducts 10 points and locks selection for 3 seconds. Low energy and food slow down selection speed.',
+  objective: 'Spot as many circuit anomalies as possible in one minute.',
   controls: [{
-    id: 'inspect', label: 'Marcar componente', description: 'Clic o toque sobre una pieza del circuito. Con teclado, usa Tab y Enter o Espacio.',
-    bindings: [{ device: 'pointer', button: 0, label: 'Clic sobre un componente' }, { device: 'touch', label: 'Tocar un componente' }],
+    id: 'inspect', label: 'Flag Component', description: 'Click or tap a circuit component. On keyboard, use Tab and Enter or Space.',
+    bindings: [{ device: 'pointer', button: 0, label: 'Click component' }, { device: 'touch', label: 'Tap component' }],
   }],
   rewards: { winner: { resources: { energy: 20 } }, loser: {}, ties: 'share' },
 });

@@ -1,10 +1,11 @@
+import { MusicToggleButton } from './BackgroundMusic';
 import MarsBackdrop from './MarsBackdrop';
 import './StartScreen.css';
 
 export interface StartScreenProps {
   onCreateScreen: () => void;
   onJoinScreen: () => void;
-  onOpenTest: () => void;
+  onOpenHowToPlay?: () => void;
   showBackdrop?: boolean;
   exiting?: boolean;
 }
@@ -12,7 +13,7 @@ export interface StartScreenProps {
 export default function StartScreen({
   onCreateScreen,
   onJoinScreen,
-  onOpenTest,
+  onOpenHowToPlay,
   showBackdrop = true,
   exiting = false,
 }: StartScreenProps) {
@@ -25,13 +26,7 @@ export default function StartScreen({
 
       <div className="start-screen__hud">
         <header className="start-screen__top">
-          <button
-            type="button"
-            className="start-screen__test-btn"
-            onClick={onOpenTest}
-          >
-            TEST LAB
-          </button>
+          <MusicToggleButton />
         </header>
 
         <div className="start-screen__title-stage">
@@ -54,7 +49,7 @@ export default function StartScreen({
               className="start-screen__btn start-screen__btn--primary"
               onClick={onCreateScreen}
             >
-              ► CREATE ROOM
+              CREATE ROOM
             </button>
             <button
               type="button"
@@ -63,6 +58,15 @@ export default function StartScreen({
             >
               JOIN ROOM
             </button>
+            {onOpenHowToPlay && (
+              <button
+                type="button"
+                className="start-screen__btn start-screen__btn--secondary"
+                onClick={onOpenHowToPlay}
+              >
+                HOW TO PLAY
+              </button>
+            )}
           </nav>
         </div>
       </div>
