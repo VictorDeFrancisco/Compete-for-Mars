@@ -4,7 +4,7 @@ import { DEFAULT_MINIGAME_CONTEXT } from '../../../../../shared/minigames/contex
 import { suitUpDefinition } from '../../../../../shared/minigames/suitUp';
 import { validateResult } from '../../../../../shared/minigames/ranking';
 import { DEFAULT_SUIT_STEPS, type SuitStep } from './suitStepsConfig';
-import { SuitUpEngine } from './SuitUpEngine';
+import { SuitUpEngine, calculateSuitUpTimeBonus } from './SuitUpEngine';
 
 test('SuitUpEngine inicializa en paso 0 con telemetría en cero', () => {
   const game = new SuitUpEngine(suitUpDefinition, () => 0, DEFAULT_MINIGAME_CONTEXT, DEFAULT_SUIT_STEPS);
@@ -145,7 +145,7 @@ test('Mash QTE: pulsaciones rápidas llenan el medidor y completan el paso', () 
   const result = game.getResult();
   assert.ok(result);
   assert.equal(result.completed, true);
-  assert.equal(result.score, 120);
+  assert.equal(result.score, 120 + calculateSuitUpTimeBonus(suitUpDefinition.durationMs, suitUpDefinition.durationMs));
 });
 
 test('Hold QTE: mantener y soltar en la zona óptima completa con éxito', () => {
@@ -188,7 +188,10 @@ test('Hold QTE: mantener y soltar en la zona óptima completa con éxito', () =>
   const result = game.getResult();
   assert.ok(result);
   assert.equal(result.completed, true);
-  assert.equal(result.score, 130); // 100 base + 30 perfect
+  assert.equal(
+    result.score,
+    130 + calculateSuitUpTimeBonus(suitUpDefinition.durationMs - 750, suitUpDefinition.durationMs),
+  ); // 100 base + 30 perfect + time bonus
 });
 
 test('Hold QTE: soltar demasiado pronto resulta en MISS', () => {
@@ -256,8 +259,11 @@ test('Modificadores de recursos: baja comida reduce puntos proporcionalmente', (
   game.dispatch('action-primary', 'press');
   const result = game.getResult();
   assert.ok(result);
-  // Con comida 0, scoreMultiplier es 0.75 => 100 * 0.75 = 75
-  assert.equal(result.score, 75);
+  // Con comida 0, scoreMultiplier es 0.75 => 100 * 0.75 = 75 + bonus de tiempo escalado por 0.75
+  assert.equal(
+    result.score,
+    75 + calculateSuitUpTimeBonus(suitUpDefinition.durationMs, suitUpDefinition.durationMs, 0.75),
+  );
 });
 
 test('Timeout al expirar durationMs genera resultado válido según contrato', () => {

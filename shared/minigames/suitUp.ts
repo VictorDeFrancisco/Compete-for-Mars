@@ -9,7 +9,7 @@ export const suitUpDefinition = defineMinigame({
   instructions:
     'Suit up and seal your NASA EVA suit before time expires by completing each Quick Time Event (QTE): hit timing zones, mash to pressurize, hold and release inside the green zone, or enter directional latch sequences. Use arrow keys (↑ ↓ ← →), Space, or the on-screen controls. Low energy speeds up targets; low food reduces score.',
   objective:
-    'First astronaut to fully seal their EVA suit wins. If no one finishes in time, component progress breaks ties.',
+    'An emergency EVA sortie is required outside the airlock. Seal every spacesuit layer as fast as possible—first to finish wins, and time remaining boosts your score.',
   controls: [
     {
       id: 'action-primary',

@@ -9,7 +9,7 @@ export const solarStormDefinition = defineMinigame({
   instructions:
     'Real NASA DONKI telemetry tracks solar flares and coronal mass ejections (CMEs) heading for your Mars dome. Aim the Magnetic Shield between 115° and 245° using A/D, arrow keys, or pointer/touch over the dome to intercept incoming waves before impact (centering a wave triggers a Critical Parry for +50 bonus pts). Catch falling green orbs to heal +12% base integrity (+50 pts), and hold Space, W, or ↑ to widen the shield to 48° during heavy bursts.',
   objective:
-    'Intercept NASA DONKI solar waves (+100 pts), land Critical Parries, and catch green orbs to repair base integrity.',
+    'NASA DONKI telemetry detects solar flares and CMEs bound for Ares Base Alpha. Deflect incoming waves (+100 pts) and catch green ion orbs to keep the dome intact.',
   controls: [
     {
       id: 'turn-left',

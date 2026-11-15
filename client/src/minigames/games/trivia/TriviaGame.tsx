@@ -1,7 +1,9 @@
+import { useEffect, useRef } from 'react';
 import type { MinigameContext } from '../../../../../shared/minigames/context';
 import { triviaDefinition } from '../../../../../shared/minigames/trivia';
 import type { MinigameDefinition } from '../../../../../shared/minigames/types';
 import { defineModule, type MinigameViewProps } from '../../core/module';
+import { playSfxError, playSfxSuccess } from '../../../utils/uiAudio';
 import { TriviaGame, type TriviaData } from './TriviaEngine';
 import './TriviaGame.css';
 
@@ -17,6 +19,19 @@ function TriviaView({ engine, snapshot }: MinigameViewProps<TriviaData>) {
   const isLastQuestion = data.currentIndex + 1 >= data.questions.length;
   const timerRatio = Math.max(0, Math.min(1, data.questionRemainingMs / data.questionDurationMs));
   const isLowTime = !answered && data.questionRemainingMs <= 5000;
+  const prevAnsweredKeyRef = useRef<string>('');
+
+  useEffect(() => {
+    const key = `${data.currentIndex}:${answered}`;
+    if (answered && prevAnsweredKeyRef.current !== key) {
+      if (data.isCorrect) {
+        playSfxSuccess();
+      } else {
+        playSfxError();
+      }
+    }
+    prevAnsweredKeyRef.current = key;
+  }, [answered, data.currentIndex, data.isCorrect]);
 
   return (
     <div className="trivia-game">
@@ -80,6 +95,7 @@ function TriviaView({ engine, snapshot }: MinigameViewProps<TriviaData>) {
                   : 'INCORRECT · +0 PTS'}
             </p>
             <p className="trivia-game__feedback-fact">{question.fact}</p>
+            <p className="trivia-game__feedback-source">Source: {question.source}</p>
           </div>
           <button
             type="button"

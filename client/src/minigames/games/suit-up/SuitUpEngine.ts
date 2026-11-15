@@ -15,6 +15,21 @@ import {
 
 export type HitRating = 'PERFECT' | 'GOOD' | 'MISS';
 
+const SUIT_UP_TIME_MAX_BONUS = 250;
+
+/**
+ * Calcula el bonus de puntuación por tiempo restante al completar el sellado del traje.
+ */
+export function calculateSuitUpTimeBonus(
+  remainingMs: number,
+  durationMs: number,
+  scoreMultiplier: number = 1,
+): number {
+  const safeDurationMs = Math.max(1, durationMs);
+  const remainingRatio = Math.max(0, Math.min(1, remainingMs / safeDurationMs));
+  return Math.round(remainingRatio * SUIT_UP_TIME_MAX_BONUS * scoreMultiplier);
+}
+
 export interface SuitUpData {
   /** Índice del paso actual (0 a totalSteps - 1) */
   currentStepIndex: number;
@@ -338,6 +353,16 @@ export class SuitUpEngine extends BaseMinigame<SuitUpData> {
 
     // ¿Se han completado todos los pasos? ¡Traje presurizado y carrera terminada!
     if (nextIndex >= this.steps.length) {
+      const snap = this.getSnapshot();
+      const timeBonus = calculateSuitUpTimeBonus(
+        snap.remainingMs,
+        this.definition.durationMs,
+        this.modifiers.scoreMultiplier,
+      );
+      if (timeBonus > 0) {
+        this.addScore(timeBonus);
+      }
+
       this.setData({
         ...data,
         currentStepIndex: nextIndex,
@@ -345,7 +370,10 @@ export class SuitUpEngine extends BaseMinigame<SuitUpData> {
         completedParts,
         qteProgress: 1,
         lastRating: rating,
-        lastRatingMessage: 'SPACESUIT 100% SEALED AND OPERATIONAL!',
+        lastRatingMessage:
+          timeBonus > 0
+            ? `SPACESUIT 100% SEALED! +${timeBonus} TIME BONUS`
+            : 'SPACESUIT 100% SEALED AND OPERATIONAL!',
         combo: newCombo,
         bestCombo,
         suitPressurePsi: 4.3,

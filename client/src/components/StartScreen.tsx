@@ -6,6 +6,7 @@ export interface StartScreenProps {
   onCreateScreen: () => void;
   onJoinScreen: () => void;
   onOpenHowToPlay?: () => void;
+  onOpenLore?: () => void;
   showBackdrop?: boolean;
   exiting?: boolean;
 }
@@ -14,6 +15,7 @@ export default function StartScreen({
   onCreateScreen,
   onJoinScreen,
   onOpenHowToPlay,
+  onOpenLore,
   showBackdrop = true,
   exiting = false,
 }: StartScreenProps) {
@@ -65,6 +67,16 @@ export default function StartScreen({
                 onClick={onOpenHowToPlay}
               >
                 HOW TO PLAY
+              </button>
+            )}
+
+            {onOpenLore && (
+              <button
+                type="button"
+                className="start-screen__btn start-screen__btn--secondary"
+                onClick={onOpenLore}
+              >
+                MISSION LORE
               </button>
             )}
           </nav>

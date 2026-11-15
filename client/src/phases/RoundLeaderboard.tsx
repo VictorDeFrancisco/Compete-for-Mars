@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { GameView } from '../../../shared/types';
 import AstronautPortraitSvg, { resolvePlayerSuitColor } from '../components/AstronautPortraitSvg';
 import { EnergyIcon, FoodIcon, HealthIcon } from '../components/ResourceIcons';
-import { playUiConfirm } from '../utils/uiAudio';
+import { playSfxFanfare, playUiConfirm } from '../utils/uiAudio';
 import './RoundLeaderboard.css';
 
 export interface RoundLeaderboardProps {
@@ -38,6 +38,7 @@ export default function RoundLeaderboard({ game, onContinue }: RoundLeaderboardP
 
   useEffect(() => {
     if (!showRoundEndedSplash) return;
+    playSfxFanfare(false);
     const timer = window.setTimeout(dismissSplash, 2000);
     return () => window.clearTimeout(timer);
   }, [showRoundEndedSplash, dismissSplash]);

@@ -14,14 +14,15 @@ interface BackgroundMusicProviderProps {
 }
 
 const STORAGE_KEY = 'mars_music_muted';
-const NORMAL_VOLUME = 0.3;
-const DUCKED_VOLUME = 0.15;
+const NORMAL_VOLUME = 0.22;
+const DUCKED_VOLUME = 0.06;
 
 /**
  * Provides persistent Mars theme audio across all screens and exposes mute state.
  */
 export function BackgroundMusicProvider({ ducked = false, children }: BackgroundMusicProviderProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [countdownDucked, setCountdownDucked] = useState(false);
   const [muted, setMuted] = useState<boolean>(() => {
     try {
       return window.localStorage.getItem(STORAGE_KEY) === '1';
@@ -31,12 +32,21 @@ export function BackgroundMusicProvider({ ducked = false, children }: Background
   });
 
   useEffect(() => {
+    const onCountdownDuck = (event: Event) => {
+      const custom = event as CustomEvent<boolean>;
+      setCountdownDucked(Boolean(custom.detail));
+    };
+    window.addEventListener('mars:countdown-duck', onCountdownDuck);
+    return () => window.removeEventListener('mars:countdown-duck', onCountdownDuck);
+  }, []);
+
+  useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    audio.volume = muted ? 0 : ducked ? DUCKED_VOLUME : NORMAL_VOLUME;
+    audio.volume = muted ? 0 : (ducked || countdownDucked) ? DUCKED_VOLUME : NORMAL_VOLUME;
     audio.muted = muted;
-  }, [ducked, muted]);
+  }, [ducked, countdownDucked, muted]);
 
   useEffect(() => {
     const audio = audioRef.current;

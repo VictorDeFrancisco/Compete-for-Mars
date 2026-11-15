@@ -10,6 +10,7 @@ import {
 import { MAP_SIZE, calculateMarsCoordinates } from './jezeroMapData';
 import { fetchNasaMarsTelemetry } from './nasaMarsApi';
 import { ROVER_GLB_GEOMETRY } from './roverModelData';
+import { playSfxError, playSfxFanfare } from '../../../utils/uiAudio';
 import './MarsRoverGame.css';
 
 export { MarsRoverGame, type MarsRoverData };
@@ -227,6 +228,23 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
   const isRunning = status === 'running';
   const isGameOver = status === 'finished' || snapshot.result !== null;
   const isMissionCompleted = snapshot.result?.completed ?? false;
+  const prevCompletedRef = useRef(isMissionCompleted);
+  const prevFailedRef = useRef(isGameOver && !isMissionCompleted);
+  const prevStalledRef = useRef(data.isStalled);
+
+  useEffect(() => {
+    const failed = isGameOver && !isMissionCompleted;
+    if (isMissionCompleted && !prevCompletedRef.current) {
+      playSfxFanfare(false);
+    } else if (failed && !prevFailedRef.current) {
+      playSfxError();
+    } else if (data.isStalled && !prevStalledRef.current) {
+      playSfxError();
+    }
+    prevCompletedRef.current = isMissionCompleted;
+    prevFailedRef.current = failed;
+    prevStalledRef.current = data.isStalled;
+  }, [isGameOver, isMissionCompleted, data.isStalled]);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const [viewportSize, setViewportSize] = useState({ width: 960, height: 540 });

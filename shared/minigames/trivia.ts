@@ -8,7 +8,7 @@ export const triviaDefinition = defineMinigame({
   maxScore: 100,
   instructions:
     'Answer 5 random space survival questions (up to 30s each; low energy trims time and low food reduces points) covering life support, radiation, power, and Mars farming. Press 1–4 or click an option, then continue with Space, Enter, or Next.',
-  objective: 'Earn 20 points per correct answer. Highest total score across the 5 questions wins.',
+  objective: 'Mission Control requires a survival readiness check on ECLSS life support, radiation shielding, and Mars ops. Answer 5 questions (+20 pts each) to lead the crew.',
   controls: [
     ...Array.from({ length: 4 }, (_, index) => ({
       id: `answer-${index + 1}`,

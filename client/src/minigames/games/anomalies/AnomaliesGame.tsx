@@ -1,6 +1,7 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { anomaliesDefinition } from '../../../../../shared/minigames/anomalies';
 import { defineModule, type MinigameViewProps } from '../../core/module';
+import { playSfxError, playSfxPerfect, playSfxSuccess } from '../../../utils/uiAudio';
 import { AnomaliesEngine, type AnomaliesData } from './AnomaliesEngine';
 import { ANOMALY_COUNT } from './circuit';
 import { CircuitDiagram } from './CircuitDiagram';
@@ -12,6 +13,23 @@ function AnomaliesView({ engine, snapshot }: MinigameViewProps<AnomaliesData>) {
   const locked = snapshot.elapsedMs < lockedUntil;
   const lockSeconds = Math.max(0, (lockedUntil - snapshot.elapsedMs) / 1000).toFixed(1);
   const inspect = useCallback((index: number) => (engine as AnomaliesEngine).inspect(index), [engine]);
+  const prevFoundRef = useRef(found.length);
+  const prevClearedRef = useRef(boardsCleared);
+  const prevMistakesRef = useRef(mistakes);
+
+  useEffect(() => {
+    if (boardsCleared > prevClearedRef.current) {
+      playSfxPerfect();
+    } else if (found.length > prevFoundRef.current) {
+      playSfxSuccess();
+    }
+    if (mistakes > prevMistakesRef.current) {
+      playSfxError();
+    }
+    prevFoundRef.current = found.length;
+    prevClearedRef.current = boardsCleared;
+    prevMistakesRef.current = mistakes;
+  }, [found.length, boardsCleared, mistakes]);
   return <section className={`anomaly-game${cleared ? ' anomaly-game--cleared' : ''}${finished ? ' anomaly-game--finished' : ''}`} aria-label="Circuit anomaly detection">
     <div className="anomaly-heading"><div><p className="anomaly-eyebrow">MAINTENANCE / ELECTRICAL SYSTEM</p><h2>Spot the 3 differences</h2></div>
     </div>

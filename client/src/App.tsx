@@ -13,6 +13,7 @@ import MarsBackdrop from './components/MarsBackdrop';
 import MarsMenuBackdrop, { type MenuTransitionDirection } from './components/MarsMenuBackdrop';
 import { BackgroundMusicProvider } from './components/BackgroundMusic';
 import HowToPlayModal from './components/HowToPlayModal';
+import LoreComicScreen from './components/LoreComicScreen';
 import { PROFESSIONS } from './components/professions';
 import TestPanel, { buildPreviewGame } from './components/TestPanel';
 import MinigamePresentation from './phases/MinigamePresentation';
@@ -20,11 +21,19 @@ import CardSelection from './phases/CardSelection';
 import PlayMinigame from './phases/PlayMinigame';
 import RoundLeaderboard from './phases/RoundLeaderboard';
 
-type AppView = 'start' | 'create' | 'join' | 'classic' | 'test-panel' | 'preview';
+type AppView = 'lore' | 'start' | 'create' | 'join' | 'classic' | 'test-panel' | 'preview';
 
 export default function App() {
   const { game, connected, error, act, leave, serverOffset } = useGame();
-  const [view, setView] = useState<AppView>('start');
+  const [view, setView] = useState<AppView>(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('minigame')) return 'start';
+      return window.localStorage.getItem('mars_lore_comic_seen') !== '1' ? 'lore' : 'start';
+    } catch {
+      return 'start';
+    }
+  });
   const [menuTransition, setMenuTransition] = useState<{
     direction: MenuTransitionDirection;
     target: 'start' | 'create' | 'join';
@@ -38,6 +47,16 @@ export default function App() {
   const [previewMinigameId, setPreviewMinigameId] = useState('pipes');
   const [previewReady, setPreviewReady] = useState(false);
   const [howToPlayOpen, setHowToPlayOpen] = useState(false);
+
+  const handleCloseLore = () => {
+    try {
+      window.localStorage.setItem('mars_lore_comic_seen', '1');
+    } catch {
+      // Ignore storage failures in restricted contexts
+    }
+    setMenuTransition(null);
+    setView('start');
+  };
 
   const seconds = useCountdown(game?.deadline ?? null, serverOffset);
   const phase: Phase = game?.phase ?? (prepared ? 'lobby' : 'stats');
@@ -254,8 +273,8 @@ export default function App() {
     );
   }
 
-  if (view === 'start' || view === 'create' || view === 'join') {
-    const scene = view === 'start' ? 'home' : 'entry';
+  if (view === 'lore' || view === 'start' || view === 'create' || view === 'join') {
+    const scene = view === 'lore' || view === 'start' ? 'home' : 'entry';
     const startMenuTransition = (
       direction: MenuTransitionDirection,
       target: 'start' | 'create' | 'join',
@@ -278,13 +297,19 @@ export default function App() {
           transition={menuTransition?.direction ?? null}
           onTransitionComplete={handleMenuTransitionComplete}
         />
-        {view === 'start' ? (
+        {view === 'lore' ? (
+          <LoreComicScreen onComplete={handleCloseLore} />
+        ) : view === 'start' ? (
           <StartScreen
             showBackdrop={false}
             exiting={menuTransition?.direction === 'forward'}
             onCreateScreen={() => startMenuTransition('forward', 'create')}
             onJoinScreen={() => startMenuTransition('forward', 'join')}
             onOpenHowToPlay={() => setHowToPlayOpen(true)}
+            onOpenLore={() => {
+              setMenuTransition(null);
+              setView('lore');
+            }}
           />
         ) : (
           <RoomEntryScreen
@@ -368,7 +393,7 @@ export default function App() {
   };
 
   return (
-    <BackgroundMusicProvider ducked={isPlayingPhase}>
+    <BackgroundMusicProvider>
       <HowToPlayModal open={howToPlayOpen} onClose={() => setHowToPlayOpen(false)} />
       {renderScreen()}
     </BackgroundMusicProvider>

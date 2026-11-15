@@ -4,6 +4,7 @@ import type { MinigameResult } from '../../../shared/minigames/types';
 import type { MinigameProps } from '../../../shared/types';
 import MinigameWrapper from '../minigames/MinigameWrapper';
 import { PipesSceneProvider } from '../minigames/games/pipes/PipesScene';
+import { playCountdownTick } from '../utils/uiAudio';
 import './PlayMinigame.css';
 
 function CornerScrewSvg({ className }: { className: string }) {
@@ -50,11 +51,19 @@ export default function PlayMinigame({ game, seconds = null, onSubmit, onProgres
 
   useEffect(() => {
     if (!shouldCountdown) return;
-    const t2 = window.setTimeout(() => setCountdown(2), COUNTDOWN_STEP_MS);
-    const t1 = window.setTimeout(() => setCountdown(1), COUNTDOWN_STEP_MS * 2);
+    playCountdownTick(false);
+    const t2 = window.setTimeout(() => {
+      setCountdown(2);
+      playCountdownTick(false);
+    }, COUNTDOWN_STEP_MS);
+    const t1 = window.setTimeout(() => {
+      setCountdown(1);
+      playCountdownTick(false);
+    }, COUNTDOWN_STEP_MS * 2);
     const t0 = window.setTimeout(() => {
       setCountdown(0);
       setShowGo(true);
+      playCountdownTick(true);
     }, COUNTDOWN_TOTAL_MS);
     const tHideGo = window.setTimeout(() => setShowGo(false), COUNTDOWN_TOTAL_MS + 650);
     return () => {
@@ -64,6 +73,14 @@ export default function PlayMinigame({ game, seconds = null, onSubmit, onProgres
       window.clearTimeout(tHideGo);
     };
   }, [shouldCountdown]);
+
+  useEffect(() => {
+    const active = canPlay && (countdown > 0 || showGo);
+    window.dispatchEvent(new CustomEvent('mars:countdown-duck', { detail: active }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('mars:countdown-duck', { detail: false }));
+    };
+  }, [canPlay, countdown, showGo]);
 
   const effectiveInitialElapsedMs =
     game.deadline === null
@@ -175,7 +192,6 @@ export default function PlayMinigame({ game, seconds = null, onSubmit, onProgres
 
           {canPlay && countdown > 0 && (
             <div className="play-countdown-overlay" role="status" aria-live="assertive">
-              <span className="play-countdown-overlay__kicker">MINIGAME STARTING</span>
               <strong key={countdown} className="play-countdown-overlay__num">
                 {countdown}
               </strong>

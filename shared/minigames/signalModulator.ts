@@ -9,7 +9,7 @@ export const signalModulatorDefinition = defineMinigame({
   instructions:
     'Tune the dish antenna to transmit as many telemetry packets as possible to NASA’s Deep Space Network before time runs out. Adjust Frequency (A/D or ←/→) and Amplitude (W/S or ↑/↓) to align your blue carrier with the gold target wave, and toggle the Solar Filter (Space/Enter) during flare interference.',
   objective:
-    'Align and transmit as many telemetry packets as possible within 60 seconds.',
+    'Lock onto NASA’s Deep Space Network to transmit colony life-support, crop, and solar-alert telemetry packets within 60 seconds while filtering flare noise.',
   controls: [
     {
       id: 'freq-down',

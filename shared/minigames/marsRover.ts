@@ -9,7 +9,7 @@ export const marsRoverDefinition = defineMinigame({
   instructions:
     'Long-range Martian exploration traverse (2 minutes) with orbital follow camera. Battery drains realistically when accelerating and climbing steep ridges. Choose wisely between routes — the longer flat valley, steep high-drain ridges, or crater pass — to reach Beacon B without running out of power.',
   objective:
-    'Reach Beacon B while conserving battery across Martian terrain before power or time runs out.',
+    'A surface relay went dark across the Martian ridge. Pilot the rover to Beacon B as fast as possible while conserving battery across craters and boulders.',
   controls: [
     {
       id: 'forward',

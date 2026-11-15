@@ -1,7 +1,8 @@
+import { useEffect } from 'react';
 import type { GameView, PublicPlayer } from '../../../shared/types';
 import AstronautPortraitSvg, { resolvePlayerSuitColor } from './AstronautPortraitSvg';
 import { MusicToggleButton } from './BackgroundMusic';
-import { playUiClick, playUiConfirm } from '../utils/uiAudio';
+import { playSfxFanfare, playUiClick, playUiConfirm } from '../utils/uiAudio';
 import './MatchVictoryScreen.css';
 
 interface MatchVictoryScreenProps {
@@ -45,6 +46,10 @@ export default function MatchVictoryScreen({
   const isHost = game.self.id === game.hostId;
   const noSurvivor = game.players.every(p => p.health <= 0);
   const confettiPieces = Array.from({ length: 28 }, (_, i) => i);
+
+  useEffect(() => {
+    playSfxFanfare(!noSurvivor);
+  }, [noSurvivor]);
 
   return (
     <main className="victory-screen" aria-label="Match complete">

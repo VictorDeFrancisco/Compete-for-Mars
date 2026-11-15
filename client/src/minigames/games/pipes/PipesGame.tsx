@@ -1,6 +1,7 @@
-import type { CSSProperties } from 'react';
+import { useEffect, useRef, type CSSProperties } from 'react';
 import { pipesDefinition } from '../../../../../shared/minigames/pipes';
 import { defineModule, type MinigameViewProps } from '../../core/module';
+import { playSfxAction, playSfxPerfect } from '../../../utils/uiAudio';
 import { PipesEngine, type PipesData } from './PipesEngine';
 import type { PipeKind } from './board';
 import { Astronaut, LunarBackdrop, usePipesScene } from './PipesScene';
@@ -30,6 +31,14 @@ function PipesView({ engine, snapshot }: MinigameViewProps<PipesData>) {
   const wetCells = new Set(wet);
   const seconds = Math.ceil(snapshot.remainingMs / 1000);
   const { crew, embedded, onExit, onRestart } = usePipesScene();
+  const prevSolvedRef = useRef(solved);
+
+  useEffect(() => {
+    if (solved > prevSolvedRef.current) {
+      playSfxPerfect();
+    }
+    prevSolvedRef.current = solved;
+  }, [solved]);
 
   return (
     <section
@@ -115,7 +124,10 @@ function PipesView({ engine, snapshot }: MinigameViewProps<PipesData>) {
                         className="pipes-cell"
                         disabled={snapshot.status !== 'running' || connected}
                         aria-label={`Rotate pipe, row ${Math.floor(index / board.size) + 1}, column ${(index % board.size) + 1}${isWet ? ', watered' : ''}`}
-                        onClick={() => (engine as PipesEngine).rotateAt(index)}
+                        onClick={() => {
+                          playSfxAction();
+                          (engine as PipesEngine).rotateAt(index);
+                        }}
                       >
                         <img
                           src={textures[texture - 1]}

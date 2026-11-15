@@ -24,12 +24,14 @@ test('defaults to 5 fixed questions per game and 30s per question', () => {
 });
 
 test('prepares unique questions with valid shuffled correctIndex', () => {
+  assert.ok(NASA_TRIVIA_QUESTIONS.length >= 36);
   const prepared = prepareTriviaQuestions(NASA_TRIVIA_QUESTIONS, QUESTIONS_PER_ROUND, () => 0.42);
   assert.equal(prepared.length, QUESTIONS_PER_ROUND);
   assert.equal(new Set(prepared.map(q => q.id)).size, QUESTIONS_PER_ROUND);
   for (const question of prepared) {
     assert.equal(question.options.length, 4);
     assert.ok(question.correctIndex >= 0 && question.correctIndex <= 3);
+    assert.ok(question.source.trim().length > 0);
     const original = NASA_TRIVIA_QUESTIONS.find(item => item.id === question.id)!;
     assert.equal(question.options[question.correctIndex], original.options[original.correctIndex]);
   }

@@ -1,5 +1,7 @@
+import { useEffect, useRef } from 'react';
 import { defineModule, type MinigameViewProps } from '../../core/module';
 import { signalModulatorDefinition } from '../../../../../shared/minigames/signalModulator';
+import { playSfxAction, playSfxPerfect } from '../../../utils/uiAudio';
 import { SignalModulatorEngine, type SignalModulatorData } from './SignalModulatorEngine';
 import { SignalCanvas } from './SignalCanvas';
 import './signalModulator.css';
@@ -8,6 +10,19 @@ function SignalModulatorView({ snapshot }: MinigameViewProps<SignalModulatorData
   const data = snapshot.data;
   const currentPacket = data.currentPacket;
   const keys = data.activeKeys;
+  const prevCompletedRef = useRef(data.completedPacketIds.length);
+  const prevFilteringRef = useRef(data.isFiltering);
+
+  useEffect(() => {
+    if (data.completedPacketIds.length > prevCompletedRef.current) {
+      playSfxPerfect();
+    }
+    if (data.isFiltering && !prevFilteringRef.current) {
+      playSfxAction();
+    }
+    prevCompletedRef.current = data.completedPacketIds.length;
+    prevFilteringRef.current = data.isFiltering;
+  }, [data.completedPacketIds.length, data.isFiltering]);
 
   return (
     <div className="signal-mod">

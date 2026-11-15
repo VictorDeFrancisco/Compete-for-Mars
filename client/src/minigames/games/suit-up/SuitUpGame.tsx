@@ -1,7 +1,9 @@
+import { useEffect, useRef } from 'react';
 import type { MinigameContext } from '../../../../../shared/minigames/context';
 import { suitUpDefinition } from '../../../../../shared/minigames/suitUp';
 import type { MinigameDefinition } from '../../../../../shared/minigames/types';
 import { defineModule, type MinigameViewProps } from '../../core/module';
+import { playSfxError, playSfxFanfare, playSfxPerfect, playSfxSuccess } from '../../../utils/uiAudio';
 import { SuitAstronautSvg } from './SuitAstronautSvg';
 import {
   ACTION_LABELS,
@@ -41,6 +43,38 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
   const modeMeta = QTE_MODE_META[qte.type];
   const psiPercent = Math.max(0, Math.min(100, (data.suitPressurePsi / 4.3) * 100));
   const o2Percent = Math.max(0, Math.min(100, data.oxygenPercent));
+  const prevCompletedStepsRef = useRef(data.completedStepIds.length);
+  const prevRatingRef = useRef(data.lastRating);
+  const prevIntegrityRef = useRef(data.suitIntegrityPercent);
+  const prevResultCompletedRef = useRef(Boolean(snapshot.result?.completed));
+
+  useEffect(() => {
+    const completedAll = Boolean(snapshot.result?.completed);
+    const lostIntegrity = data.suitIntegrityPercent < prevIntegrityRef.current;
+    const missedNow = data.lastRating === 'MISS' && prevRatingRef.current !== 'MISS';
+
+    if (completedAll && !prevResultCompletedRef.current) {
+      playSfxFanfare(false);
+    } else if (data.completedStepIds.length > prevCompletedStepsRef.current) {
+      if (data.lastRating === 'PERFECT') {
+        playSfxPerfect();
+      } else {
+        playSfxSuccess();
+      }
+    } else if (lostIntegrity || missedNow) {
+      playSfxError();
+    }
+
+    prevCompletedStepsRef.current = data.completedStepIds.length;
+    prevRatingRef.current = data.lastRating;
+    prevIntegrityRef.current = data.suitIntegrityPercent;
+    prevResultCompletedRef.current = completedAll;
+  }, [
+    data.completedStepIds.length,
+    data.lastRating,
+    data.suitIntegrityPercent,
+    snapshot.result?.completed,
+  ]);
 
   const activeSeqTarget =
     qte.type === 'sequence'

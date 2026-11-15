@@ -232,6 +232,15 @@
   color: #2f2820;
 }
 
+.trivia-game__feedback-source {
+  margin: 4px 0 0;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #4b4135;
+}
+
 .trivia-game__next {
   flex-shrink: 0;
   padding: 10px 18px;
