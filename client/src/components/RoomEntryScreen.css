@@ -435,40 +435,46 @@
 }
 
 .entry-submit {
+  height: 60px;
+  min-width: 176px;
+  padding: 0 20px;
+  border-radius: 14px;
+  border: 3px solid var(--ink-black, #1A1817);
   font-family: 'Archivo', sans-serif;
-  font-weight: 800;
-  font-size: 1.04rem;
-  letter-spacing: 0.1em;
+  font-size: 0.96rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  background: var(--nasa-orange);
-  color: var(--paper-cream);
-  border: 3px solid var(--ink-black);
-  border-radius: 4px;
-  padding: 15px 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--nasa-orange, #FC3D21);
+  color: var(--paper-cream, #F5EFE0);
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: 0 5px 0 var(--ink-black);
-  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.12s ease, opacity 0.12s ease;
+  box-shadow: 0 5px 0 var(--ink-black, #1A1817);
+  transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.12s ease;
 }
 
 .entry-submit:hover:not(:disabled) {
-  background: var(--nasa-orange-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 7px 0 var(--ink-black);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 0 var(--ink-black, #1A1817);
 }
 
 .entry-submit:active:not(:disabled) {
-  transform: translateY(3px);
-  box-shadow: 0 2px 0 var(--ink-black);
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--ink-black, #1A1817);
 }
 
 .entry-submit:disabled {
-  background: var(--nasa-orange);
-  color: var(--paper-cream);
-  border-color: var(--ink-black);
-  box-shadow: 0 5px 0 var(--ink-black);
-  opacity: 0.56;
+  background: var(--nasa-orange, #FC3D21);
+  color: var(--paper-cream, #F5EFE0);
+  border-color: var(--ink-black, #1A1817);
+  box-shadow: 0 5px 0 var(--ink-black, #1A1817);
+  opacity: 0.55;
   cursor: not-allowed;
+  transform: none;
 }
 
 @media (max-width: 1040px) {

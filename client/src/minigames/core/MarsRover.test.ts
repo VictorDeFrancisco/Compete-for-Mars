@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { marsRoverDefinition } from '../../../../shared/minigames/marsRover';
 import { validateResult } from '../../../../shared/minigames/ranking';
-import { MarsRoverGame } from '../games/mars-rover/MarsRoverEngine';
+import { MarsRoverGame, calculateMarsRoverScore } from '../games/mars-rover/MarsRoverEngine';
 import { calculateMarsCoordinates } from '../games/mars-rover/jezeroMapData';
 
 test('mars-rover: físicas continuas, aceleración y consumo visible de batería', () => {
@@ -127,4 +127,40 @@ test('mars-rover: obstáculos de rocas 3D y respuesta física de colisión', () 
   // Comprobar que no hay rocas inmediatamente encima del punto de inicio
   const startDist = Math.hypot(firstRock.x - sector.startPos.x, firstRock.y - sector.startPos.y);
   assert.ok(startDist >= 12, 'El rover no debe aparecer dentro de una roca');
+});
+
+test('mars-rover: el tiempo restante influye en la puntuación al llegar a la meta', () => {
+  const fastRun = calculateMarsRoverScore(80, 100_000, 120_000, 1000);
+  const slowRun = calculateMarsRoverScore(80, 10_000, 120_000, 1000);
+
+  assert.ok(fastRun.timePoints > slowRun.timePoints, 'Llegar antes debe otorgar mayor bonificación por tiempo');
+  assert.ok(fastRun.totalScore > slowRun.totalScore, 'A igual batería, menor tiempo debe dar mayor puntuación');
+  assert.ok(fastRun.totalScore <= 1000 && slowRun.totalScore >= 500);
+
+  // Verificación integrada llegando realmente a Beacon B con dos tiempos distintos
+  const steerAndDriveToTarget = (initialElapsedMs: number) => {
+    let now = 0;
+    const game = new MarsRoverGame(marsRoverDefinition, () => now, undefined, 42);
+    game.start(initialElapsedMs);
+    for (let step = 0; step < 300 && game.getSnapshot().status === 'running'; step++) {
+      const snap = game.getSnapshot().data;
+      const dx = game.sector.targetPos.x - snap.posX;
+      const dy = game.sector.targetPos.y - snap.posY;
+      const desired = ((Math.atan2(dx, -dy) * 180) / Math.PI + 360) % 360;
+      const diff = ((desired - snap.heading + 540) % 360) - 180;
+      game.dispatch('turn-left', diff < -5 ? 'press' : 'release');
+      game.dispatch('turn-right', diff > 5 ? 'press' : 'release');
+      game.dispatch('forward', 'press');
+      now += 150;
+      game.tick();
+    }
+    return game.getResult();
+  };
+
+  const fastResult = steerAndDriveToTarget(0);
+  const lateResult = steerAndDriveToTarget(60_000);
+  assert.ok(fastResult?.completed && lateResult?.completed, 'Ambos rovers deben alcanzar la baliza B');
+  assert.ok(fastResult.score > lateResult.score, 'La llegada temprana debe puntuar más que la tardía');
+  assert.doesNotThrow(() => validateResult(marsRoverDefinition, fastResult));
+  assert.doesNotThrow(() => validateResult(marsRoverDefinition, lateResult));
 });

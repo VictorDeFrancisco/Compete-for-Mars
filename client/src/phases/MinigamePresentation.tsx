@@ -24,9 +24,9 @@ function resolveCardVerdict(summary: string): { label: 'SUCCESS' | 'FAILED'; ton
 }
 
 const MINIGAME_PREVIEW_IMAGES: Record<string, { src: string; width: number; height: number }> = {
-  pipes: { src: '/assets/minigames-preview/tuberias_water_grid.svg', width: 520, height: 420 },
-  'mars-rover': { src: '/assets/minigames-preview/rover.svg', width: 3507, height: 2956 },
-  'suit-up': { src: '/assets/minigames-preview/traje.svg', width: 520, height: 420 },
+  pipes: { src: '/assets/minigames-preview/tuberias_water_grid.svg', width: 740, height: 420 },
+  'mars-rover': { src: '/assets/minigames-preview/rover.svg', width: 3507, height: 1972 },
+  'suit-up': { src: '/assets/minigames-preview/traje.svg', width: 740, height: 420 },
   'signal-modulator': { src: '/assets/minigames-preview/modulacion.svg', width: 1280, height: 720 },
   anomalies: { src: '/assets/minigames-preview/circuito.svg', width: 1280, height: 720 },
   'solar-storm': { src: '/assets/minigames-preview/donki.svg', width: 500, height: 320 },

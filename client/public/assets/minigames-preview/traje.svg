@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="100%" height="100%" viewBox="0 0 520 420" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:affinity="https://www.affinity.studio/" style="fill-rule:evenodd;clip-rule:evenodd;">
+<svg width="100%" height="100%" viewBox="0 0 740 420" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:affinity="https://www.affinity.studio/" style="fill-rule:evenodd;clip-rule:evenodd;">
     <g id="fondo-crema">
     </g>
-    <rect x="-28.478" y="-20.6" width="614.671" height="467.94" style="fill:rgb(235,235,235);"/>
+    <rect x="-28.478" y="-20.6" width="820" height="467.94" style="fill:rgb(235,235,235);"/>
     <g id="header-superior">
     </g>
     <g id="tablero-grid">
     </g>
     <g id="tag-in">
     </g>
-    <g id="tag-out" transform="matrix(1,0,0,1,406,248)">
+    <g id="tag-out" transform="matrix(1,0,0,1,516,248)">
         <g transform="matrix(0.730482,0,0,0.826189,-145.858043,-78.256274)">
             <path d="M43.097,-70C55.185,-70 65,-61.322 65,-50.634L65,100.634C65,111.322 55.185,120 43.097,120L-43.097,120C-55.185,120 -65,111.322 -65,100.634L-65,-50.634C-65,-61.322 -55.185,-70 -43.097,-70L43.097,-70Z" style="fill:rgb(221,227,232);stroke:rgb(26,29,32);stroke-width:4px;"/>
         </g>

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { solarStormDefinition } from '../../../../shared/minigames/solarStorm';
 import { validateResult } from '../../../../shared/minigames/ranking';
 import { SolarStormGame } from '../games/solar-storm/SolarStormEngine';
+import { getSolarSceneLayout, SOLAR_CANVAS_HEIGHT, SOLAR_CANVAS_WIDTH } from '../games/solar-storm/solarLayout';
 
 test('solar-storm: inicialización con episodio DONKI y ángulo de escudo a 180°', () => {
   let now = 0;
@@ -135,4 +136,20 @@ test('solar-storm: derrota inmediata si la integridad de la base llega a 0%', ()
   assert.equal(snap.result?.reason, 'failed', 'Debe registrar derrota (failed)');
   assert.equal(snap.result?.completed, false);
   assert.doesNotThrow(() => validateResult(solarStormDefinition, snap.result!));
+});
+
+test('solar-storm: layout uniforme mantiene proporciones 1:1 en pantalla completa y ventanas pequeñas', () => {
+  const fullscreen = getSolarSceneLayout(1920, 880);
+  const narrow = getSolarSceneLayout(640, 480);
+  const wideShort = getSolarSceneLayout(1600, 340);
+
+  for (const layout of [fullscreen, narrow, wideShort]) {
+    assert.ok(layout.vw >= SOLAR_CANVAS_WIDTH - 1e-6);
+    assert.ok(layout.vh >= SOLAR_CANVAS_HEIGHT - 1e-6);
+    assert.equal(layout.baseX, layout.vw / 2);
+    assert.equal(layout.groundY, layout.vh - 55);
+  }
+  assert.equal(fullscreen.scale, 1920 / SOLAR_CANVAS_WIDTH);
+  assert.equal(narrow.scale, 640 / SOLAR_CANVAS_WIDTH);
+  assert.equal(wideShort.scale, 340 / SOLAR_CANVAS_HEIGHT);
 });

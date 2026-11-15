@@ -2,11 +2,8 @@ import type { PointerEvent } from 'react';
 import { defineModule, type MinigameViewProps } from '../../core/module';
 import { solarStormDefinition } from '../../../../../shared/minigames/solarStorm';
 import { SolarStormGame, type SolarStormData } from './SolarStormEngine';
-import {
-  SOLAR_CANVAS_HEIGHT,
-  SOLAR_CANVAS_WIDTH,
-  SolarStormCanvas,
-} from './SolarStormCanvas';
+import { getSolarSceneLayout } from './solarLayout';
+import { SolarStormCanvas } from './SolarStormCanvas';
 import './solarStorm.css';
 
 export { SolarStormGame, type SolarStormData };
@@ -35,10 +32,11 @@ function SolarStormView({ engine, snapshot }: MinigameViewProps<SolarStormData>)
     const rect = canvas.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return;
 
-    const normX = ((e.clientX - rect.left) / rect.width) * SOLAR_CANVAS_WIDTH;
-    const normY = ((e.clientY - rect.top) / rect.height) * SOLAR_CANVAS_HEIGHT;
-    const dx = normX - SOLAR_CANVAS_WIDTH / 2;
-    const dy = 351 - normY;
+    const layout = getSolarSceneLayout(rect.width, rect.height);
+    const sceneX = (e.clientX - rect.left) / layout.scale;
+    const sceneY = (e.clientY - rect.top) / layout.scale;
+    const dx = sceneX - layout.baseX;
+    const dy = layout.baseCenterY - sceneY;
     const angleRad = Math.atan2(dx, Math.max(12, dy));
     const angleDeg = 180 + (angleRad * 180) / Math.PI;
     solarEngine.setDirectAngle(angleDeg);

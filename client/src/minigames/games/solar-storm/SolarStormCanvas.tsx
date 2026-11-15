@@ -1,8 +1,12 @@
 import { useEffect, useRef } from 'react';
 import type { SolarStormData } from './SolarStormEngine';
+import {
+  getSolarSceneLayout,
+  SOLAR_CANVAS_HEIGHT,
+  SOLAR_CANVAS_WIDTH,
+} from './solarLayout';
 
-export const SOLAR_CANVAS_WIDTH = 1200;
-export const SOLAR_CANVAS_HEIGHT = 420;
+export { getSolarSceneLayout, SOLAR_CANVAS_HEIGHT, SOLAR_CANVAS_WIDTH, type SolarSceneLayout } from './solarLayout';
 
 interface SolarStormCanvasProps {
   data: SolarStormData;
@@ -38,8 +42,13 @@ interface FloatingText {
 }
 
 export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const dataRef = useRef<SolarStormData>(data);
+  const viewportRef = useRef<{ width: number; height: number }>({
+    width: SOLAR_CANVAS_WIDTH,
+    height: SOLAR_CANVAS_HEIGHT,
+  });
   const sparksRef = useRef<Spark[]>([]);
   const ringsRef = useRef<RingShockwave[]>([]);
   const floatingTextsRef = useRef<FloatingText[]>([]);
@@ -54,20 +63,16 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
     dataRef.current = data;
   }, [data]);
 
-  // Manejo de eventos de partículas y efectos visuales temporales
+  // Manejo de eventos de partículas y efectos visuales temporales (coordenadas relativas a baseX, baseCenterY)
   useEffect(() => {
-    const w = SOLAR_CANVAS_WIDTH;
-    const baseX = w / 2;
-    const groundY = 365;
-    const baseCenterY = groundY - 14;
     const canopyR = 138;
 
     // 1. Deflexión Crítica (Parry)
     if (data.criticalParryCount > prevCriticalCount.current) {
       prevCriticalCount.current = data.criticalParryCount;
       const angleRad = ((data.shieldAngle - 180) * Math.PI) / 180;
-      const hitX = baseX + Math.sin(angleRad) * canopyR;
-      const hitY = baseCenterY - Math.cos(angleRad) * canopyR;
+      const hitX = Math.sin(angleRad) * canopyR;
+      const hitY = -Math.cos(angleRad) * canopyR;
 
       ringsRef.current.push({
         x: hitX,
@@ -105,8 +110,8 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
       // 2. Deflexión Normal en el dosel
       prevBlockedCount.current = data.blockedCount;
       const angleRad = ((data.shieldAngle - 180) * Math.PI) / 180;
-      const hitX = baseX + Math.sin(angleRad) * canopyR;
-      const hitY = baseCenterY - Math.cos(angleRad) * canopyR;
+      const hitX = Math.sin(angleRad) * canopyR;
+      const hitY = -Math.cos(angleRad) * canopyR;
 
       ringsRef.current.push({
         x: hitX,
@@ -148,8 +153,8 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
       const lastBreached = data.waves.find(w => w.status === 'breached');
       const targetDeg = lastBreached ? lastBreached.template.approachAngleDeg : 180;
       const targetRad = ((targetDeg - 180) * Math.PI) / 180;
-      const hitX = baseX + Math.sin(targetRad) * 55;
-      const hitY = groundY - 18;
+      const hitX = Math.sin(targetRad) * 55;
+      const hitY = -4;
 
       ringsRef.current.push({
         x: hitX,
@@ -189,8 +194,8 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
     if (data.ionsCollectedCount > prevIonsCount.current) {
       prevIonsCount.current = data.ionsCollectedCount;
       const angleRad = ((data.shieldAngle - 180) * Math.PI) / 180;
-      const px = baseX + Math.sin(angleRad) * canopyR;
-      const py = baseCenterY - Math.cos(angleRad) * canopyR;
+      const px = Math.sin(angleRad) * canopyR;
+      const py = -Math.cos(angleRad) * canopyR;
 
       floatingTextsRef.current.push({
         x: px - 38,
@@ -218,6 +223,29 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
     }
   }, [data.blockedCount, data.criticalParryCount, data.breachedCount, data.ionsCollectedCount, data.combo]);
 
+  // Observar tamaño real del viewport para evitar deformaciones al escalar o en pantalla completa
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+
+    const updateSize = (rect?: DOMRectReadOnly) => {
+      const box = rect ?? wrapper.getBoundingClientRect();
+      if (box.width > 0 && box.height > 0) {
+        viewportRef.current = { width: box.width, height: box.height };
+      }
+    };
+
+    updateSize();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        updateSize(entry.contentRect);
+      }
+    });
+    observer.observe(wrapper);
+    return () => observer.disconnect();
+  }, []);
+
   // Bucle de renderizado continuo a 60 fps
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -230,15 +258,31 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
     const render = () => {
       tick += 0.04;
       const currentData = dataRef.current;
-      const w = canvas.width;
-      const h = canvas.height;
-      const baseX = w / 2;
-      const baseOffset = baseX - 340;
-      const groundY = 365;
-      const baseCenterY = groundY - 14;
-      const canopyR = 138;
+      const { width: viewW, height: viewH } = viewportRef.current;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const targetPixelW = Math.max(1, Math.round(viewW * dpr));
+      const targetPixelH = Math.max(1, Math.round(viewH * dpr));
+      if (canvas.width !== targetPixelW || canvas.height !== targetPixelH) {
+        canvas.width = targetPixelW;
+        canvas.height = targetPixelH;
+      }
+
+      const {
+        scale,
+        vw: w,
+        vh: h,
+        baseX,
+        baseOffset,
+        groundY,
+        baseCenterY,
+        canopyR,
+      } = getSolarSceneLayout(viewW, viewH);
+
+      const scaleX = (targetPixelW / Math.max(1, viewW)) * scale;
+      const scaleY = (targetPixelH / Math.max(1, viewH)) * scale;
 
       ctx.save();
+      ctx.setTransform(scaleX, 0, 0, scaleY, 0, 0);
 
       // Screen shake en impactos fuertes
       if (currentData.shakeIntensity > 0.1) {
@@ -258,8 +302,8 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
 
       // Estrellas en el cielo marciano
       for (let i = 0; i < 60; i++) {
-        const sx = (i * 97 + 17) % w;
-        const sy = (i * 47 + 11) % (groundY - 60);
+        const sx = (((i * 97 + 17) % 997) / 997) * w;
+        const sy = (((i * 47 + 11) % 311) / 311) * Math.max(40, groundY - 60);
         const alpha = 0.2 + 0.35 * Math.sin(tick * 2 + i);
         ctx.fillStyle = `rgba(255, 240, 220, ${alpha})`;
         ctx.fillRect(sx, sy, 1.3, 1.3);
@@ -287,7 +331,7 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
 
       // El Sol visto desde Marte
       const sunX = Math.round(w * 0.11);
-      const sunY = 58;
+      const sunY = Math.max(58, Math.round(groundY * 0.16));
       const sunGlow = ctx.createRadialGradient(sunX, sunY, 6, sunX, sunY, 70);
       sunGlow.addColorStop(0, 'rgba(255, 255, 240, 0.95)');
       sunGlow.addColorStop(0.25, 'rgba(251, 191, 36, 0.6)');
@@ -342,7 +386,7 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
       // Rocas en el terreno
       ctx.fillStyle = 'rgba(67, 20, 7, 0.7)';
       for (let r = 0; r < 34; r++) {
-        const rx = (r * 83 + 23) % w;
+        const rx = (((r * 83 + 23) % 997) / 997) * w;
         const ry = groundY + ((r * 17) % Math.max(12, h - groundY - 12));
         ctx.beginPath();
         ctx.ellipse(rx, ry, 7 + (r % 4), 3.5, 0, 0, Math.PI * 2);
@@ -624,7 +668,7 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
         ctx.lineWidth = 2.5;
         ctx.globalAlpha = Math.max(0, r.alpha);
         ctx.beginPath();
-        ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
+        ctx.arc(baseX + r.x, baseCenterY + r.y, r.radius, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
       }
@@ -646,7 +690,7 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
         ctx.fillStyle = s.color;
         ctx.globalAlpha = Math.max(0, alpha);
         ctx.beginPath();
-        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.arc(baseX + s.x, baseCenterY + s.y, s.size, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalAlpha = 1.0;
       }
@@ -670,7 +714,7 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
         ctx.globalAlpha = Math.max(0, alpha);
         ctx.shadowColor = '#000000';
         ctx.shadowBlur = 6;
-        ctx.fillText(t.text, t.x, t.y);
+        ctx.fillText(t.text, baseX + t.x, baseCenterY + t.y);
         ctx.restore();
       }
 
@@ -683,7 +727,7 @@ export function SolarStormCanvas({ data }: SolarStormCanvasProps) {
   }, []);
 
   return (
-    <div className="solar-canvas-wrapper">
+    <div ref={wrapperRef} className="solar-canvas-wrapper">
       <canvas
         ref={canvasRef}
         width={SOLAR_CANVAS_WIDTH}

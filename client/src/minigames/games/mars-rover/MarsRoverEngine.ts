@@ -31,6 +31,29 @@ export interface MarsRoverData {
   sector: MarsSectorMap;
 }
 
+const ARRIVAL_BASE_SCORE = 500;
+const ARRIVAL_ENERGY_MAX_BONUS = 250;
+const ARRIVAL_TIME_MAX_BONUS = 250;
+
+/**
+ * Calcula la puntuación final al alcanzar la baliza B combinando
+ * llegada base (500), batería restante (hasta 250) y tiempo restante (hasta 250).
+ */
+export function calculateMarsRoverScore(
+  energy: number,
+  remainingMs: number,
+  durationMs: number,
+  maxScore: number = marsRoverDefinition.maxScore
+): { totalScore: number; energyPoints: number; timePoints: number } {
+  const energyRatio = Math.max(0, Math.min(1, energy / 100));
+  const energyPoints = Math.round(energyRatio * ARRIVAL_ENERGY_MAX_BONUS);
+  const safeDurationMs = Math.max(1, durationMs);
+  const timeRatio = Math.max(0, Math.min(1, remainingMs / safeDurationMs));
+  const timePoints = Math.round(timeRatio * ARRIVAL_TIME_MAX_BONUS);
+  const totalScore = Math.min(maxScore, ARRIVAL_BASE_SCORE + energyPoints + timePoints);
+  return { totalScore, energyPoints, timePoints };
+}
+
 export class MarsRoverGame extends BaseMinigame<MarsRoverData> {
   readonly sector: MarsSectorMap;
 
@@ -304,9 +327,12 @@ export class MarsRoverGame extends BaseMinigame<MarsRoverData> {
 
     // Llegada a la meta B (radio 8.5m)
     if (targetDist <= 8.5) {
-      const basePoints = 500;
-      const energyPoints = Math.floor(energy / 10) * 50;
-      const totalScore = Math.min(1000, basePoints + energyPoints);
+      const { totalScore, timePoints } = calculateMarsRoverScore(
+        energy,
+        this.getSnapshot().remainingMs,
+        this.definition.durationMs,
+        this.definition.maxScore
+      );
 
       this.setScore(totalScore);
       this.setData({
@@ -324,7 +350,7 @@ export class MarsRoverGame extends BaseMinigame<MarsRoverData> {
         energy: Math.round(energy * 10) / 10,
         elevation: Math.round(this.sector.elevationAt(posX, posY) * 10) / 10,
         slopeDeg: Math.round(currentSlopeDeg * 10) / 10,
-        lastEventMessage: `Target B reached! Remaining battery: ${energy.toFixed(1)}% · Score: ${totalScore}`,
+        lastEventMessage: `Target B reached in ${(now / 1000).toFixed(1)}s! Battery: ${energy.toFixed(1)}% · Time bonus: +${timePoints} · Score: ${totalScore}`,
       });
       this.complete();
       return;
