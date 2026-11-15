@@ -58,11 +58,15 @@ export function roundLoserDamage(round: number, deaths: number): number {
 }
 
 export function pickNextMinigame(room: Room, random: () => number = Math.random): MinigameDefinition {
-  // Guarantee at least 2 other minigames between repeats whenever catalog size allows.
+  // Bag shuffle: play every minigame once before repeating, while still keeping >= 2 other games between repeats.
+  const cycleStart = Math.floor(room.minigameHistory.length / MINIGAMES.length) * MINIGAMES.length;
+  const seenInCycle = new Set(room.minigameHistory.slice(cycleStart));
+  const remainingInCycle = MINIGAMES.filter(minigame => !seenInCycle.has(minigame.id));
+  const cyclePool = remainingInCycle.length > 0 ? remainingInCycle : MINIGAMES;
   const excludeCount = Math.min(2, Math.max(0, MINIGAMES.length - 1));
   const recent = new Set(room.minigameHistory.slice(-excludeCount));
-  const candidates = MINIGAMES.filter(minigame => !recent.has(minigame.id));
-  const pool = candidates.length > 0 ? candidates : MINIGAMES;
+  const spacedPool = cyclePool.filter(minigame => !recent.has(minigame.id));
+  const pool = spacedPool.length > 0 ? spacedPool : cyclePool;
   const chosen = pool[Math.floor(random() * pool.length)] ?? pool[0];
   room.minigameHistory.push(chosen.id);
   return chosen;
@@ -292,9 +296,18 @@ export function advanceIfComplete(room: Room, now = Date.now()): boolean {
       player.resources.energy = clampPlayerResource(player, 'energy', player.resources.energy - ROUND_RESOURCE_UPKEEP);
       player.resources.food = clampPlayerResource(player, 'food', player.resources.food - ROUND_RESOURCE_UPKEEP);
 
-      // 2. Minigame winner gains +20 (decaying by round) of the minigame's primary resource.
-      if (entry.outcome === 'winner' && winBonus > 0) {
-        player.resources[rewardResource] = clampPlayerResource(player, rewardResource, player.resources[rewardResource] + winBonus);
+      // 2. Minigame winner gains full winBonus, middle ranks gain a partial ration, and active draws share half.
+      const hadActivity = entry.result.score > 0 || entry.result.completed;
+      const resourceGain =
+        entry.outcome === 'winner'
+          ? winBonus
+          : entry.outcome === 'draw' && hadActivity
+            ? Math.round(winBonus * 0.5)
+            : entry.outcome === 'neutral'
+              ? Math.round(winBonus * 0.45)
+              : 0;
+      if (resourceGain > 0) {
+        player.resources[rewardResource] = clampPlayerResource(player, rewardResource, player.resources[rewardResource] + resourceGain);
       }
 
       // 3. Apply health penalties: last place + radiation + depleted food/energy.
@@ -361,6 +374,7 @@ export function restartMatch(room: Room, actor: Player, now = Date.now()): void 
   room.cards = [];
   room.cardsResolved = false;
   room.lastResults = [];
+  room.minigameHistory = [];
   room.minigame = MINIGAMES[0];
   for (const player of room.players) {
     player.maxHealth = maxHealthFor(player);

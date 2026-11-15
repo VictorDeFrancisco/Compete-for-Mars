@@ -114,7 +114,7 @@ export class MarsRoverGame extends BaseMinigame<MarsRoverData> {
     } = this.getSnapshot().data;
 
     const roverMass = 750;
-    const maxMotorForce = 4600 * this.modifiers.speedMultiplier;
+    const maxMotorForce = 5800 * (0.72 + 0.28 * this.modifiers.speedMultiplier);
     const steeringTorque = 195;
 
     // Sub-pasos de física para integración continua
@@ -166,16 +166,17 @@ export class MarsRoverGame extends BaseMinigame<MarsRoverData> {
       suspensionOffset += this.suspensionVelocity * dt;
       suspensionOffset = Math.max(-0.25, Math.min(0.25, suspensionOffset));
 
-      // 4. Tracción motriz
+      // 4. Tracción motriz (suave en subida, sin atascos prematuros ni penalización cuesta abajo)
+      const isClimbing = (this.inputState.forward && gLong > 0.08) || (this.inputState.reverse && gLong < -0.08);
       let tractionFactor = 1.0;
-      if (slopeDeg > 20) {
-        tractionFactor = Math.max(0.18, 1.0 - (slopeDeg - 20) / 14);
-        if (slopeDeg > 30) isStalled = true;
+      if (isClimbing && slopeDeg > 22) {
+        tractionFactor = Math.max(0.65, 1.0 - (slopeDeg - 22) / 28);
+        if (slopeDeg > 36 && currentSpeed < 0.35) isStalled = true;
       }
 
       let motorForce = 0;
       if (this.inputState.forward) motorForce = maxMotorForce * tractionFactor;
-      else if (this.inputState.reverse) motorForce = -maxMotorForce * 0.7 * tractionFactor;
+      else if (this.inputState.reverse) motorForce = -maxMotorForce * 0.72 * tractionFactor;
 
       const fMotorX = ufX * motorForce;
       const fMotorY = ufY * motorForce;
@@ -200,8 +201,8 @@ export class MarsRoverGame extends BaseMinigame<MarsRoverData> {
       vy = (vy + ay * dt) * Math.exp(-0.75 * dt);
 
       const curSpeed = Math.hypot(vx, vy);
-      if (curSpeed > 8.5) {
-        const factor = 8.5 / curSpeed;
+      if (curSpeed > 10.5) {
+        const factor = 10.5 / curSpeed;
         vx *= factor;
         vy *= factor;
       }

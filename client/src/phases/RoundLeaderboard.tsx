@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { GameView } from '../../../shared/types';
 import AstronautPortraitSvg, { resolvePlayerSuitColor } from '../components/AstronautPortraitSvg';
+import { EnergyIcon, FoodIcon, HealthIcon } from '../components/ResourceIcons';
 import { playUiConfirm } from '../utils/uiAudio';
 import './RoundLeaderboard.css';
 
@@ -30,20 +31,23 @@ export default function RoundLeaderboard({ game, onContinue }: RoundLeaderboardP
   const [splashDismissedPhaseId, setSplashDismissedPhaseId] = useState<string | null>(null);
   const showRoundEndedSplash = !selfConfirmed && splashDismissedPhaseId !== game.phaseId;
 
+  const dismissSplash = useCallback(() => {
+    setSplashDismissedPhaseId(game.phaseId);
+    window.dispatchEvent(new CustomEvent('mars:leaderboard-reveal'));
+  }, [game.phaseId]);
+
   useEffect(() => {
     if (!showRoundEndedSplash) return;
-    const timer = window.setTimeout(() => {
-      setSplashDismissedPhaseId(game.phaseId);
-    }, 2200);
+    const timer = window.setTimeout(dismissSplash, 2000);
     return () => window.clearTimeout(timer);
-  }, [showRoundEndedSplash, game.phaseId]);
+  }, [showRoundEndedSplash, dismissSplash]);
 
   if (showRoundEndedSplash) {
     return (
       <section
         className="round-ended-splash"
         aria-label="Ronda terminada"
-        onClick={() => setSplashDismissedPhaseId(game.phaseId)}
+        onClick={dismissSplash}
       >
         <div className="round-ended-splash__card">
           <span className="round-ended-splash__kicker">
@@ -117,17 +121,31 @@ export default function RoundLeaderboard({ game, onContinue }: RoundLeaderboardP
                 </div>
 
                 <div className="leaderboard-row__deltas">
-                  <span className={`leaderboard-delta ${entry.healthDelta < 0 ? 'is-neg' : 'is-neutral'}`}>
+                  <span className={`leaderboard-delta leaderboard-delta--hp ${entry.healthDelta < 0 ? 'is-neg' : 'is-neutral'}`}>
+                    <HealthIcon className="leaderboard-delta__icon" />
                     {entry.healthDelta >= 0 ? `+${entry.healthDelta}` : entry.healthDelta} VIDA
                   </span>
                   {isSelf && (
                     <>
-                      <span className={`leaderboard-delta ${entry.resourcesDelta.energy >= 0 ? 'is-pos' : 'is-neg'}`}>
+                      <span className="leaderboard-delta leaderboard-delta--energy">
+                        <EnergyIcon className="leaderboard-delta__icon" />
                         {entry.resourcesDelta.energy >= 0 ? `+${entry.resourcesDelta.energy}` : entry.resourcesDelta.energy} ENERGÍA
                       </span>
-                      <span className={`leaderboard-delta ${entry.resourcesDelta.food >= 0 ? 'is-pos' : 'is-neg'}`}>
+                      <span className="leaderboard-delta leaderboard-delta--food">
+                        <FoodIcon className="leaderboard-delta__icon" />
                         {entry.resourcesDelta.food >= 0 ? `+${entry.resourcesDelta.food}` : entry.resourcesDelta.food} COMIDA
                       </span>
+                      {game.self.resources.food === 0 && (
+                        <span className="leaderboard-delta is-neg">SIN COMIDA (-15 VIDA)</span>
+                      )}
+                      {game.self.resources.energy === 0 && (
+                        <span className="leaderboard-delta is-neg">SIN ENERGÍA (-15 VIDA)</span>
+                      )}
+                      {game.self.resources.radiation > 0 && (
+                        <span className="leaderboard-delta leaderboard-delta--rad">
+                          RADIACIÓN (-{game.self.resources.radiation * 10} VIDA)
+                        </span>
+                      )}
                     </>
                   )}
                 </div>

@@ -200,28 +200,71 @@ export default function MinigamePresentation({ game, onReady }: PresentationProp
             </div>
 
             <div className="briefing-controls-grid">
-              {game.minigame.controls.map(action => (
-                <div key={action.id} className="briefing-control-item">
-                  <div className="briefing-control-item__keys">
-                    {action.bindings.map((binding, idx) => {
-                      const raw = binding.label.toUpperCase();
-                      const keyLabel = raw === 'ESPACIO' ? 'SPACE' : raw;
-                      return (
-                        <kbd
-                          key={`${action.id}-${idx}`}
-                          className={`briefing-keycap3d${keyLabel.length > 2 ? ' briefing-keycap3d--wide' : ''}`}
-                        >
-                          {keyLabel}
-                        </kbd>
-                      );
-                    })}
-                  </div>
-                  <div className="briefing-control-item__copy">
-                    <strong>{action.label}</strong>
-                    <span>{action.description}</span>
-                  </div>
-                </div>
-              ))}
+              {(() => {
+                const rawControls = game.minigame.controls;
+                const answerGroup = rawControls.filter(c => /^answer-[1-4]$/.test(c.id));
+                const restControls = answerGroup.length >= 2
+                  ? [
+                      {
+                        id: 'answer-group',
+                        label: 'Elegir respuesta',
+                        description: 'Selecciona la opción correcta (1–4) con teclado o pulsando la tarjeta.',
+                        bindings: [
+                          ...answerGroup.map((_, idx) => ({
+                            device: 'keyboard' as const,
+                            code: `Digit${idx + 1}`,
+                            label: `${idx + 1}`,
+                          })),
+                          { device: 'pointer' as const, label: 'Clic en una opción' },
+                        ],
+                      },
+                      ...rawControls.filter(c => !/^answer-[1-4]$/.test(c.id)),
+                    ]
+                  : rawControls;
+
+                return restControls.map(action => {
+                  const hasPointer = action.bindings.some(b => b.device === 'pointer');
+                  const visibleBindings = action.bindings.filter(b =>
+                    b.device === 'touch' && hasPointer ? false : true,
+                  );
+
+                  return (
+                    <div key={action.id} className="briefing-control-item">
+                      <div className="briefing-control-item__keys">
+                        {visibleBindings.map((binding, idx) => {
+                          if (binding.device === 'pointer' || binding.device === 'touch') {
+                            const icon = binding.device === 'pointer' ? '🖱' : '👆';
+                            return (
+                              <span
+                                key={`${action.id}-${idx}`}
+                                className={`briefing-input-pill briefing-input-pill--${binding.device}`}
+                              >
+                                <span aria-hidden="true">{icon}</span>
+                                {binding.label}
+                              </span>
+                            );
+                          }
+
+                          const raw = binding.label.toUpperCase();
+                          const keyLabel = raw === 'ESPACIO' || raw === 'SPACE' ? 'SPACE' : raw;
+                          return (
+                            <kbd
+                              key={`${action.id}-${idx}`}
+                              className={`briefing-keycap3d${keyLabel.length > 2 ? ' briefing-keycap3d--wide' : ''}`}
+                            >
+                              {keyLabel}
+                            </kbd>
+                          );
+                        })}
+                      </div>
+                      <div className="briefing-control-item__copy">
+                        <strong>{action.label}</strong>
+                        <span>{action.description}</span>
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
             </div>
           </div>
         )}
@@ -281,7 +324,7 @@ export default function MinigamePresentation({ game, onReady }: PresentationProp
             </div>
 
             <div className="briefing-played-card__patch">
-              <CardCategoryPatchSvg category={resolvedCard?.category ?? 'supply'} />
+              <CardCategoryPatchSvg cardId={resolvedCard?.id} category={resolvedCard?.category ?? 'supply'} />
             </div>
 
             <h3 className="briefing-played-card__title">

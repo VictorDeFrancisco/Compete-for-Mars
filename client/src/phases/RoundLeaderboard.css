@@ -190,12 +190,36 @@
 }
 
 .leaderboard-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   padding: 2px 8px;
   border-radius: 4px;
   font-family: 'Courier Prime', monospace;
   font-size: 0.76rem;
   font-weight: 800;
   border: 1.5px solid var(--ink-black, #1A1817);
+}
+
+.leaderboard-delta__icon {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+.leaderboard-delta--food {
+  background: #DCFCE7;
+  color: #14532D;
+}
+
+.leaderboard-delta--energy {
+  background: #FFEDD5;
+  color: #9A3412;
+}
+
+.leaderboard-delta--rad {
+  background: #EDE9FE;
+  color: #5B21B6;
 }
 
 .leaderboard-delta.is-pos {

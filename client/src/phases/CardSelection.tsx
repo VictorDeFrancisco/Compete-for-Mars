@@ -2,7 +2,10 @@ import { Fragment, useState } from 'react';
 import { DISTRIBUTED_RESOURCE_PER_ALIVE } from '../../../shared/constants';
 import type { Card, CardSelectionProps } from '../../../shared/types';
 import { playUiClick } from '../utils/uiAudio';
+import { CardCategoryPatchSvg } from './CardArtworkSvg';
 import './CardSelection.css';
+
+export { CardCategoryPatchSvg };
 
 export const categoryLabels = {
   supply: 'Recursos',
@@ -11,9 +14,11 @@ export const categoryLabels = {
   interaction: 'Especial · Trastada',
 } as const;
 
+type HighlightTone = 'food' | 'energy' | 'hp' | 'rad' | 'cost' | 'info' | 'danger';
+
 interface CardHighlight {
   label: string;
-  tone: 'gain' | 'cost' | 'danger' | 'rad' | 'info';
+  tone: HighlightTone;
 }
 
 export function getCardHighlights(card: Card, aliveCount: number): CardHighlight[] {
@@ -25,11 +30,11 @@ export function getCardHighlights(card: Card, aliveCount: number): CardHighlight
       : card.rules?.amount ?? Math.max(1, aliveCount) * DISTRIBUTED_RESOURCE_PER_ALIVE;
 
   if (kind === 'rest') {
-    tags.push({ label: `+${sharedPool} ENERGÍA (A REPARTIR)`, tone: 'gain' });
+    tags.push({ label: `+${sharedPool} ENERGÍA (A REPARTIR)`, tone: 'energy' });
   } else if (kind === 'eat') {
-    tags.push({ label: `+${sharedPool} COMIDA (A REPARTIR)`, tone: 'gain' });
+    tags.push({ label: `+${sharedPool} COMIDA (A REPARTIR)`, tone: 'food' });
   } else if (kind === 'decontamination') {
-    tags.push({ label: 'CURA TODA RADIACIÓN (SOLO SI VAS TÚ)', tone: 'gain' });
+    tags.push({ label: 'CURA TODA RADIACIÓN (SOLO SI VAS TÚ)', tone: 'food' });
     tags.push({ label: '+1 RADIACIÓN SI ESTÁS LIMPIO', tone: 'rad' });
   } else if (kind === 'radiation-shield') {
     tags.push({ label: 'BLOQUEA PRÓXIMA RADIACIÓN', tone: 'info' });
@@ -38,21 +43,21 @@ export function getCardHighlights(card: Card, aliveCount: number): CardHighlight
   } else if (kind === 'sabotage') {
     tags.push({ label: `QUITA -${card.rules?.amount ?? 20} COMIDA AL OBJETIVO`, tone: 'danger' });
   } else if (kind === 'supply-theft') {
-    tags.push({ label: `ROBA +${card.rules?.amount ?? 30} COMIDA AL LÍDER`, tone: 'gain' });
+    tags.push({ label: `ROBA +${card.rules?.amount ?? 30} COMIDA AL LÍDER`, tone: 'food' });
   } else if (kind === 'exchange') {
     tags.push({ label: 'ROTA COMIDA Y ENERGÍA', tone: 'info' });
   } else if (kind === 'contagion') {
     tags.push({ label: '+1 RADIACIÓN AL OBJETIVO', tone: 'rad' });
   } else if (kind === 'isotope-leak') {
-    tags.push({ label: `+${card.rules?.amount ?? 10} ENERGÍA`, tone: 'gain' });
+    tags.push({ label: `+${card.rules?.amount ?? 15} ENERGÍA`, tone: 'energy' });
     tags.push({ label: '+1 RADIACIÓN AL OBJETIVO', tone: 'rad' });
   }
 
   if (card.cost?.energy) tags.push({ label: `COSTE -${card.cost.energy} ENERGÍA`, tone: 'cost' });
   if (card.cost?.food) tags.push({ label: `COSTE -${card.cost.food} COMIDA`, tone: 'cost' });
 
-  if (card.effect.food) tags.push({ label: `+${card.effect.food} COMIDA`, tone: 'gain' });
-  if (card.effect.energy) tags.push({ label: `+${card.effect.energy} ENERGÍA`, tone: 'gain' });
+  if (card.effect.food) tags.push({ label: `+${card.effect.food} COMIDA`, tone: 'food' });
+  if (card.effect.energy) tags.push({ label: `+${card.effect.energy} ENERGÍA`, tone: 'energy' });
   if (card.effect.radiation) tags.push({ label: `+${card.effect.radiation} RADIACIÓN`, tone: 'rad' });
 
   if (card.rules?.chance !== undefined) {
@@ -60,7 +65,7 @@ export function getCardHighlights(card: Card, aliveCount: number): CardHighlight
     tags.push({ label: `${Math.round(chance * 100)}% ÉXITO`, tone: 'info' });
   }
   if (card.rules?.failureHealth) {
-    tags.push({ label: `${card.rules.failureHealth} VIDA SI FALLA`, tone: 'danger' });
+    tags.push({ label: `${card.rules.failureHealth} VIDA SI FALLA`, tone: 'hp' });
   }
   if (card.rules?.failure?.radiation) {
     tags.push({ label: `+${card.rules.failure.radiation} RADIACIÓN SI FALLA`, tone: 'rad' });
@@ -72,73 +77,75 @@ export function getCardHighlights(card: Card, aliveCount: number): CardHighlight
   return tags;
 }
 
-const HIGHLIGHT_REGEX =
-  /([+-]?\d+(?:\s*\/\s*\d+)?(?:\s*%|\s+de\s+(?:energía|comida|vida|radiación))?|\bradiación\b|\bcomida\b|\benergía\b|\bvida\b)/gi;
+const VERB_PATTERN =
+  '\\b(?:gana[rs]?|ganar|obtiene[ns]?|obtener|consigue[ns]?|conseguir|recibe[ns]?|recibir|recupera[rsn]?|recuperar|encuentra[rsn]?|encontrar|capta[rsn]?|captar|reparte[ns]?|repartir|roba[rsn]?|robar|suma[rsn]?|sumar|aumenta[rsn]?|aumentar|añade[ns]?|añadir|cura[rsn]?|curar|elimina[rsn]?|eliminar|bloquea[rsn]?|bloquear|anula[rsn]?|anular|evita[rsn]?|evitar|protege[ns]?|proteger|pierde[ns]?|perder|paga[rsn]?|pagar|quita[rsn]?|quitar|cuesta[ns]?|costar|consume[ns]?|consumir|gasta[rsn]?|gastar|sufre[ns]?|sufrir|transfiere[ns]?|transferir|pasa[rsn]?|pasar)\\b';
 
-function renderHighlightedText(text: string) {
-  const parts = text.split(HIGHLIGHT_REGEX);
-  return parts.map((part, idx) => {
-    if (!part) return null;
-    if (idx % 2 === 1) {
-      const lower = part.toLowerCase();
-      let cls = 'card-kw--num';
-      if (lower.includes('radiación')) cls = 'card-kw--rad';
-      else if (lower.includes('comida')) cls = 'card-kw--food';
-      else if (lower.includes('energía')) cls = 'card-kw--energy';
-      else if (lower.includes('vida')) cls = 'card-kw--hp';
-      return (
-        <mark key={idx} className={`card-kw ${cls}`}>
-          {part}
-        </mark>
-      );
-    }
-    return <Fragment key={idx}>{part}</Fragment>;
-  });
+const RESOURCE_OR_NUM_PATTERN =
+  '(?:[+-]?\\d+(?:\\s*\\/\\s*\\d+)?(?:\\s*%|\\s+de\\s+(?:energía|comida|vida|radiación))?|\\bradiación\\b|\\bcomida\\b|\\benergía\\b|\\bvida\\b)';
+
+const CARD_TOKEN_REGEX = new RegExp(`(${VERB_PATTERN}|${RESOURCE_OR_NUM_PATTERN})`, 'gi');
+
+const CURE_VERBS_RE = /^(?:cura|elimina|bloquea|anula|evita|protege)/i;
+const ALWAYS_NEG_VERBS_RE = /^(?:paga|cuesta|costar|consume|gasta|sufre|transfiere|pasa)/i;
+const LOSS_VERBS_RE = /^(?:pierde|perder|quita)/i;
+
+function classifyVerbPolarity(verb: string, tailText: string): 'pos' | 'neg' {
+  if (CURE_VERBS_RE.test(verb)) return 'pos';
+  if (ALWAYS_NEG_VERBS_RE.test(verb)) return 'neg';
+
+  const clause = tailText.split(/[.,;():]|\by\b|\bpero\b|\bsi\b/i)[0] ?? '';
+  const mentionsRadiation = /radiaci[oó]n/i.test(clause);
+
+  if (LOSS_VERBS_RE.test(verb)) {
+    return mentionsRadiation ? 'pos' : 'neg';
+  }
+  return mentionsRadiation ? 'neg' : 'pos';
 }
 
-export function CardCategoryPatchSvg({ category }: { category: Card['category'] }) {
-  switch (category) {
-    case 'risk':
-      return (
-        <svg className="action-card__svg" viewBox="0 0 64 64" aria-hidden="true">
-          <circle cx="32" cy="32" r="28" fill="#C1440E" stroke="#1A1817" strokeWidth="3" />
-          <circle cx="32" cy="32" r="21" fill="#F5EFE0" stroke="#1A1817" strokeWidth="2" />
-          <path d="M13 41 L24 27 L33 35 L42 23 L51 41 Z" fill="#7A2506" stroke="#1A1817" strokeWidth="2" />
-          <circle cx="42" cy="21" r="4.5" fill="#FC3D21" stroke="#1A1817" strokeWidth="1.5" />
-        </svg>
-      );
-    case 'defense':
-      return (
-        <svg className="action-card__svg" viewBox="0 0 64 64" aria-hidden="true">
-          <circle cx="32" cy="32" r="28" fill="#0B3D91" stroke="#1A1817" strokeWidth="3" />
-          <circle cx="32" cy="32" r="21" fill="#F5EFE0" stroke="#1A1817" strokeWidth="2" />
-          <path d="M32 16 L44 22 V33 C44 40 38 45 32 48 C26 45 20 40 20 33 V22 Z" fill="#0B3D91" stroke="#1A1817" strokeWidth="2" />
-          <path d="M27 32 H37 M32 27 V37" stroke="#F5EFE0" strokeWidth="3" strokeLinecap="round" />
-        </svg>
-      );
-    case 'interaction':
-      return (
-        <svg className="action-card__svg" viewBox="0 0 64 64" aria-hidden="true">
-          <circle cx="32" cy="32" r="28" fill="#6D4B8C" stroke="#1A1817" strokeWidth="3" />
-          <circle cx="32" cy="32" r="21" fill="#F5EFE0" stroke="#1A1817" strokeWidth="2" />
-          <circle cx="25" cy="28" r="5" fill="#1A1817" />
-          <circle cx="39" cy="28" r="5" fill="#FC3D21" stroke="#1A1817" strokeWidth="1.5" />
-          <path d="M17 42 C18 36 32 36 33 42 Z" fill="#1A1817" />
-          <path d="M31 42 C32 36 46 36 47 42 Z" fill="#6D4B8C" stroke="#1A1817" strokeWidth="1.5" />
-        </svg>
-      );
-    case 'supply':
-    default:
-      return (
-        <svg className="action-card__svg" viewBox="0 0 64 64" aria-hidden="true">
-          <circle cx="32" cy="32" r="28" fill="#2F6F4E" stroke="#1A1817" strokeWidth="3" />
-          <circle cx="32" cy="32" r="21" fill="#F5EFE0" stroke="#1A1817" strokeWidth="2" />
-          <rect x="20" y="21" width="24" height="22" rx="3" fill="#2F6F4E" stroke="#1A1817" strokeWidth="2" />
-          <rect x="24" y="25" width="16" height="6" fill="#F5EFE0" />
-          <line x1="26" y1="36" x2="38" y2="36" stroke="#F5EFE0" strokeWidth="2.5" />
-        </svg>
-      );
+function renderHighlightedText(text: string) {
+  const parts: Array<{ text: string; start: number; isMatch: boolean }> = [];
+  let cursor = 0;
+  for (const match of text.matchAll(CARD_TOKEN_REGEX)) {
+    const idx = match.index ?? 0;
+    if (idx > cursor) {
+      parts.push({ text: text.slice(cursor, idx), start: cursor, isMatch: false });
+    }
+    parts.push({ text: match[0], start: idx, isMatch: true });
+    cursor = idx + match[0].length;
   }
+  if (cursor < text.length) {
+    parts.push({ text: text.slice(cursor), start: cursor, isMatch: false });
+  }
+
+  return parts.map((part, idx) => {
+    if (!part.text) return null;
+    if (!part.isMatch) return <Fragment key={idx}>{part.text}</Fragment>;
+
+    const lower = part.text.toLowerCase();
+    if (lower.includes('radiación')) {
+      return <mark key={idx} className="card-kw card-kw--rad">{part.text}</mark>;
+    }
+    if (lower.includes('comida')) {
+      return <mark key={idx} className="card-kw card-kw--food">{part.text}</mark>;
+    }
+    if (lower.includes('energía')) {
+      return <mark key={idx} className="card-kw card-kw--energy">{part.text}</mark>;
+    }
+    if (lower.includes('vida')) {
+      return <mark key={idx} className="card-kw card-kw--hp">{part.text}</mark>;
+    }
+    if (/^[+-]?\d/.test(part.text)) {
+      return <mark key={idx} className="card-kw card-kw--num">{part.text}</mark>;
+    }
+
+    const tail = text.slice(part.start + part.text.length);
+    const polarity = classifyVerbPolarity(part.text, tail);
+    return (
+      <span key={idx} className={`card-verb card-verb--${polarity}`}>
+        {part.text}
+      </span>
+    );
+  });
 }
 
 export default function CardSelection({ game, onChoose }: CardSelectionProps) {
@@ -205,7 +212,7 @@ export default function CardSelection({ game, onChoose }: CardSelectionProps) {
               </div>
 
               <div className="action-card__patch">
-                <CardCategoryPatchSvg category={card.category} />
+                <CardCategoryPatchSvg cardId={card.id} category={card.category} />
               </div>
 
               <h3>{card.title}</h3>

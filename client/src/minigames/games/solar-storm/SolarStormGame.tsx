@@ -1,3 +1,4 @@
+import type { PointerEvent } from 'react';
 import { defineModule, type MinigameViewProps } from '../../core/module';
 import { solarStormDefinition } from '../../../../../shared/minigames/solarStorm';
 import { SolarStormGame, type SolarStormData } from './SolarStormEngine';
@@ -6,8 +7,9 @@ import './solarStorm.css';
 
 export { SolarStormGame, type SolarStormData };
 
-function SolarStormView({ snapshot }: MinigameViewProps<SolarStormData>) {
+function SolarStormView({ engine, snapshot }: MinigameViewProps<SolarStormData>) {
   const data = snapshot.data;
+  const solarEngine = engine as SolarStormGame;
 
   const alertWave = data.activeAlertWave;
   const timeToImpact = alertWave
@@ -21,12 +23,34 @@ function SolarStormView({ snapshot }: MinigameViewProps<SolarStormData>) {
       ? '#facc15'
       : '#f87171';
 
-  const timeLeftSec = Math.max(0, 60 - Math.floor(data.currentSecond));
+  const aimShieldFromPointer = (e: PointerEvent<HTMLDivElement>) => {
+    if (snapshot.status !== 'running') return;
+    const canvas = e.currentTarget.querySelector('canvas');
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return;
+
+    const normX = ((e.clientX - rect.left) / rect.width) * 680;
+    const normY = ((e.clientY - rect.top) / rect.height) * 480;
+    const dx = normX - 340;
+    const dy = 401 - normY;
+    const angleRad = Math.atan2(dx, Math.max(12, dy));
+    const angleDeg = 180 + (angleRad * 180) / Math.PI;
+    solarEngine.setDirectAngle(angleDeg);
+  };
 
   return (
     <div className="solar-storm-view">
       {/* Zona Jugable de la Base Marciana con HUD Integrado en el Interior */}
-      <div className="solar-storm__screen-frame">
+      <div
+        className="solar-storm__screen-frame"
+        onPointerDown={aimShieldFromPointer}
+        onPointerMove={e => {
+          if (e.pointerType === 'mouse' || e.buttons > 0) {
+            aimShieldFromPointer(e);
+          }
+        }}
+      >
         <SolarStormCanvas data={data} />
 
         {/* Ticker de Alerta DONKI superpuesto en la parte superior del canvas */}
@@ -62,10 +86,9 @@ function SolarStormView({ snapshot }: MinigameViewProps<SolarStormData>) {
             </div>
           </div>
 
-          {/* Horas / Fecha Simulada NASA y Cuenta Atrás */}
+          {/* Horas / Fecha Simulada NASA */}
           <div className="hud-metric hud-metric--clock">
             <span className="hud-clock-time">{data.simulatedDateTime}</span>
-            <span className="hud-clock-sub">⏱️ RESTANTE: {timeLeftSec}s</span>
           </div>
 
           {/* Potencia del Escudo */}

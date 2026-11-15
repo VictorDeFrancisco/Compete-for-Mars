@@ -7,39 +7,38 @@ export const solarStormDefinition = defineMinigame({
   durationMs: 60_000,
   maxScore: 1000,
   instructions:
-    'El Sol emite llamaradas solares y eyecciones de masa coronal (CME) reales de la base de datos NASA DONKI mientras el tiempo avanza rápidamente. Controla el Escudo Magnético móvil en la órbita de Marte: gira el escudo con A/D o ←/→ para interceptar las ondas de plasma antes de que impacten la colonia marciana. Pulsa Espacio o W para activar el Super-Escudo ampliado durante erupciones extremas.',
+    'La base de datos real NASA DONKI registra llamaradas solares y eyecciones de masa coronal (CME) dirigidas hacia tu cúpula en Marte. Orienta el Escudo Magnético entre 115° y 245° con A/D, las flechas o moviendo el ratón/dedo sobre el domo para interceptar cada onda antes de que impacte (bloquear en el centro exacto activa un Parry Crítico con combo). Captura también los orbes azules de iones para ganar puntos extra y recargar el Super-Escudo, y mantén Espacio, W o ↑ para ensanchar el escudo a 48° ante ráfagas múltiples.',
   objective:
-    'Gira el escudo magnético e intercepta todas las ondas de radiación solar de la NASA para proteger la colonia de Marte.',
+    'Intercepta las ondas solares de NASA DONKI, encadena Parrys Críticos y recoge orbes de iones para proteger la integridad de la base.',
   controls: [
     {
       id: 'turn-left',
       label: 'Girar Escudo Izquierda',
-      description: 'Rota el escudo magnético en sentido antihorario alrededor de Marte.',
+      description: 'Desplaza el deflector magnético hacia el sector izquierdo del domo (115°–245°).',
       bindings: [
         { device: 'keyboard', code: 'KeyA', label: 'A' },
         { device: 'keyboard', code: 'ArrowLeft', label: '←' },
-        { device: 'touch', label: '◀ Girar Izquierda' },
+        { device: 'pointer', button: 0, label: 'Apuntar sobre el domo' },
       ],
     },
     {
       id: 'turn-right',
       label: 'Girar Escudo Derecha',
-      description: 'Rota el escudo magnético en sentido horario alrededor de Marte.',
+      description: 'Desplaza el deflector magnético hacia el sector derecho del domo.',
       bindings: [
         { device: 'keyboard', code: 'KeyD', label: 'D' },
         { device: 'keyboard', code: 'ArrowRight', label: '→' },
-        { device: 'touch', label: 'Girar Derecha ▶' },
+        { device: 'pointer', button: 0, label: 'Arrastrar en el domo' },
       ],
     },
     {
       id: 'boost',
-      label: 'Super-Escudo Ampliado',
-      description: 'Expande el deflector magnético a 160° para bloquear ondas masivas.',
+      label: 'Super-Escudo (48°)',
+      description: 'Mantén pulsado para duplicar la cobertura del escudo de 24° a 48° consumiendo potencia.',
       bindings: [
         { device: 'keyboard', code: 'Space', label: 'Espacio' },
         { device: 'keyboard', code: 'KeyW', label: 'W' },
         { device: 'keyboard', code: 'ArrowUp', label: '↑' },
-        { device: 'touch', label: '⚡ Super-Escudo' },
       ],
     },
   ],

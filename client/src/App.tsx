@@ -89,7 +89,7 @@ export default function App() {
       <div className="mars-stage">
         <MarsBackdrop />
         <main className="mars-stage__main">
-          <Hud game={game} seconds={seconds} onLeave={leave} disabled={!connected} />
+          <Hud game={game} seconds={phase === 'playing' ? null : seconds} onLeave={leave} disabled={!connected} />
           {error && <p className="error stage-error" role="alert">{error}</p>}
           <div className="stage-workspace">
             <div className="stage-center">
@@ -180,7 +180,7 @@ export default function App() {
         <main className="mars-stage__main">
           <Hud
             game={previewGame}
-            seconds={previewSeconds}
+            seconds={previewPhase === 'playing' ? null : previewSeconds}
             onLeave={() => setView('test-panel')}
             leaveLabel="BACK TO PANEL"
           />

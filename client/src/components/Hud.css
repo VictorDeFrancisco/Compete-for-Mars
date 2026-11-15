@@ -352,6 +352,18 @@
   font-weight: 900;
 }
 
+.crew-dock-res__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.crew-dock-res__icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
 .crew-dock-rad {
   position: relative;
   display: inline-flex;
@@ -455,6 +467,9 @@
   line-height: 1;
   letter-spacing: 0.03em;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   text-shadow:
     0 2px 0 #1A1817,
     2px 0 0 #1A1817,
@@ -465,6 +480,13 @@
     2px -2px 0 #1A1817,
     -2px -2px 0 #1A1817;
   animation: crewDeltaFloat 3.45s cubic-bezier(0.16, 0.86, 0.25, 1) forwards;
+}
+
+.crew-delta-pop__icon {
+  width: 18px;
+  height: 18px;
+  filter: drop-shadow(0 2px 0 #1A1817);
+  flex-shrink: 0;
 }
 
 .crew-delta-pop--hp {

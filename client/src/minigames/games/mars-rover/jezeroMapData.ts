@@ -180,8 +180,8 @@ export function generateMarsSector(seed = Math.floor(Math.random() * 1_000_000))
     hills.push({
       x: hx,
       y: hy,
-      radius: 16 + rand() * 10,
-      height: 6.0 + rand() * 5.0, // Altura moderada y realista (+6m a +11m)
+      radius: 17 + rand() * 10,
+      height: 4.2 + rand() * 3.8, // Elevación suave y navegable (+4.2m a +8m)
     });
   }
 
@@ -245,7 +245,7 @@ export function generateMarsSector(seed = Math.floor(Math.random() * 1_000_000))
     for (const h of hills) {
       const dh = Math.hypot(x - h.x, y - h.y);
       if (dh < h.radius * 2.0) {
-        z += Math.exp(-Math.pow(dh / (h.radius * 0.65), 2)) * h.height;
+        z += Math.exp(-Math.pow(dh / (h.radius * 0.85), 2)) * h.height;
       }
     }
 

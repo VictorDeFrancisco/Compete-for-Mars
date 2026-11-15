@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { GameView, PublicPlayer } from '../../../shared/types';
 import AstronautPortraitSvg, { resolvePlayerSuitColor } from './AstronautPortraitSvg';
-import { RadiationIcon } from './RadiationIcon';
+import { EnergyIcon, FoodIcon, RadiationIcon } from './ResourceIcons';
 import './Hud.css';
 
 export interface HudProps {
@@ -126,8 +126,16 @@ interface DockSnapshot {
   radiation: number;
 }
 
-function formatDelta(value: number, suffix: string): string {
-  return `${value > 0 ? `+${value}` : `${value}`} ${suffix}`;
+function DeltaScopeIcon({ scope }: { scope: StatDeltaEvent['scope'] }) {
+  if (scope === 'energy') return <EnergyIcon className="crew-delta-pop__icon" />;
+  if (scope === 'food') return <FoodIcon className="crew-delta-pop__icon" />;
+  if (scope === 'rad') return <RadiationIcon className="crew-delta-pop__icon" />;
+  return null;
+}
+
+function formatDelta(value: number, suffix?: string): string {
+  const num = value > 0 ? `+${value}` : `${value}`;
+  return suffix ? `${num} ${suffix}` : num;
 }
 
 export function BottomCrewDock({ game }: { game: GameView }) {
@@ -205,7 +213,7 @@ export function BottomCrewDock({ game }: { game: GameView }) {
         id: ++seqRef.current,
         playerId: game.self.id,
         scope: 'energy',
-        label: formatDelta(energyDiff, '⚡'),
+        label: formatDelta(energyDiff),
         tone: 'energy',
       });
     }
@@ -216,7 +224,7 @@ export function BottomCrewDock({ game }: { game: GameView }) {
         id: ++seqRef.current,
         playerId: game.self.id,
         scope: 'food',
-        label: formatDelta(foodDiff, '🌿'),
+        label: formatDelta(foodDiff),
         tone: 'food',
       });
     }
@@ -227,7 +235,7 @@ export function BottomCrewDock({ game }: { game: GameView }) {
         id: ++seqRef.current,
         playerId: game.self.id,
         scope: 'rad',
-        label: formatDelta(radDiff, '☢'),
+        label: formatDelta(radDiff),
         tone: 'rad',
       });
       if (radDiff > 0 && !pulses[game.self.id]) {
@@ -235,28 +243,53 @@ export function BottomCrewDock({ game }: { game: GameView }) {
       }
     }
 
-    const revealDelayMs = game.phase === 'presentation' && game.self.cardOutcome ? 650 : 0;
+    const waitLeaderboardReveal =
+      game.phase === 'results' && !game.self.ready && game.self.health > 0;
+    const revealDelayMs =
+      game.phase === 'presentation' && game.self.cardOutcome
+        ? 650
+        : waitLeaderboardReveal
+          ? 2250
+          : 0;
+
+    const scheduleReveal = (fn: () => void) => {
+      if (revealDelayMs <= 0) {
+        fn();
+        return;
+      }
+      if (waitLeaderboardReveal) {
+        let fired = false;
+        const runOnce = () => {
+          if (fired) return;
+          fired = true;
+          window.removeEventListener('mars:leaderboard-reveal', onReveal);
+          window.clearTimeout(fallbackTimer);
+          fn();
+        };
+        const onReveal = () => runOnce();
+        const fallbackTimer = window.setTimeout(runOnce, revealDelayMs);
+        window.addEventListener('mars:leaderboard-reveal', onReveal, { once: true });
+        timersRef.current.push(fallbackTimer);
+        return;
+      }
+      const delayTimer = window.setTimeout(fn, revealDelayMs);
+      timersRef.current.push(delayTimer);
+    };
 
     if (spawned.length > 0) {
       const spawnedIds = new Set(spawned.map(item => item.id));
-      const triggerSpawn = () => {
+      scheduleReveal(() => {
         setDeltas(current => [...current, ...spawned]);
         const clearTimer = window.setTimeout(() => {
           setDeltas(current => current.filter(item => !spawnedIds.has(item.id)));
         }, 3600);
         timersRef.current.push(clearTimer);
-      };
-      if (revealDelayMs > 0) {
-        const delayTimer = window.setTimeout(triggerSpawn, revealDelayMs);
-        timersRef.current.push(delayTimer);
-      } else {
-        triggerSpawn();
-      }
+      });
     }
 
     const pulseKeys = Object.keys(pulses);
     if (pulseKeys.length > 0) {
-      const triggerPulse = () => {
+      scheduleReveal(() => {
         setCardPulses(current => ({ ...current, ...pulses }));
         const pulseTimer = window.setTimeout(() => {
           setCardPulses(current => {
@@ -268,29 +301,17 @@ export function BottomCrewDock({ game }: { game: GameView }) {
           });
         }, 1450);
         timersRef.current.push(pulseTimer);
-      };
-      if (revealDelayMs > 0) {
-        const delayPulseTimer = window.setTimeout(triggerPulse, revealDelayMs);
-        timersRef.current.push(delayPulseTimer);
-      } else {
-        triggerPulse();
-      }
+      });
     }
     if (newDeaths.length > 0) {
       const deathIds = new Set(newDeaths.map(item => item.id));
-      const triggerDeaths = () => {
+      scheduleReveal(() => {
         setDeathAlerts(current => [...current, ...newDeaths]);
         const deathTimer = window.setTimeout(() => {
           setDeathAlerts(current => current.filter(item => !deathIds.has(item.id)));
         }, 3400);
         timersRef.current.push(deathTimer);
-      };
-      if (revealDelayMs > 0) {
-        const delayDeathTimer = window.setTimeout(triggerDeaths, revealDelayMs);
-        timersRef.current.push(delayDeathTimer);
-      } else {
-        triggerDeaths();
-      }
+      });
     }
   }, [game]);
 
@@ -400,13 +421,16 @@ export function BottomCrewDock({ game }: { game: GameView }) {
                     <div className="crew-delta-stack" aria-live="polite">
                       {energyDeltas.map(item => (
                         <span key={item.id} className={`crew-delta-pop crew-delta-pop--${item.tone}`}>
-                          {item.label}
+                          <span>{item.label}</span>
+                          <DeltaScopeIcon scope={item.scope} />
                         </span>
                       ))}
                     </div>
                   )}
                   <div className="crew-dock-res__head">
-                    <span>⚡ ENERGY</span>
+                    <span className="crew-dock-res__label">
+                      <EnergyIcon className="crew-dock-res__icon" /> ENERGY
+                    </span>
                     <b>
                       {game.self.resources.energy}/{maxEnergy}
                     </b>
@@ -427,13 +451,16 @@ export function BottomCrewDock({ game }: { game: GameView }) {
                     <div className="crew-delta-stack" aria-live="polite">
                       {foodDeltas.map(item => (
                         <span key={item.id} className={`crew-delta-pop crew-delta-pop--${item.tone}`}>
-                          {item.label}
+                          <span>{item.label}</span>
+                          <DeltaScopeIcon scope={item.scope} />
                         </span>
                       ))}
                     </div>
                   )}
                   <div className="crew-dock-res__head">
-                    <span>🌿 FOOD</span>
+                    <span className="crew-dock-res__label">
+                      <FoodIcon className="crew-dock-res__icon" /> FOOD
+                    </span>
                     <b>
                       {game.self.resources.food}/{maxFood}
                     </b>
@@ -454,7 +481,8 @@ export function BottomCrewDock({ game }: { game: GameView }) {
                     <div className="crew-delta-stack" aria-live="polite">
                       {radDeltas.map(item => (
                         <span key={item.id} className={`crew-delta-pop crew-delta-pop--${item.tone}`}>
-                          {item.label}
+                          <span>{item.label}</span>
+                          <DeltaScopeIcon scope={item.scope} />
                         </span>
                       ))}
                     </div>

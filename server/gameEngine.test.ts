@@ -196,6 +196,11 @@ test('orden aleatorio controlado: mínimo 2 minijuegos distintos entre repeticio
     assert.equal(room.phase, 'lobby');
   }
   assert.equal(new Set(seenOrder).size >= 4, true);
+  // Bag-shuffle invariant: every full cycle of MINIGAMES.length plays every minigame before repeating.
+  const firstCycle = seenOrder.slice(0, 7);
+  assert.equal(new Set(firstCycle).size, 7);
+  const secondCycle = seenOrder.slice(7, 14);
+  assert.equal(new Set(secondCycle).size, 7);
 });
 
 test('radiación sin límite superior, daño por 0 comida/energía, decaimiento del +24 y fórmula de último puesto', () => {

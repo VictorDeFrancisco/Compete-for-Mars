@@ -205,6 +205,28 @@ main .briefing-tabs button.briefing-tab.is-active {
   color: var(--nasa-blue, #0B3D91);
 }
 
+.briefing-input-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 2px solid var(--ink-black, #1A1817);
+  background: #E4ECFA;
+  color: var(--nasa-blue, #0B3D91);
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  box-shadow: 0 2px 0 var(--ink-black, #1A1817);
+}
+
+.briefing-input-pill--touch {
+  background: #FFEDD5;
+  color: #9A3412;
+}
+
 .briefing-card__info {
   display: flex;
   flex-direction: column;

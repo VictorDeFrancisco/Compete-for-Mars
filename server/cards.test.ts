@@ -38,24 +38,24 @@ test('draws exactly three unique eligible cards: one supply, one risk and one sp
 });
 
 test('each resource pool scales by living players, splits independently and cannot be claimed twice', () => {
-  const { room, players: p } = fixture(); // 4 alive => pool = 60, 2 choosers each => +30
+  const { room, players: p } = fixture(); // 4 alive => pool = 80, 2 choosers each => +40
   p.forEach((q, i) => chooseCard(room, q, i < 2 ? 'rest' : 'eat'));
   assert.equal(p[0].resources.energy, 40);
-  resolveCards(room); assert.equal(p[0].resources.energy, 70); assert.equal(p[2].resources.food, 70);
-  resolveCards(room); assert.equal(p[0].resources.energy, 70);
+  resolveCards(room); assert.equal(p[0].resources.energy, 80); assert.equal(p[2].resources.food, 80);
+  resolveCards(room); assert.equal(p[0].resources.energy, 80);
 
-  // 2 alive => pool = 30 (not 40); 1 chooser gets +30
+  // 2 alive => pool = 40; 1 chooser gets +40
   const duo = fixture(2);
   chooseCard(duo.room, duo.players[0], 'rest'); chooseCard(duo.room, duo.players[1], 'eat');
   resolveCards(duo.room);
-  assert.equal(duo.players[0].resources.energy, 70);
-  assert.equal(duo.players[1].resources.food, 70);
+  assert.equal(duo.players[0].resources.energy, 80);
+  assert.equal(duo.players[1].resources.food, 80);
 
-  // 1 alive => pool = 15
+  // 1 alive => pool = 20
   const solo = fixture(1);
   chooseCard(solo.room, solo.players[0], 'rest');
   resolveCards(solo.room);
-  assert.equal(solo.players[0].resources.energy, 55);
+  assert.equal(solo.players[0].resources.energy, 60);
 });
 
 test('rejects unoffered cards, duplicate decisions, dead/self/missing targets and unaffordable costs', () => {
@@ -125,7 +125,7 @@ test('theft splits one finite loot pool and simultaneous sabotage never creates 
 });
 
 test('expedition chance is living players / 5, using an injectable random source', () => {
-  for (const [roll, radiation, food] of [[.79, 0, 70], [.8, 1, 40]]) {
+  for (const [roll, radiation, food] of [[.79, 0, 80], [.8, 1, 40]]) {
     const { room, players: p } = fixture();
     chooseCard(room, p[0], 'expedition'); p.slice(1).forEach(q => chooseCard(room, q, 'rest'));
     resolveCards(room, () => roll); assert.equal(p[0].resources.radiation, radiation); assert.equal(p[0].resources.food, food);
@@ -138,8 +138,8 @@ test('all risk cards respect their success, failure, health damage and upfront c
       const { room, players: [p] } = fixture(1, [id, 'rest', 'eat']);
       const card = room.cards[0]; chooseCard(room, p, id); resolveCards(room, () => success ? 0 : .99);
       assert.equal(p.resources.food, 40 - (card.cost?.food ?? 0) + (success ? card.effect.food ?? 0 : 0));
-      assert.equal(p.resources.energy, 40 - (card.cost?.energy ?? 0) + (success ? card.effect.energy ?? 0 : id === 'dust-storm' ? -15 : 0));
-      assert.equal(p.health, success || id !== 'ice-cave' ? 100 : 80);
+      assert.equal(p.resources.energy, 40 - (card.cost?.energy ?? 0) + (success ? card.effect.energy ?? 0 : id === 'dust-storm' ? -10 : 0));
+      assert.equal(p.health, success || id !== 'ice-cave' ? 100 : 85);
       assert.equal(p.resources.radiation, !success && id === 'mysterious-signal' ? 1 : 0);
     }
   }
@@ -160,7 +160,7 @@ test('contagion keeps source radiation, does nothing to a contaminated target an
   p[0].resources.radiation = 2; p[1].resources.radiation = 1;
   chooseCard(room, p[0], 'contagion', p[1].id); chooseCard(room, p[1], 'emergency-landing'); chooseCard(room, p[2], 'emergency-landing');
   resolveCards(room); assert.deepEqual(p.map(q => q.resources.radiation), [2, 2, 1]);
-  assert.equal(p[2].resources.food, 65); assert.equal(p[2].resources.energy, 65);
+  assert.equal(p[2].resources.food, 75); assert.equal(p[2].resources.energy, 75);
 });
 
 test('selections, targets, protection and personal outcomes remain private in socket views', () => {
@@ -254,7 +254,7 @@ test('exchange respects the recipient profession cap and cave damage preserves h
   const cave = fixture(1, ['ice-cave', 'rest', 'eat']);
   cave.players[0].stats = { energy: 0, food: 0, health: 30 }; cave.players[0].health = cave.players[0].maxHealth = 130;
   chooseCard(cave.room, cave.players[0], 'ice-cave'); resolveCards(cave.room, () => .99);
-  assert.equal(cave.players[0].health, 110);
+  assert.equal(cave.players[0].health, 115);
 });
 
 test('reinforced suit preserves the upkeep, empty-resource damage and last-place penalty from main', () => {
@@ -269,7 +269,7 @@ test('reinforced suit preserves the upkeep, empty-resource damage and last-place
   assert.equal(p[0].health, 30); // -40 last place (round 5 * 8), -15 empty food, -15 empty energy; radiation blocked.
   assert.equal(p[0].protection.reinforcedSuit, false);
   assert.equal(p[0].resources.radiation, 2);
-  assert.equal(p[1].resources.food, 10); // 40 - 30 upkeep.
+  assert.equal(p[1].resources.food, 20); // 40 - 20 upkeep.
 });
 
 test('new radiation cards apply radiation, respect shields and isotope-leak works on clean crews', () => {
@@ -277,15 +277,15 @@ test('new radiation cards apply radiation, respect shields and isotope-leak work
   chooseCard(room, p[0], 'nuclear-battery');
   chooseCard(room, p[1], 'isotope-leak', p[0].id);
   resolveCards(room);
-  assert.equal(p[0].resources.energy, 65);
+  assert.equal(p[0].resources.energy, 85);
   assert.equal(p[0].resources.radiation, 2);
-  assert.equal(p[1].resources.energy, 50);
+  assert.equal(p[1].resources.energy, 55);
 
   const risk = fixture(1, ['solar-flare-harvest', 'crater-excavation', 'rest']);
   risk.players[0].protection.radiationShield = true;
   chooseCard(risk.room, risk.players[0], 'solar-flare-harvest');
   resolveCards(risk.room);
-  assert.equal(risk.players[0].resources.energy, 75);
+  assert.equal(risk.players[0].resources.energy, 95);
   assert.equal(risk.players[0].resources.radiation, 0);
   assert.equal(risk.players[0].protection.radiationShield, false);
 

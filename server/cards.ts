@@ -20,6 +20,8 @@ export function distributedResourcePool(card: Card, aliveCount: number): number 
 }
 export function drawCards(players: readonly Player[], random = Math.random): Card[] {
   const alive = players.filter(p => p.health > 0), contaminated = alive.some(p => p.resources.radiation > 0);
+  const starvingFood = alive.some(p => p.resources.food === 0);
+  const starvingEnergy = alive.some(p => p.resources.energy === 0);
   const eligible = (c: Card) =>
     (contaminated || !['decontamination', 'reinforced-suit', 'contagion'].includes(c.id))
     && (alive.length > 1 || !['sabotage', 'supply-theft', 'exchange', 'contagion', 'isotope-leak'].includes(c.id))
@@ -27,8 +29,30 @@ export function drawCards(players: readonly Player[], random = Math.random): Car
   const supply = CARD_CATALOG.filter(c => c.category === 'supply' && eligible(c));
   const risk = CARD_CATALOG.filter(c => c.category === 'risk' && eligible(c));
   const special = CARD_CATALOG.filter(c => (c.category === 'defense' || c.category === 'interaction') && eligible(c));
-  const pick = (pool: readonly Card[]) => pool[Math.floor(random() * pool.length)];
-  return [pick(supply), pick(risk), pick(special)];
+  const pickWeighted = (pool: readonly Card[], weightFor: (c: Card) => number) => {
+    const weights = pool.map(c => Math.max(1, weightFor(c)));
+    const total = weights.reduce((sum, w) => sum + w, 0);
+    let roll = random() * total;
+    for (let i = 0; i < pool.length; i++) {
+      roll -= weights[i];
+      if (roll < 0) return pool[i];
+    }
+    return pool[pool.length - 1];
+  };
+  const supplyPick = pickWeighted(supply, card => {
+    let weight = 1;
+    if (starvingFood && (card.id === 'eat' || card.effect.food)) weight += card.id === 'eat' ? 5 : 2;
+    if (starvingEnergy && (card.id === 'rest' || card.effect.energy)) weight += card.id === 'rest' ? 5 : 2;
+    return weight;
+  });
+  const riskPick = pickWeighted(risk, card => {
+    let weight = 1;
+    if (starvingFood && card.effect.food) weight += 2;
+    if (starvingEnergy && card.effect.energy) weight += 2;
+    return weight;
+  });
+  const specialPick = special[Math.floor(random() * special.length)];
+  return [supplyPick, riskPick, specialPick];
 }
 export function cardUnavailable(player: Player, card: Card): string | null {
   if (player.health <= 0) return 'Los jugadores eliminados no pueden elegir cartas.';

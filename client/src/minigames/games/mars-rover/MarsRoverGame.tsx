@@ -234,7 +234,48 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
   const programRef = useRef<WebGLProgram | null>(null);
   const glTextureRef = useRef<WebGLTexture | null>(null);
   const textureImgRef = useRef<HTMLImageElement | null>(null);
+  const uploadedTexVersionRef = useRef(-1);
   const [textureVersion, setTextureVersion] = useState(0);
+
+  const staticCacheRef = useRef<{
+    gl: WebGLRenderingContext;
+    seed: number;
+    terrainCount: number;
+    posBuffer: WebGLBuffer | null;
+    normBuffer: WebGLBuffer | null;
+    elevBuffer: WebGLBuffer | null;
+    texBuffer: WebGLBuffer | null;
+    indexBuffer: WebGLBuffer | null;
+    rockVertCount: number;
+    rockVBuffer: WebGLBuffer | null;
+    rockNBuffer: WebGLBuffer | null;
+    rockCBuffer: WebGLBuffer | null;
+    beaconCount: number;
+    bVBuffer: WebGLBuffer | null;
+    bIBuffer: WebGLBuffer | null;
+    roverCBuffer: WebGLBuffer | null;
+  } | null>(null);
+
+  useEffect(() => {
+    return () => {
+      const cache = staticCacheRef.current;
+      if (cache) {
+        const g = cache.gl;
+        g.deleteBuffer(cache.posBuffer);
+        g.deleteBuffer(cache.normBuffer);
+        g.deleteBuffer(cache.elevBuffer);
+        g.deleteBuffer(cache.texBuffer);
+        g.deleteBuffer(cache.indexBuffer);
+        g.deleteBuffer(cache.rockVBuffer);
+        g.deleteBuffer(cache.rockNBuffer);
+        g.deleteBuffer(cache.rockCBuffer);
+        g.deleteBuffer(cache.bVBuffer);
+        g.deleteBuffer(cache.bIBuffer);
+        g.deleteBuffer(cache.roverCBuffer);
+        staticCacheRef.current = null;
+      }
+    };
+  }, []);
 
   // Mantener la relación de aspecto del lienzo 3D adaptada al contenedor disponible
   useEffect(() => {
@@ -333,59 +374,211 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
 
     const sector = rover.sector;
 
-    // 1. Malla 3D del paisaje marciano extendido (54x54 vértices)
-    const res = 54;
-    const vertices: number[] = [];
-    const normals: number[] = [];
-    const elevations: number[] = [];
-    const texCoords: number[] = [];
-    const indices: number[] = [];
-
-    const step = MAP_SIZE / res;
-    for (let j = 0; j <= res; j++) {
-      for (let i = 0; i <= res; i++) {
-        const wx = i * step;
-        const wy = j * step;
-        const wz = sector.elevationAt(wx, wy);
-
-        vertices.push(wx, wz, wy);
-        elevations.push(wz);
-        texCoords.push(wx / MAP_SIZE, wy / MAP_SIZE);
-
-        const { gx, gy } = sector.gradientAt(wx, wy);
-        const len = Math.hypot(-gx, 1.0, -gy) || 1;
-        normals.push(-gx / len, 1.0 / len, -gy / len);
+    // 1. Caché de geometría estática WebGL (terreno, rocas, baliza y colores del rover)
+    if (!staticCacheRef.current || staticCacheRef.current.seed !== sector.seed || staticCacheRef.current.gl !== gl) {
+      if (staticCacheRef.current) {
+        const prevGl = staticCacheRef.current.gl;
+        prevGl.deleteBuffer(staticCacheRef.current.posBuffer);
+        prevGl.deleteBuffer(staticCacheRef.current.normBuffer);
+        prevGl.deleteBuffer(staticCacheRef.current.elevBuffer);
+        prevGl.deleteBuffer(staticCacheRef.current.texBuffer);
+        prevGl.deleteBuffer(staticCacheRef.current.indexBuffer);
+        prevGl.deleteBuffer(staticCacheRef.current.rockVBuffer);
+        prevGl.deleteBuffer(staticCacheRef.current.rockNBuffer);
+        prevGl.deleteBuffer(staticCacheRef.current.rockCBuffer);
+        prevGl.deleteBuffer(staticCacheRef.current.bVBuffer);
+        prevGl.deleteBuffer(staticCacheRef.current.bIBuffer);
+        prevGl.deleteBuffer(staticCacheRef.current.roverCBuffer);
       }
+
+      const res = 54;
+      const vertices: number[] = [];
+      const normals: number[] = [];
+      const elevations: number[] = [];
+      const texCoords: number[] = [];
+      const indices: number[] = [];
+
+      const step = MAP_SIZE / res;
+      for (let j = 0; j <= res; j++) {
+        for (let i = 0; i <= res; i++) {
+          const wx = i * step;
+          const wy = j * step;
+          const wz = sector.elevationAt(wx, wy);
+
+          vertices.push(wx, wz, wy);
+          elevations.push(wz);
+          texCoords.push(wx / MAP_SIZE, wy / MAP_SIZE);
+
+          const { gx, gy } = sector.gradientAt(wx, wy);
+          const len = Math.hypot(-gx, 1.0, -gy) || 1;
+          normals.push(-gx / len, 1.0 / len, -gy / len);
+        }
+      }
+
+      for (let j = 0; j < res; j++) {
+        for (let i = 0; i < res; i++) {
+          const row1 = j * (res + 1);
+          const row2 = (j + 1) * (res + 1);
+          indices.push(row1 + i, row2 + i, row1 + i + 1);
+          indices.push(row1 + i + 1, row2 + i, row2 + i + 1);
+        }
+      }
+
+      const posBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+      const normBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, normBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
+
+      const elevBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, elevBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(elevations), gl.STATIC_DRAW);
+
+      const texBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, texBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.STATIC_DRAW);
+
+      const indexBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+
+      const rockVerts: number[] = [];
+      const rockNorms: number[] = [];
+      const rockColors: number[] = [];
+
+      for (const rock of sector.rocks) {
+        const zBase = sector.elevationAt(rock.x, rock.y);
+        const N = 8;
+        const ringVerts: Array<[number, number, number]> = [];
+
+        for (let k = 0; k < N; k++) {
+          const angle = rock.rotation + (k * Math.PI * 2) / N;
+          const rDist = rock.radius * (0.82 + 0.36 * Math.sin(k * 2.7 + rock.shapeSeed * 5.0));
+          const hOffset = rock.height * 0.42 * (0.75 + 0.35 * Math.cos(k * 2.1));
+          const px = rock.x + Math.cos(angle) * rDist;
+          const py = rock.y + Math.sin(angle) * rDist;
+          const pz = sector.elevationAt(px, py) + hOffset;
+          ringVerts.push([px, pz, py]);
+        }
+
+        const topVert: [number, number, number] = [
+          rock.x + Math.cos(rock.rotation) * (rock.radius * 0.15),
+          zBase + rock.height,
+          rock.y + Math.sin(rock.rotation) * (rock.radius * 0.15),
+        ];
+        const botVert: [number, number, number] = [rock.x, zBase - 0.4, rock.y];
+        const baseCol = [0.38 * rock.colorSeed, 0.23 * rock.colorSeed, 0.17 * rock.colorSeed];
+
+        for (let k = 0; k < N; k++) {
+          const v0 = topVert;
+          const v1 = ringVerts[k];
+          const v2 = ringVerts[(k + 1) % N];
+
+          const e1 = [v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2]];
+          const e2 = [v2[0] - v0[0], v2[1] - v0[1], v2[2] - v0[2]];
+          const nx = e1[1] * e2[2] - e1[2] * e2[1];
+          const ny = e1[2] * e2[0] - e1[0] * e2[2];
+          const nz = e1[0] * e2[1] - e1[1] * e2[0];
+          const len = Math.hypot(nx, ny, nz) || 1;
+          const norm = [nx / len, ny / len, nz / len];
+
+          const varC = 0.88 + 0.22 * Math.sin(k * 2.3 + rock.shapeSeed * 3.0);
+          const col = [baseCol[0] * varC, baseCol[1] * varC, baseCol[2] * varC];
+
+          rockVerts.push(...v0, ...v1, ...v2);
+          rockNorms.push(...norm, ...norm, ...norm);
+          rockColors.push(...col, ...col, ...col);
+        }
+
+        for (let k = 0; k < N; k++) {
+          const v0 = botVert;
+          const v1 = ringVerts[(k + 1) % N];
+          const v2 = ringVerts[k];
+
+          const e1 = [v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2]];
+          const e2 = [v2[0] - v0[0], v2[1] - v0[1], v2[2] - v0[2]];
+          const nx = e1[1] * e2[2] - e1[2] * e2[1];
+          const ny = e1[2] * e2[0] - e1[0] * e2[2];
+          const nz = e1[0] * e2[1] - e1[1] * e2[0];
+          const len = Math.hypot(nx, ny, nz) || 1;
+          const norm = [nx / len, ny / len, nz / len];
+
+          const varC = 0.72 + 0.18 * Math.cos(k * 1.9);
+          const col = [baseCol[0] * varC, baseCol[1] * varC, baseCol[2] * varC];
+
+          rockVerts.push(...v0, ...v1, ...v2);
+          rockNorms.push(...norm, ...norm, ...norm);
+          rockColors.push(...col, ...col, ...col);
+        }
+      }
+
+      const rockVBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, rockVBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(rockVerts), gl.STATIC_DRAW);
+
+      const rockNBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, rockNBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(rockNorms), gl.STATIC_DRAW);
+
+      const rockCBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, rockCBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(rockColors), gl.STATIC_DRAW);
+
+      const targetB = sector.targetPos;
+      const bElev = sector.elevationAt(targetB.x, targetB.y);
+      const beaconVerts: number[] = [
+        targetB.x - 2.2, bElev, targetB.y - 2.2,
+        targetB.x + 2.2, bElev, targetB.y - 2.2,
+        targetB.x + 2.2, bElev, targetB.y + 2.2,
+        targetB.x - 2.2, bElev, targetB.y + 2.2,
+        targetB.x - 0.7, bElev + 38.0, targetB.y - 0.7,
+        targetB.x + 0.7, bElev + 38.0, targetB.y - 0.7,
+        targetB.x + 0.7, bElev + 38.0, targetB.y + 0.7,
+        targetB.x - 0.7, bElev + 38.0, targetB.y + 0.7,
+      ];
+      const beaconIndices = [
+        0, 1, 5, 0, 5, 4,
+        1, 2, 6, 1, 6, 5,
+        2, 3, 7, 2, 7, 6,
+        3, 0, 4, 3, 4, 7,
+        4, 5, 6, 4, 6, 7,
+      ];
+
+      const bVBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, bVBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(beaconVerts), gl.STATIC_DRAW);
+
+      const bIBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bIBuffer);
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(beaconIndices), gl.STATIC_DRAW);
+
+      const roverCBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, roverCBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, ROVER_GLB_GEOMETRY.colors, gl.STATIC_DRAW);
+
+      staticCacheRef.current = {
+        gl,
+        seed: sector.seed,
+        terrainCount: indices.length,
+        posBuffer,
+        normBuffer,
+        elevBuffer,
+        texBuffer,
+        indexBuffer,
+        rockVertCount: rockVerts.length / 3,
+        rockVBuffer,
+        rockNBuffer,
+        rockCBuffer,
+        beaconCount: beaconIndices.length,
+        bVBuffer,
+        bIBuffer,
+        roverCBuffer,
+      };
     }
 
-    for (let j = 0; j < res; j++) {
-      for (let i = 0; i < res; i++) {
-        const row1 = j * (res + 1);
-        const row2 = (j + 1) * (res + 1);
-        indices.push(row1 + i, row2 + i, row1 + i + 1);
-        indices.push(row1 + i + 1, row2 + i, row2 + i + 1);
-      }
-    }
-
-    const posBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-
-    const normBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, normBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
-
-    const elevBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, elevBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(elevations), gl.STATIC_DRAW);
-
-    const texBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, texBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.STATIC_DRAW);
-
-    const indexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+    const cache = staticCacheRef.current;
 
     const aPosLoc = gl.getAttribLocation(program, 'a_position');
     const aNormLoc = gl.getAttribLocation(program, 'a_normal');
@@ -400,7 +593,7 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
     const uUseVertexColorLoc = gl.getUniformLocation(program, 'u_useVertexColor');
     const uNasaTexLoc = gl.getUniformLocation(program, 'u_nasaTexture');
 
-    // Gestión segura de la textura WebGL
+    // Gestión segura de la textura WebGL (subir a GPU solo cuando cambia textureVersion)
     if (!glTextureRef.current) {
       glTextureRef.current = gl.createTexture();
       gl.bindTexture(gl.TEXTURE_2D, glTextureRef.current);
@@ -416,10 +609,16 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 2, 2, 0, gl.RGBA, gl.UNSIGNED_BYTE, defaultPix);
     }
 
-    if (textureImgRef.current && textureImgRef.current.complete && textureImgRef.current.naturalWidth > 0) {
+    if (
+      uploadedTexVersionRef.current !== textureVersion &&
+      textureImgRef.current &&
+      textureImgRef.current.complete &&
+      textureImgRef.current.naturalWidth > 0
+    ) {
       try {
         gl.bindTexture(gl.TEXTURE_2D, glTextureRef.current);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textureImgRef.current);
+        uploadedTexVersionRef.current = textureVersion;
       } catch (err) {
         console.warn('Error al vincular textura satelital:', err);
       }
@@ -476,24 +675,24 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
     gl.uniform1f(uUseVertexColorLoc, 0.0);
     gl.disableVertexAttribArray(aColorLoc);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, cache.posBuffer);
     gl.vertexAttribPointer(aPosLoc, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(aPosLoc);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, normBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, cache.normBuffer);
     gl.vertexAttribPointer(aNormLoc, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(aNormLoc);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, elevBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, cache.elevBuffer);
     gl.vertexAttribPointer(aElevLoc, 1, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(aElevLoc);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, texBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, cache.texBuffer);
     gl.vertexAttribPointer(aTexCoordLoc, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(aTexCoordLoc);
 
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cache.indexBuffer);
+    gl.drawElements(gl.TRIANGLES, cache.terrainCount, gl.UNSIGNED_SHORT, 0);
 
     // 3. Renderizar Rocas y Peñascos Marcianos (Obstáculos Físicos 3D con sombreado faceted)
     gl.disableVertexAttribArray(aTexCoordLoc);
@@ -501,99 +700,21 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
     gl.disableVertexAttribArray(aElevLoc);
     gl.vertexAttrib1f(aElevLoc, 0);
 
-    const rockVerts: number[] = [];
-    const rockNorms: number[] = [];
-    const rockColors: number[] = [];
-
-    for (const rock of sector.rocks) {
-      const zBase = sector.elevationAt(rock.x, rock.y);
-      const N = 8;
-      const ringVerts: Array<[number, number, number]> = [];
-
-      for (let k = 0; k < N; k++) {
-        const angle = rock.rotation + (k * Math.PI * 2) / N;
-        const rDist = rock.radius * (0.82 + 0.36 * Math.sin(k * 2.7 + rock.shapeSeed * 5.0));
-        const hOffset = rock.height * 0.42 * (0.75 + 0.35 * Math.cos(k * 2.1));
-        const px = rock.x + Math.cos(angle) * rDist;
-        const py = rock.y + Math.sin(angle) * rDist;
-        const pz = sector.elevationAt(px, py) + hOffset;
-        ringVerts.push([px, pz, py]);
-      }
-
-      const topVert: [number, number, number] = [
-        rock.x + Math.cos(rock.rotation) * (rock.radius * 0.15),
-        zBase + rock.height,
-        rock.y + Math.sin(rock.rotation) * (rock.radius * 0.15),
-      ];
-      const botVert: [number, number, number] = [rock.x, zBase - 0.4, rock.y];
-      const baseCol = [0.38 * rock.colorSeed, 0.23 * rock.colorSeed, 0.17 * rock.colorSeed];
-
-      // Facetas superiores
-      for (let k = 0; k < N; k++) {
-        const v0 = topVert;
-        const v1 = ringVerts[k];
-        const v2 = ringVerts[(k + 1) % N];
-
-        const e1 = [v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2]];
-        const e2 = [v2[0] - v0[0], v2[1] - v0[1], v2[2] - v0[2]];
-        const nx = e1[1] * e2[2] - e1[2] * e2[1];
-        const ny = e1[2] * e2[0] - e1[0] * e2[2];
-        const nz = e1[0] * e2[1] - e1[1] * e2[0];
-        const len = Math.hypot(nx, ny, nz) || 1;
-        const norm = [nx / len, ny / len, nz / len];
-
-        const varC = 0.88 + 0.22 * Math.sin(k * 2.3 + rock.shapeSeed * 3.0);
-        const col = [baseCol[0] * varC, baseCol[1] * varC, baseCol[2] * varC];
-
-        rockVerts.push(...v0, ...v1, ...v2);
-        rockNorms.push(...norm, ...norm, ...norm);
-        rockColors.push(...col, ...col, ...col);
-      }
-
-      // Facetas inferiores
-      for (let k = 0; k < N; k++) {
-        const v0 = botVert;
-        const v1 = ringVerts[(k + 1) % N];
-        const v2 = ringVerts[k];
-
-        const e1 = [v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2]];
-        const e2 = [v2[0] - v0[0], v2[1] - v0[1], v2[2] - v0[2]];
-        const nx = e1[1] * e2[2] - e1[2] * e2[1];
-        const ny = e1[2] * e2[0] - e1[0] * e2[2];
-        const nz = e1[0] * e2[1] - e1[1] * e2[0];
-        const len = Math.hypot(nx, ny, nz) || 1;
-        const norm = [nx / len, ny / len, nz / len];
-
-        const varC = 0.72 + 0.18 * Math.cos(k * 1.9);
-        const col = [baseCol[0] * varC, baseCol[1] * varC, baseCol[2] * varC];
-
-        rockVerts.push(...v0, ...v1, ...v2);
-        rockNorms.push(...norm, ...norm, ...norm);
-        rockColors.push(...col, ...col, ...col);
-      }
-    }
-
-    const rockVBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, rockVBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(rockVerts), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, cache.rockVBuffer);
     gl.vertexAttribPointer(aPosLoc, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(aPosLoc);
 
-    const rockNBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, rockNBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(rockNorms), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, cache.rockNBuffer);
     gl.vertexAttribPointer(aNormLoc, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(aNormLoc);
 
-    const rockCBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, rockCBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(rockColors), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, cache.rockCBuffer);
     gl.vertexAttribPointer(aColorLoc, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(aColorLoc);
 
     gl.uniform1f(uUseVertexColorLoc, 1.0);
     gl.uniform1f(uUseCustomColorLoc, 0.0);
-    gl.drawArrays(gl.TRIANGLES, 0, rockVerts.length / 3);
+    gl.drawArrays(gl.TRIANGLES, 0, cache.rockVertCount);
 
     gl.disableVertexAttribArray(aColorLoc);
 
@@ -602,35 +723,11 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
     gl.uniform1f(uUseCustomColorLoc, 1.0);
     gl.uniform3f(uCustomColorLoc, 0.22, 1.0, 0.40); // Verde esmeralda brillante
 
-    const targetB = sector.targetPos;
-    const bElev = sector.elevationAt(targetB.x, targetB.y);
-    const beaconVerts: number[] = [
-      targetB.x - 2.2, bElev, targetB.y - 2.2,
-      targetB.x + 2.2, bElev, targetB.y - 2.2,
-      targetB.x + 2.2, bElev, targetB.y + 2.2,
-      targetB.x - 2.2, bElev, targetB.y + 2.2,
-      targetB.x - 0.7, bElev + 38.0, targetB.y - 0.7,
-      targetB.x + 0.7, bElev + 38.0, targetB.y - 0.7,
-      targetB.x + 0.7, bElev + 38.0, targetB.y + 0.7,
-      targetB.x - 0.7, bElev + 38.0, targetB.y + 0.7,
-    ];
-    const beaconIndices = [
-      0, 1, 5, 0, 5, 4,
-      1, 2, 6, 1, 6, 5,
-      2, 3, 7, 2, 7, 6,
-      3, 0, 4, 3, 4, 7,
-      4, 5, 6, 4, 6, 7,
-    ];
-
-    const bVBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, bVBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(beaconVerts), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, cache.bVBuffer);
     gl.vertexAttribPointer(aPosLoc, 3, gl.FLOAT, false, 0, 0);
 
-    const bIBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bIBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(beaconIndices), gl.STATIC_DRAW);
-    gl.drawElements(gl.TRIANGLES, beaconIndices.length, gl.UNSIGNED_SHORT, 0);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cache.bIBuffer);
+    gl.drawElements(gl.TRIANGLES, cache.beaconCount, gl.UNSIGNED_SHORT, 0);
 
     // 5. Renderizar Rover 3D Low-Poly desde el modelo GLB real (rover modelo.glb)
     const cosH = Math.cos(headingRad);
@@ -689,9 +786,7 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
     gl.bufferData(gl.ARRAY_BUFFER, roverNorms, gl.STATIC_DRAW);
     gl.vertexAttribPointer(aNormLoc, 3, gl.FLOAT, false, 0, 0);
 
-    const rCBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, rCBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, ROVER_GLB_GEOMETRY.colors, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, cache.roverCBuffer);
     gl.vertexAttribPointer(aColorLoc, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(aColorLoc);
 
@@ -701,20 +796,9 @@ function MarsRoverView({ engine, snapshot }: MinigameViewProps<MarsRoverData>) {
 
     gl.disableVertexAttribArray(aColorLoc);
 
-    // Limpieza de buffers WebGL
-    gl.deleteBuffer(posBuffer);
-    gl.deleteBuffer(normBuffer);
-    gl.deleteBuffer(elevBuffer);
-    gl.deleteBuffer(texBuffer);
-    gl.deleteBuffer(indexBuffer);
-    gl.deleteBuffer(bVBuffer);
-    gl.deleteBuffer(bIBuffer);
-    gl.deleteBuffer(rockVBuffer);
-    gl.deleteBuffer(rockNBuffer);
-    gl.deleteBuffer(rockCBuffer);
+    // Limpieza únicamente de los buffers dinámicos del rover
     gl.deleteBuffer(rVBuffer);
     gl.deleteBuffer(rNBuffer);
-    gl.deleteBuffer(rCBuffer);
   }, [data, rover.sector, textureVersion, status, animTick, viewportSize]);
 
   const energyClass =
