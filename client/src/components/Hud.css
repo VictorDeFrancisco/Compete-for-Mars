@@ -33,25 +33,36 @@
 
 .top-hud__timer {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: center;
-  min-width: 58px;
-  padding: 5px 11px;
+  gap: 7px;
+  min-width: 108px;
+  padding: 6px 14px;
   background: var(--paper-cream);
   color: var(--ink-black);
   border: 2.5px solid var(--ink-black);
-  border-radius: 5px;
+  border-radius: 6px;
   font-family: 'Courier Prime', monospace;
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 1.24rem;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
   box-shadow: 0 3px 0 var(--ink-black);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.top-hud__timer-label {
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  opacity: 0.72;
 }
 
 .top-hud__timer--low {
   background: #fde0dc;
   color: #a1170a;
   border-color: #a1170a;
+  animation: timerUrgentPulse 0.7s ease-in-out infinite;
 }
 
 .top-hud__leave {
@@ -62,6 +73,8 @@
 
 /* --- BOTTOM CREW DOCK (homogéneo en todas las pantallas) --- */
 .bottom-crew-dock {
+  position: relative;
+  z-index: 50;
   display: flex;
   align-items: stretch;
   justify-content: center;
@@ -71,6 +84,7 @@
 }
 
 .crew-dock-card {
+  position: relative;
   flex: 1 1 0;
   min-width: 195px;
   max-width: 360px;
@@ -83,6 +97,15 @@
   border-radius: 8px;
   box-shadow: 0 4px 0 var(--ink-black);
   color: var(--ink-black);
+}
+
+.crew-dock-card--damage {
+  animation: crewCardDamageShake 0.95s ease;
+  box-shadow: 0 4px 0 #991B1B, 0 0 0 3px #EF4444;
+}
+
+.crew-dock-card--heal {
+  box-shadow: 0 4px 0 #15803D, 0 0 0 3px #22C55E;
 }
 
 .crew-dock-card--self {
@@ -99,6 +122,24 @@
   opacity: 0.56;
 }
 
+.crew-dock-card--dead {
+  background: #d9cfc1;
+  border-color: #5b1d17;
+  box-shadow: 0 3px 0 #5b1d17;
+  opacity: 0.84;
+}
+
+.crew-dock-card--dead .crew-dock-card__avatar {
+  filter: grayscale(1) contrast(1.15) brightness(0.76);
+  opacity: 0.78;
+}
+
+.crew-dock-card--dead .crew-dock-card__name {
+  text-decoration: line-through;
+  text-decoration-thickness: 2.5px;
+  color: #4f463c;
+}
+
 .crew-dock-card__identity {
   display: flex;
   align-items: center;
@@ -108,24 +149,40 @@
 }
 
 .crew-dock-card__avatar-frame {
+  position: relative;
   width: 44px;
   height: 44px;
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  border: 2.5px solid var(--ink-black);
-  border-radius: 6px;
-  background: #0d1624;
-  overflow: hidden;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+.crew-dock-card__skull-badge {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #dc2626;
+  filter: drop-shadow(0 2px 0 #18181b);
+  pointer-events: none;
+}
+
+.crew-dock-card__skull-badge svg {
+  width: 28px;
+  height: 28px;
 }
 
 .crew-dock-card--self .crew-dock-card__avatar-frame {
-  border-color: var(--nasa-orange);
+  border-color: transparent;
 }
 
 .crew-dock-card__avatar {
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
 }
 
 .crew-dock-card__meta {
@@ -195,6 +252,13 @@
   color: #3f382e;
 }
 
+.crew-dock-card__status--dead {
+  background: #991b1b;
+  border-color: #450a0a;
+  color: #fef2f2;
+  letter-spacing: 0.06em;
+}
+
 .crew-dock-card__hp-row {
   display: flex;
   align-items: center;
@@ -262,6 +326,7 @@
 }
 
 .crew-dock-res {
+  position: relative;
   flex: 1 1 108px;
   min-width: 96px;
   display: flex;
@@ -288,6 +353,7 @@
 }
 
 .crew-dock-rad {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -356,4 +422,212 @@
     border-left: none;
     border-top: 2px dashed #c4b59c;
   }
+}
+
+/* --- FLOATING STAT DELTA POPUPS (-10 HP, +25 ⚡, +1 ☢, etc.) --- */
+.crew-delta-stack {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  z-index: 35;
+}
+
+.crew-delta-stack--hp {
+  left: 28%;
+}
+
+.crew-delta-pop {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  font-family: 'Archivo', sans-serif;
+  font-size: 1.32rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  text-shadow:
+    0 2px 0 #1A1817,
+    2px 0 0 #1A1817,
+    -2px 0 0 #1A1817,
+    0 -2px 0 #1A1817,
+    2px 2px 0 #1A1817,
+    -2px 2px 0 #1A1817,
+    2px -2px 0 #1A1817,
+    -2px -2px 0 #1A1817;
+  animation: crewDeltaFloat 3.45s cubic-bezier(0.16, 0.86, 0.25, 1) forwards;
+}
+
+.crew-delta-pop--hp {
+  color: #FF3B30;
+}
+
+.crew-delta-pop--energy {
+  color: #FF9500;
+}
+
+.crew-delta-pop--food {
+  color: #2ECC71;
+}
+
+.crew-delta-pop--rad {
+  color: #C084FC;
+}
+
+@keyframes crewDeltaFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.75);
+  }
+  12% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.12);
+  }
+  24% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1);
+  }
+  82% {
+    opacity: 1;
+    transform: translateY(-34px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-48px) scale(0.95);
+  }
+}
+
+@keyframes crewCardDamageShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-5px) rotate(-0.8deg); }
+  45% { transform: translateX(5px) rotate(0.8deg); }
+  70% { transform: translateX(-3px); }
+}
+
+.crew-death-card-skull {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 35;
+  animation: crewCardSkullPop 2.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.crew-death-card-skull__svg {
+  width: 46px;
+  height: 46px;
+  color: #ef4444;
+  filter: drop-shadow(0 3px 0 #18181b) drop-shadow(0 0 12px rgba(220, 38, 38, 0.65));
+}
+
+.crew-death-banner-stack {
+  position: fixed;
+  top: 76px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 65;
+  pointer-events: none;
+}
+
+.crew-death-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  background: #1c1413;
+  color: #fef2f2;
+  border: 3px solid #ef4444;
+  border-radius: 10px;
+  box-shadow: 0 6px 0 #7f1d1d, 0 14px 28px rgba(0, 0, 0, 0.48);
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.98rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  animation: crewDeathBannerIn 3.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.crew-death-banner__skull {
+  width: 30px;
+  height: 30px;
+  color: #ef4444;
+  flex-shrink: 0;
+  animation: deathSkullShake 0.45s ease-in-out 2;
+}
+
+@keyframes timerUrgentPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 3px 0 #a1170a;
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 3px 0 #a1170a, 0 0 12px rgba(220, 38, 38, 0.42);
+  }
+}
+
+@keyframes crewCardSkullPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.35) translateY(8px);
+  }
+  16% {
+    opacity: 1;
+    transform: scale(1.25) translateY(-4px);
+  }
+  28% {
+    opacity: 1;
+    transform: scale(1) translateY(-6px);
+  }
+  78% {
+    opacity: 1;
+    transform: scale(1) translateY(-10px);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+}
+
+@keyframes crewDeathBannerIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-18px) scale(0.86);
+  }
+  14% {
+    opacity: 1;
+    transform: translateY(0) scale(1.04);
+  }
+  24% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  82% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.95);
+  }
+}
+
+@keyframes deathSkullShake {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-14deg) scale(1.12); }
+  75% { transform: rotate(14deg) scale(1.12); }
 }

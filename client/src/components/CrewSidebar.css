@@ -54,9 +54,9 @@
   width: 34px;
   height: 34px;
   border-radius: 7px;
-  border: 2px solid var(--ink-black, #1A1817);
-  background: #FFE5D9;
-  padding: 2px;
+  border: none;
+  background: transparent;
+  padding: 0;
   line-height: 0;
   flex-shrink: 0;
 }

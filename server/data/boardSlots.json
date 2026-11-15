@@ -220,5 +220,60 @@
     "rules": {
       "kind": "emergency-landing"
     }
+  },
+  {
+    "id": "nuclear-battery",
+    "title": "Pila nuclear",
+    "description": "Gana 25 de energía de reserva, pero recibe 1 de radiación por fuga térmica.",
+    "category": "risk",
+    "effect": {
+      "energy": 25,
+      "radiation": 1
+    },
+    "rules": {
+      "kind": "nuclear-battery"
+    }
+  },
+  {
+    "id": "solar-flare-harvest",
+    "title": "Cosecha solar",
+    "description": "Capta 35 de energía de la tormenta solar, pero recibe 1 de radiación.",
+    "category": "risk",
+    "effect": {
+      "energy": 35,
+      "radiation": 1
+    },
+    "rules": {
+      "kind": "solar-flare-harvest"
+    }
+  },
+  {
+    "id": "crater-excavation",
+    "title": "Excavación en cráter",
+    "description": "55 %: gana 45 de comida. Si falla, recibe 1 de radiación y pierde 10 de vida.",
+    "category": "risk",
+    "effect": {
+      "food": 45
+    },
+    "rules": {
+      "kind": "crater-excavation",
+      "chance": 0.55,
+      "failureHealth": -10,
+      "failure": {
+        "radiation": 1
+      }
+    }
+  },
+  {
+    "id": "isotope-leak",
+    "title": "Fuga de isótopos",
+    "description": "Añade 1 de radiación a otro jugador y recupera 10 de energía del núcleo.",
+    "category": "interaction",
+    "effect": {},
+    "rules": {
+      "kind": "isotope-leak",
+      "amount": 10
+    },
+    "targetRequired": true
   }
 ]

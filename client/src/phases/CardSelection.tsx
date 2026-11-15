@@ -4,7 +4,7 @@ import type { Card, CardSelectionProps } from '../../../shared/types';
 import { playUiClick } from '../utils/uiAudio';
 import './CardSelection.css';
 
-const categoryLabels = {
+export const categoryLabels = {
   supply: 'Recursos',
   risk: 'Expedición',
   defense: 'Especial · Protección',
@@ -16,7 +16,7 @@ interface CardHighlight {
   tone: 'gain' | 'cost' | 'danger' | 'rad' | 'info';
 }
 
-function getCardHighlights(card: Card, aliveCount: number): CardHighlight[] {
+export function getCardHighlights(card: Card, aliveCount: number): CardHighlight[] {
   const tags: CardHighlight[] = [];
   const kind = card.rules?.kind ?? card.id;
   const sharedPool =
@@ -42,6 +42,9 @@ function getCardHighlights(card: Card, aliveCount: number): CardHighlight[] {
   } else if (kind === 'exchange') {
     tags.push({ label: 'ROTA COMIDA Y ENERGÍA', tone: 'info' });
   } else if (kind === 'contagion') {
+    tags.push({ label: '+1 RADIACIÓN AL OBJETIVO', tone: 'rad' });
+  } else if (kind === 'isotope-leak') {
+    tags.push({ label: `+${card.rules?.amount ?? 10} ENERGÍA`, tone: 'gain' });
     tags.push({ label: '+1 RADIACIÓN AL OBJETIVO', tone: 'rad' });
   }
 
@@ -93,7 +96,7 @@ function renderHighlightedText(text: string) {
   });
 }
 
-function CardCategoryPatchSvg({ category }: { category: Card['category'] }) {
+export function CardCategoryPatchSvg({ category }: { category: Card['category'] }) {
   switch (category) {
     case 'risk':
       return (
@@ -140,9 +143,18 @@ function CardCategoryPatchSvg({ category }: { category: Card['category'] }) {
 
 export default function CardSelection({ game, onChoose }: CardSelectionProps) {
   const [targets, setTargets] = useState<Record<string, string>>({});
+  const [pendingChoice, setPendingChoice] = useState<{
+    phaseId: string;
+    cardId: string;
+    targetId?: string;
+  } | null>(null);
   const alive = game.players.filter(p => p.health > 0);
   const opponents = alive.filter(p => p.id !== game.self.id);
   const dead = game.self.health <= 0;
+  const activePending = pendingChoice?.phaseId === game.phaseId ? pendingChoice : null;
+  const activeSelectedId = game.self.selectedCardId ?? activePending?.cardId ?? null;
+  const hasChosen = game.self.hasChosenCard || activePending !== null;
+  const readyCount = alive.filter(p => p.hasChosenCard).length;
 
   return (
     <section className="phase-cards" aria-label="Card selection">
@@ -176,7 +188,7 @@ export default function CardSelection({ game, onChoose }: CardSelectionProps) {
           );
           const noRadiation = card.requiresRadiation && game.self.resources.radiation === 0;
           const needsTarget = card.targetRequired && !targets[card.id];
-          const selected = game.self.selectedCardId === card.id;
+          const selected = activeSelectedId === card.id;
           const highlights = getCardHighlights(card, alive.length);
 
           return (
@@ -214,7 +226,7 @@ export default function CardSelection({ game, onChoose }: CardSelectionProps) {
                   <select
                     aria-label={`Objetivo de ${card.title}`}
                     value={targets[card.id] ?? ''}
-                    disabled={dead || game.self.hasChosenCard}
+                    disabled={dead || hasChosen}
                     onChange={e => setTargets(current => ({ ...current, [card.id]: e.target.value }))}
                   >
                     <option value="">Elige un astronauta</option>
@@ -237,10 +249,12 @@ export default function CardSelection({ game, onChoose }: CardSelectionProps) {
                 </p>
                 <button
                   type="button"
-                  disabled={dead || game.self.hasChosenCard || cannotPay || !!noRadiation || !!needsTarget}
+                  disabled={dead || hasChosen || cannotPay || !!noRadiation || !!needsTarget}
                   onClick={() => {
+                    const targetId = card.targetRequired ? targets[card.id] : undefined;
                     playUiClick();
-                    onChoose(card.id, card.targetRequired ? targets[card.id] : undefined);
+                    setPendingChoice({ phaseId: game.phaseId, cardId: card.id, targetId });
+                    onChoose(card.id, targetId);
                   }}
                 >
                   {selected ? 'CARTA ELEGIDA ✓' : 'ELEGIR CARTA'}
@@ -252,10 +266,10 @@ export default function CardSelection({ game, onChoose }: CardSelectionProps) {
       </div>
 
       <div className="cards-status" role="status">
-        <strong>{alive.filter(p => p.hasChosenCard).length} / {alive.length} LISTOS</strong>
+        <strong>{readyCount} / {alive.length} LISTOS</strong>
         <span>
-          {game.self.hasChosenCard && !dead
-            ? 'Selección bloqueada. Esperando al resto de la tripulación…'
+          {hasChosen && !dead
+            ? 'Esperando al resto de la tripulación…'
             : 'Haz clic en una carta para confirmar tu jugada de esta ronda.'}
         </span>
       </div>

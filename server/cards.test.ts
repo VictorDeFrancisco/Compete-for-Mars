@@ -271,3 +271,27 @@ test('reinforced suit preserves the upkeep, empty-resource damage and last-place
   assert.equal(p[0].resources.radiation, 2);
   assert.equal(p[1].resources.food, 10); // 40 - 30 upkeep.
 });
+
+test('new radiation cards apply radiation, respect shields and isotope-leak works on clean crews', () => {
+  const { room, players: p } = fixture(2, ['nuclear-battery', 'solar-flare-harvest', 'isotope-leak']);
+  chooseCard(room, p[0], 'nuclear-battery');
+  chooseCard(room, p[1], 'isotope-leak', p[0].id);
+  resolveCards(room);
+  assert.equal(p[0].resources.energy, 65);
+  assert.equal(p[0].resources.radiation, 2);
+  assert.equal(p[1].resources.energy, 50);
+
+  const risk = fixture(1, ['solar-flare-harvest', 'crater-excavation', 'rest']);
+  risk.players[0].protection.radiationShield = true;
+  chooseCard(risk.room, risk.players[0], 'solar-flare-harvest');
+  resolveCards(risk.room);
+  assert.equal(risk.players[0].resources.energy, 75);
+  assert.equal(risk.players[0].resources.radiation, 0);
+  assert.equal(risk.players[0].protection.radiationShield, false);
+
+  const crater = fixture(1, ['crater-excavation', 'rest', 'eat']);
+  chooseCard(crater.room, crater.players[0], 'crater-excavation');
+  resolveCards(crater.room, () => 0.99);
+  assert.equal(crater.players[0].resources.radiation, 1);
+  assert.equal(crater.players[0].health, 90);
+});

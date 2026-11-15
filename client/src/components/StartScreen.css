@@ -22,6 +22,12 @@
   padding: 18px 28px 18px;
   display: flex;
   flex-direction: column;
+  transition: opacity 0.22s ease;
+}
+
+.start-screen--exiting .start-screen__hud {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .start-screen__top {
@@ -32,100 +38,122 @@
 }
 
 .start-screen__test-btn {
-  padding: 7px 15px;
+  padding: 9px 16px;
   background: var(--paper-cream, #F5EFE0);
   color: var(--ink-black, #1A1817);
   border: 3px solid var(--ink-black, #1A1817);
-  border-radius: 8px;
-  box-shadow: 0 4px 0 var(--ink-black, #1A1817);
+  border-radius: 6px;
+  box-shadow: 0 5px 0 var(--ink-black, #1A1817);
   font-family: 'Archivo', sans-serif;
   font-size: 0.8rem;
   font-weight: 900;
   letter-spacing: 0.08em;
+  text-transform: uppercase;
   cursor: pointer;
   transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.1s ease;
 }
 
 .start-screen__test-btn:hover {
   background: #FFF9EB;
-  transform: translateY(-1px);
-  box-shadow: 0 5px 0 var(--ink-black, #1A1817);
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 var(--ink-black, #1A1817);
 }
 
 .start-screen__test-btn:active {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 var(--ink-black, #1A1817);
+  box-shadow: 0 2px 0 var(--ink-black, #1A1817);
 }
 
-/* Título arriba en el cielo despejado y botones abajo sobre el suelo, dejando la base libre en el centro */
+/* Composición asimétrica arriba a la izquierda sobre el cielo despejado de mars-bg.jpeg */
 .start-screen__title-stage {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  text-align: center;
-  gap: 20px;
-  padding: clamp(2px, 1vh, 16px) 0 clamp(18px, 4.2vh, 44px);
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 24px;
+  padding: clamp(14px, 3.6vh, 42px) 0 0 clamp(12px, 4.2vw, 60px);
+}
+
+.start-screen__hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: min(740px, 100%);
+}
+
+.start-screen__badge {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: var(--paper-cream, #F5EFE0);
+  text-shadow: 3px 3px 0 var(--ink-black, #1A1817);
+  font-family: 'Courier Prime', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: clamp(0.76rem, 1.15vw, 0.92rem);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  user-select: none;
+  animation: startFadeDown 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.12s backwards;
 }
 
 .start-screen__hero-title {
   margin: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  line-height: 0.92;
+  align-items: flex-start;
+  gap: 4px;
+  line-height: 0.88;
   text-transform: uppercase;
   user-select: none;
-  filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.42));
 }
 
 .start-screen__title-line {
   font-family: 'Archivo', sans-serif;
   font-weight: 900;
-  font-size: clamp(2.7rem, 6.6vw, 5.3rem);
-  letter-spacing: 0.045em;
-  color: #FFF7E8;
-  -webkit-text-stroke: 2.8px #1A1817;
-  text-shadow:
-    0 5px 0 #1A1817,
-    0 12px 28px rgba(0, 0, 0, 0.55);
-  animation: startTitleFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.18s backwards;
+  font-size: clamp(2.2rem, 4.8vw, 4rem);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  color: var(--paper-cream, #F5EFE0);
+  text-shadow: 5px 5px 0 var(--ink-black, #1A1817);
+  animation: startTitleFade 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards;
 }
 
 .start-screen__title-line--accent {
-  color: #FC3D21;
-  font-size: clamp(3rem, 7.4vw, 5.9rem);
-  animation: startTitleFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.34s backwards;
+  color: var(--nasa-orange, #FC3D21);
+  font-size: clamp(3.8rem, 8.2vw, 6.8rem);
+  letter-spacing: 0.05em;
+  line-height: 0.86;
+  text-shadow: 5px 5px 0 var(--ink-black, #1A1817);
+  animation: startTitleFade 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.32s backwards;
 }
 
 .start-screen__menu {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding: 10px 14px;
-  border-radius: 16px;
-  background: rgba(12, 8, 6, 0.34);
-  backdrop-filter: blur(6px);
-  border: 1px solid rgba(255, 224, 180, 0.14);
-  animation: startFadeUp 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.52s backwards;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  width: min(420px, 100%);
+  animation: startFadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.44s backwards;
 }
 
 .start-screen__btn {
-  min-width: 230px;
-  height: 60px;
-  padding: 0 28px;
-  border-radius: 10px;
-  border: 3.5px solid var(--ink-black, #1A1817);
+  width: 100%;
+  padding: 15px 28px;
+  border-radius: 6px;
+  border: 3px solid var(--ink-black, #1A1817);
   font-family: 'Archivo', sans-serif;
   font-weight: 900;
-  font-size: 1.08rem;
+  font-size: 1rem;
+  line-height: 1.1;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  text-align: center;
   cursor: pointer;
-  box-shadow: 0 6px 0 var(--ink-black, #1A1817);
+  box-shadow: 0 5px 0 var(--ink-black, #1A1817);
   transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.12s ease;
 }
 
@@ -137,7 +165,7 @@
 .start-screen__btn--primary:hover {
   background: var(--nasa-orange-hover, #FF553B);
   transform: translateY(-2px);
-  box-shadow: 0 8px 0 var(--ink-black, #1A1817);
+  box-shadow: 0 7px 0 var(--ink-black, #1A1817);
 }
 
 .start-screen__btn--secondary {
@@ -146,9 +174,9 @@
 }
 
 .start-screen__btn--secondary:hover {
-  background: #FFFFFF;
+  background: #FFF9EB;
   transform: translateY(-2px);
-  box-shadow: 0 8px 0 var(--ink-black, #1A1817);
+  box-shadow: 0 7px 0 var(--ink-black, #1A1817);
 }
 
 .start-screen__btn:active {
@@ -199,12 +227,19 @@
 }
 
 @media (max-width: 600px) {
-  .start-screen__menu {
-    flex-direction: column;
-    width: min(320px, 100%);
+  .start-screen__hud {
+    padding: 16px 18px;
   }
 
-  .start-screen__btn {
-    width: 100%;
+  .start-screen__title-stage {
+    padding: 12px 0 28px 0;
+  }
+
+  .start-screen__title-line {
+    white-space: normal;
+  }
+
+  .start-screen__menu {
+    width: min(360px, 100%);
   }
 }

@@ -98,8 +98,10 @@ function PipesView({ engine, snapshot }: MinigameViewProps<PipesData>) {
               } as CSSProperties}
             >
               <div className="pipes-port pipes-port--entry" aria-label={`Entrada, fila ${board.entryRow + 1}`}>
-                <span>IN</span>
-                <b>→</b>
+                <div className="pipes-port__coupler">
+                  <span>IN</span>
+                  <b>▸</b>
+                </div>
               </div>
               <div className="pipes-board-frame">
                 <div className="pipes-board" role="group" aria-label={`Tablero de ${board.size} por ${board.size}`}>
@@ -131,8 +133,10 @@ function PipesView({ engine, snapshot }: MinigameViewProps<PipesData>) {
                 className={`pipes-port pipes-port--exit${connected ? ' pipes-port--flowing' : ''}`}
                 aria-label={`Salida, fila ${board.exitRow + 1}`}
               >
-                <b>→</b>
-                <span>OUT</span>
+                <div className="pipes-port__coupler">
+                  <b>▸</b>
+                  <span>OUT</span>
+                </div>
               </div>
             </div>
             <div className="pipes-feedback" role="status" aria-live="polite">

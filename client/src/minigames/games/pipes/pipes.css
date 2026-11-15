@@ -288,7 +288,7 @@ body:has(.pipes-game:not(.pipes-game--embedded)) {
 }
 
 .pipes-machine {
-  --port-width: 44px;
+  --port-width: 56px;
   --frame-inset: 9px;
   display: grid;
   grid-template-columns: var(--port-width) minmax(0, 1fr) var(--port-width);
@@ -378,9 +378,8 @@ body:has(.pipes-game:not(.pipes-game--embedded)) {
   height: calc((100cqw - 2 * var(--port-width) - 2 * var(--frame-inset) - 8px) / var(--pipe-size));
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   position: relative;
-  color: #0b3d91;
 }
 
 .pipes-port--entry {
@@ -388,6 +387,7 @@ body:has(.pipes-game:not(.pipes-game--embedded)) {
     var(--frame-inset) + 4px +
       (100cqw - 2 * var(--port-width) - 2 * var(--frame-inset) - 8px) / var(--pipe-size) * var(--entry-row)
   );
+  justify-content: flex-end;
 }
 
 .pipes-port--exit {
@@ -395,43 +395,48 @@ body:has(.pipes-game:not(.pipes-game--embedded)) {
     var(--frame-inset) + 4px +
       (100cqw - 2 * var(--port-width) - 2 * var(--frame-inset) - 8px) / var(--pipe-size) * var(--exit-row)
   );
-  color: #c1440e;
+  justify-content: flex-start;
 }
 
-.pipes-port b {
-  width: 36px;
-  height: 36px;
-  display: flex;
+.pipes-port__coupler {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 8px;
   border: 2.5px solid #1a1817;
-  border-radius: 6px;
-  background: #d8ecff;
-  font-size: 1.35rem;
-  font-weight: 900;
   box-shadow: 0 3px 0 #1a1817;
+  font-family: 'IBM Plex Mono', 'Courier Prime', monospace;
+  line-height: 1;
 }
 
-.pipes-port span {
-  position: absolute;
-  bottom: calc(50% + 22px);
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+.pipes-port--entry .pipes-port__coupler {
+  border-right: 0;
+  border-radius: 7px 0 0 7px;
+  background: #d8ecff;
+  color: #0b3d91;
 }
 
-.pipes-port--exit span {
-  top: calc(50% + 23px);
-  bottom: auto;
-}
-
-.pipes-port--exit b {
+.pipes-port--exit .pipes-port__coupler {
+  border-left: 0;
+  border-radius: 0 7px 7px 0;
   background: #ffebc7;
+  color: #9a3412;
 }
 
-.pipes-port--flowing b {
+.pipes-port__coupler span {
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.pipes-port__coupler b {
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.pipes-port--flowing .pipes-port__coupler {
   background: #2e8b57;
   color: #f5efe0;
 }

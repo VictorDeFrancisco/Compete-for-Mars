@@ -222,10 +222,10 @@ export class SignalModulatorEngine extends BaseMinigame<SignalModulatorData> {
     // 3. Gestión del Filtro Solar y Batería de Blindaje (con precisión float independiente del FPS)
     let isFiltering = this.inputState.filterNoise && this.filterBatteryExact > 0;
     if (isFiltering) {
-      this.filterBatteryExact = Math.max(0, this.filterBatteryExact - deltaMs / 24); // ~2.4s de uso continuo
+      this.filterBatteryExact = Math.max(0, this.filterBatteryExact - deltaMs / 80); // ~8.0s de uso continuo
       if (this.filterBatteryExact <= 0) isFiltering = false;
     } else {
-      this.filterBatteryExact = Math.min(100, this.filterBatteryExact + deltaMs / 25); // recarga en ~2.5s
+      this.filterBatteryExact = Math.min(100, this.filterBatteryExact + deltaMs / 22); // recarga en ~2.2s
     }
     const filterBattery = this.filterBatteryExact;
 

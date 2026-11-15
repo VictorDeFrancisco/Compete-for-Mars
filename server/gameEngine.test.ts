@@ -170,6 +170,7 @@ test('orden aleatorio controlado: mínimo 2 minijuegos distintos entre repeticio
     a.health = a.maxHealth;
     a.resources.energy = 100 + a.stats.energy;
     a.resources.food = 100 + a.stats.food;
+    a.resources.radiation = 0;
     a.ready = true;
     startRound(room, a, i * 10, seededRandom);
     const id = room.minigame.id;

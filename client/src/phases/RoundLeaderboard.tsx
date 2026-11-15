@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import type { GameView } from '../../../shared/types';
 import AstronautPortraitSvg, { resolvePlayerSuitColor } from '../components/AstronautPortraitSvg';
 import { playUiConfirm } from '../utils/uiAudio';
@@ -26,6 +27,36 @@ export default function RoundLeaderboard({ game, onContinue }: RoundLeaderboardP
   const matchOver = Boolean(game.matchFinished || game.winnerId != null);
   const matchWinner = game.winnerId ? game.players.find(p => p.id === game.winnerId) : null;
   const selfConfirmed = game.self.ready || game.self.health <= 0;
+  const [splashDismissedPhaseId, setSplashDismissedPhaseId] = useState<string | null>(null);
+  const showRoundEndedSplash = !selfConfirmed && splashDismissedPhaseId !== game.phaseId;
+
+  useEffect(() => {
+    if (!showRoundEndedSplash) return;
+    const timer = window.setTimeout(() => {
+      setSplashDismissedPhaseId(game.phaseId);
+    }, 2200);
+    return () => window.clearTimeout(timer);
+  }, [showRoundEndedSplash, game.phaseId]);
+
+  if (showRoundEndedSplash) {
+    return (
+      <section
+        className="round-ended-splash"
+        aria-label="Ronda terminada"
+        onClick={() => setSplashDismissedPhaseId(game.phaseId)}
+      >
+        <div className="round-ended-splash__card">
+          <span className="round-ended-splash__kicker">
+            {game.minigame.title.toUpperCase()}
+          </span>
+          <h2 className="round-ended-splash__title">
+            {matchOver ? '¡EXPEDICIÓN FINALIZADA!' : `¡RONDA ${String(game.round).padStart(2, '0')} TERMINADA!`}
+          </h2>
+          <p className="round-ended-splash__sub">Calculando clasificación y bajas…</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="leaderboard-sheet" aria-label="Resultados de la ronda">

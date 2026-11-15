@@ -196,7 +196,13 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
                         style={{ width: `${data.qteProgress * 100}%` }}
                       />
                       <span className="suit-mash-counter-text">
-                        {data.mashCount} / {(qte as MashQteConfig).targetCount} PULSACIONES
+                        {(data.mashCount >= (qte as MashQteConfig).targetCount
+                          ? (qte as MashQteConfig).targetCount
+                          : Math.min(
+                              (qte as MashQteConfig).targetCount - 1,
+                              Math.round(data.mashCount),
+                            ))}{' '}
+                        / {(qte as MashQteConfig).targetCount} PULSACIONES
                       </span>
                     </div>
                   </div>
@@ -207,11 +213,12 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
                     {(qte as SequenceQteConfig).sequence.map((actionKey, idx) => {
                       const isDone = idx < data.sequenceIndex;
                       const isActive = idx === data.sequenceIndex;
+                      const isSpace = actionKey === 'action-primary';
                       const info = ACTION_LABELS[actionKey] ?? { icon: '?', key: actionKey };
                       return (
                         <div
                           key={idx}
-                          className={`suit-seq-key ${
+                          className={`suit-seq-key${isSpace ? ' suit-seq-key--space' : ''} ${
                             isDone
                               ? 'suit-seq-key--done'
                               : isActive
@@ -219,7 +226,28 @@ function SuitUpView({ engine, snapshot }: MinigameViewProps<SuitUpData>) {
                                 : ''
                           }`}
                         >
-                          <span className="suit-seq-key__glyph">{isDone ? '✓' : info.icon}</span>
+                          <span className="suit-seq-key__glyph">
+                            {isDone ? (
+                              '✓'
+                            ) : isSpace ? (
+                              <svg
+                                className="suit-seq-key__space-icon"
+                                viewBox="0 0 30 12"
+                                aria-hidden="true"
+                              >
+                                <path
+                                  d="M2.5 2 V9.5 H27.5 V2"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="3.2"
+                                  strokeLinecap="square"
+                                  strokeLinejoin="miter"
+                                />
+                              </svg>
+                            ) : (
+                              info.icon
+                            )}
+                          </span>
                           <span className="suit-seq-key__sub">{info.key.split('/')[0].trim()}</span>
                         </div>
                       );

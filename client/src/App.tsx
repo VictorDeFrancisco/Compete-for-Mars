@@ -10,6 +10,7 @@ import Hud, { BottomCrewDock } from './components/Hud';
 import StartScreen from './components/StartScreen';
 import RoomEntryScreen from './components/RoomEntryScreen';
 import MarsBackdrop from './components/MarsBackdrop';
+import MarsMenuBackdrop, { type MenuTransitionDirection } from './components/MarsMenuBackdrop';
 import { PROFESSIONS } from './components/professions';
 import TestPanel, { buildPreviewGame } from './components/TestPanel';
 import MinigamePresentation from './phases/MinigamePresentation';
@@ -22,6 +23,11 @@ type AppView = 'start' | 'create' | 'join' | 'classic' | 'test-panel' | 'preview
 export default function App() {
   const { game, connected, error, act, leave, serverOffset } = useGame();
   const [view, setView] = useState<AppView>('start');
+  const [menuTransition, setMenuTransition] = useState<{
+    direction: MenuTransitionDirection;
+    target: 'start' | 'create' | 'join';
+  } | null>(null);
+  const [enteredViaTransition, setEnteredViaTransition] = useState(false);
   const [name, setName] = useState('');
   const [stats, setStats] = useState<Stats>({ ...PROFESSIONS[0].stats });
   const [prepared, setPrepared] = useState(false);
@@ -104,6 +110,7 @@ export default function App() {
                   <PlayMinigame
                     key={game.phaseId}
                     game={game}
+                    seconds={seconds}
                     onProgress={score => socket.emit('minigame:progress', { phaseId: game.phaseId, score })}
                     onSubmit={result => act(reply => socket.emit('minigame:submit', { phaseId: game.phaseId, result }, reply))}
                   />
@@ -189,6 +196,7 @@ export default function App() {
                 <PlayMinigame
                   key={previewGame.phaseId}
                   game={previewGame}
+                  seconds={previewSeconds}
                   onSubmit={() => setPreviewPhase('results')}
                 />
               )}
@@ -225,36 +233,65 @@ export default function App() {
     );
   }
 
-  if (view === 'create' || view === 'join') {
-    return (
-      <RoomEntryScreen
-        mode={view}
-        connected={connected}
-        error={error}
-        name={name}
-        stats={stats}
-        onName={setName}
-        onStats={setStats}
-        onSubmit={code => {
-          if (view === 'create') {
-            act(reply => socket.emit('room:create', entry, reply));
-          } else if (code) {
-            act(reply => socket.emit('room:join', { ...entry, code }, reply));
-          }
-        }}
-        onSwitchMode={nextMode => setView(nextMode)}
-        onBack={() => setView('start')}
-      />
-    );
-  }
+  if (view === 'start' || view === 'create' || view === 'join') {
+    const scene = view === 'start' ? 'home' : 'entry';
+    const startMenuTransition = (
+      direction: MenuTransitionDirection,
+      target: 'start' | 'create' | 'join',
+    ) => {
+      if (menuTransition) return;
+      setMenuTransition({ direction, target });
+    };
+    const handleMenuTransitionComplete = () => {
+      if (!menuTransition) return;
+      const next = menuTransition.target;
+      setEnteredViaTransition(menuTransition.direction === 'forward');
+      setMenuTransition(null);
+      setView(next);
+    };
 
-  if (view === 'start') {
     return (
-      <StartScreen
-        onCreateScreen={() => setView('create')}
-        onJoinScreen={() => setView('join')}
-        onOpenTest={() => setView('test-panel')}
-      />
+      <>
+        <MarsMenuBackdrop
+          scene={scene}
+          transition={menuTransition?.direction ?? null}
+          onTransitionComplete={handleMenuTransitionComplete}
+        />
+        {view === 'start' ? (
+          <StartScreen
+            showBackdrop={false}
+            exiting={menuTransition?.direction === 'forward'}
+            onCreateScreen={() => startMenuTransition('forward', 'create')}
+            onJoinScreen={() => startMenuTransition('forward', 'join')}
+            onOpenTest={() => {
+              setMenuTransition(null);
+              setView('test-panel');
+            }}
+          />
+        ) : (
+          <RoomEntryScreen
+            showBackdrop={false}
+            exiting={menuTransition?.direction === 'reverse'}
+            entering={enteredViaTransition && menuTransition === null}
+            mode={view}
+            connected={connected}
+            error={error}
+            name={name}
+            stats={stats}
+            onName={setName}
+            onStats={setStats}
+            onSubmit={code => {
+              if (view === 'create') {
+                act(reply => socket.emit('room:create', entry, reply));
+              } else if (code) {
+                act(reply => socket.emit('room:join', { ...entry, code }, reply));
+              }
+            }}
+            onSwitchMode={nextMode => setView(nextMode)}
+            onBack={() => startMenuTransition('reverse', 'start')}
+          />
+        )}
+      </>
     );
   }
 

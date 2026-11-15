@@ -5,16 +5,23 @@ export interface StartScreenProps {
   onCreateScreen: () => void;
   onJoinScreen: () => void;
   onOpenTest: () => void;
+  showBackdrop?: boolean;
+  exiting?: boolean;
 }
 
 export default function StartScreen({
   onCreateScreen,
   onJoinScreen,
   onOpenTest,
+  showBackdrop = true,
+  exiting = false,
 }: StartScreenProps) {
   return (
-    <section className="start-screen" aria-label="Compete For Mars">
-      <MarsBackdrop />
+    <section
+      className={`start-screen ${exiting ? 'start-screen--exiting' : ''}`.trim()}
+      aria-label="Compete For Mars"
+    >
+      {showBackdrop && <MarsBackdrop src="/assets/mars-home.png" />}
 
       <div className="start-screen__hud">
         <header className="start-screen__top">
@@ -28,12 +35,18 @@ export default function StartScreen({
         </header>
 
         <div className="start-screen__title-stage">
-          <h1 className="start-screen__hero-title">
-            <span className="start-screen__title-line">COMPETE</span>
-            <span className="start-screen__title-line start-screen__title-line--accent">
-              FOR MARS
+          <div className="start-screen__hero">
+            <span className="start-screen__badge">
+              JUNIOR ASTRONAUT MISSION TRAINER
             </span>
-          </h1>
+
+            <h1 className="start-screen__hero-title">
+              <span className="start-screen__title-line">COMPETE FOR</span>
+              <span className="start-screen__title-line start-screen__title-line--accent">
+                MARS
+              </span>
+            </h1>
+          </div>
 
           <nav className="start-screen__menu" aria-label="Main menu">
             <button
@@ -41,7 +54,7 @@ export default function StartScreen({
               className="start-screen__btn start-screen__btn--primary"
               onClick={onCreateScreen}
             >
-              ▶ CREATE ROOM
+              ► CREATE ROOM
             </button>
             <button
               type="button"

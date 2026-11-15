@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { GameView } from '../../../shared/types';
 
 /**
@@ -7,10 +7,14 @@ import type { GameView } from '../../../shared/types';
  */
 export default function MarsBase3D({ game: _game, autoOrbit = true }: { game: GameView; autoOrbit?: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoReady, setVideoReady] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+    if (video.readyState >= 2) {
+      setVideoReady(true);
+    }
     if (autoOrbit) {
       void video.play().catch(() => {});
     } else {
@@ -22,14 +26,15 @@ export default function MarsBase3D({ game: _game, autoOrbit = true }: { game: Ga
     <div className="mars-base-bg">
       <video
         ref={videoRef}
-        className="mars-base-bg__video"
+        className={`mars-base-bg__video ${videoReady ? 'mars-base-bg__video--ready' : ''}`}
         src="/assets/mars-base.mp4"
-        poster="/assets/mars-bg.jpeg"
         autoPlay
         loop
         muted
         playsInline
         preload="auto"
+        onLoadedData={() => setVideoReady(true)}
+        onPlaying={() => setVideoReady(true)}
         aria-label="Video view of the Mars base"
       />
       <div className="mars-base-bg__scrim" aria-hidden="true" />

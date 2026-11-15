@@ -183,7 +183,7 @@
   margin-bottom: 10px;
 }
 
-.phase-cards .action-badge {
+.action-badge {
   padding: 4px 9px;
   border-radius: 5px;
   border: 2px solid var(--ink-black);
@@ -194,27 +194,27 @@
   box-shadow: 0 2px 0 var(--ink-black);
 }
 
-.phase-cards .action-badge--gain {
+.action-badge--gain {
   background: #2e8b57;
   color: #f5efe0;
 }
 
-.phase-cards .action-badge--cost {
+.action-badge--cost {
   background: #f5c242;
   color: #1a1817;
 }
 
-.phase-cards .action-badge--danger {
+.action-badge--danger {
   background: #fc3d21;
   color: #f5efe0;
 }
 
-.phase-cards .action-badge--rad {
+.action-badge--rad {
   background: #7c3aed;
   color: #f5efe0;
 }
 
-.phase-cards .action-badge--info {
+.action-badge--info {
   background: #0b3d91;
   color: #f5efe0;
 }

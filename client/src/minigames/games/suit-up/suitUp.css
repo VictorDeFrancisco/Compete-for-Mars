@@ -475,8 +475,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 68px;
+  gap: 5px;
+  min-width: 68px;
   height: 68px;
+  padding: 0 8px;
   border-radius: 8px;
   background: #fffaf0;
   border: 3px solid #1a1817;
@@ -485,18 +487,34 @@
   transition: transform 0.12s ease, background 0.12s ease;
 }
 
+.suit-seq-key--space {
+  min-width: 92px;
+  padding: 0 12px;
+}
+
 .suit-seq-key__glyph {
-  font-size: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  font-size: 1.65rem;
   font-weight: 900;
   line-height: 1;
 }
 
+.suit-seq-key__space-icon {
+  display: block;
+  width: 30px;
+  height: 12px;
+}
+
 .suit-seq-key__sub {
   font-family: 'Courier Prime', monospace;
-  font-size: 0.64rem;
+  font-size: 0.66rem;
   font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  margin-top: 2px;
 }
 
 .suit-seq-key--done {

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { deriveRoundSeed } from '../../../shared/minigames/context';
 import type { MinigameProps } from '../../../shared/types';
 import MinigameWrapper from '../minigames/MinigameWrapper';
@@ -21,14 +21,58 @@ function CornerScrewSvg({ className }: { className: string }) {
 }
 
 export interface PlayMinigameProps extends MinigameProps {
+  seconds?: number | null;
   onProgress?: (score: number) => void;
 }
 
+const COUNTDOWN_STEP_MS = 900;
+const COUNTDOWN_TOTAL_MS = COUNTDOWN_STEP_MS * 3;
+
 // Local runner sends a single result without managing rewards or damage here.
-export default function PlayMinigame({ game, onSubmit, onProgress }: PlayMinigameProps) {
+export default function PlayMinigame({ game, seconds = null, onSubmit, onProgress }: PlayMinigameProps) {
   const initialElapsed = useRef(
-    Math.max(0, game.minigame.durationMs - ((game.deadline ?? game.serverNow) - game.serverNow)),
+    game.deadline === null
+      ? 0
+      : Math.max(0, game.minigame.durationMs - (game.deadline - game.serverNow)),
   );
+  const canPlay = game.self.health > 0 && !game.self.hasSubmitted;
+  const shouldCountdown = canPlay && initialElapsed.current < 1500;
+  const [countdown, setCountdown] = useState<number>(shouldCountdown ? 3 : 0);
+  const [showGo, setShowGo] = useState(false);
+  const [localRemainingMs, setLocalRemainingMs] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!shouldCountdown) return;
+    const t2 = window.setTimeout(() => setCountdown(2), COUNTDOWN_STEP_MS);
+    const t1 = window.setTimeout(() => setCountdown(1), COUNTDOWN_STEP_MS * 2);
+    const t0 = window.setTimeout(() => {
+      setCountdown(0);
+      setShowGo(true);
+    }, COUNTDOWN_TOTAL_MS);
+    const tHideGo = window.setTimeout(() => setShowGo(false), COUNTDOWN_TOTAL_MS + 650);
+    return () => {
+      window.clearTimeout(t2);
+      window.clearTimeout(t1);
+      window.clearTimeout(t0);
+      window.clearTimeout(tHideGo);
+    };
+  }, [shouldCountdown]);
+
+  const effectiveInitialElapsedMs =
+    game.deadline === null
+      ? 0
+      : shouldCountdown
+        ? Math.min(Math.max(0, game.minigame.durationMs - 4000), initialElapsed.current + COUNTDOWN_TOTAL_MS)
+        : initialElapsed.current;
+
+  const displaySeconds =
+    localRemainingMs !== null
+      ? Math.max(0, Math.ceil(localRemainingMs / 1000))
+      : seconds !== null
+        ? Math.max(0, seconds)
+        : Math.ceil(Math.max(0, game.minigame.durationMs - initialElapsed.current) / 1000);
+
+  const timerUrgency = displaySeconds <= 5 ? 'critical' : displaySeconds <= 10 ? 'low' : 'normal';
   const lowEnergy = game.self.resources.energy <= 30;
   const lowFood = game.self.resources.food <= 30;
   const minigameContext = {
@@ -56,21 +100,27 @@ export default function PlayMinigame({ game, onSubmit, onProgress }: PlayMinigam
 
         <div className="nasa-console__top">
           <span className="nasa-console__label">{game.minigame.title}</span>
-          {(game.self.cardOutcome || lowEnergy || lowFood) && (
-            <div className="nasa-console__alerts">
-              {game.self.cardOutcome && (
-                <span className="nasa-console__alert nasa-console__alert--card" role="status">
-                  {game.self.cardOutcome.summary}
-                </span>
-              )}
-              {(lowEnergy || lowFood) && (
+
+          <div className="nasa-console__top-right">
+            {(lowEnergy || lowFood) && (
+              <div className="nasa-console__alerts">
                 <span className="nasa-console__alert nasa-console__alert--warn" role="status">
                   {lowEnergy ? 'LOW ENERGY ' : ''}
                   {lowFood ? 'LOW FOOD' : ''}
                 </span>
-              )}
-            </div>
-          )}
+              </div>
+            )}
+
+            {canPlay && (
+              <span
+                className={`nasa-console__timer nasa-console__timer--${timerUrgency}`}
+                role="timer"
+                aria-label={`Quedan ${displaySeconds} segundos`}
+              >
+                ⏱ {countdown > 0 ? 'PREPÁRATE' : `${displaySeconds}s`}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="nasa-console__screen">
@@ -95,7 +145,9 @@ export default function PlayMinigame({ game, onSubmit, onProgress }: PlayMinigam
               <MinigameWrapper
                 definition={game.minigame}
                 context={minigameContext}
-                initialElapsedMs={initialElapsed.current}
+                initialElapsedMs={effectiveInitialElapsedMs}
+                paused={countdown > 0}
+                onRemainingChange={setLocalRemainingMs}
                 onResult={onSubmit}
                 onScoreChange={onProgress}
                 showChrome={false}
@@ -105,11 +157,28 @@ export default function PlayMinigame({ game, onSubmit, onProgress }: PlayMinigam
             <MinigameWrapper
               definition={game.minigame}
               context={minigameContext}
-              initialElapsedMs={initialElapsed.current}
+              initialElapsedMs={effectiveInitialElapsedMs}
+              paused={countdown > 0}
+              onRemainingChange={setLocalRemainingMs}
               onResult={onSubmit}
               onScoreChange={onProgress}
               showChrome={false}
             />
+          )}
+
+          {canPlay && countdown > 0 && (
+            <div className="play-countdown-overlay" role="status" aria-live="assertive">
+              <span className="play-countdown-overlay__kicker">EMPEZANDO MINIJUEGO</span>
+              <strong key={countdown} className="play-countdown-overlay__num">
+                {countdown}
+              </strong>
+            </div>
+          )}
+
+          {canPlay && showGo && countdown === 0 && (
+            <div className="play-countdown-overlay play-countdown-overlay--go" aria-hidden="true">
+              <strong className="play-countdown-overlay__go">¡YA!</strong>
+            </div>
           )}
         </div>
       </div>

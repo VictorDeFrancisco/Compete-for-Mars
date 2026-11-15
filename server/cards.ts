@@ -22,7 +22,7 @@ export function drawCards(players: readonly Player[], random = Math.random): Car
   const alive = players.filter(p => p.health > 0), contaminated = alive.some(p => p.resources.radiation > 0);
   const eligible = (c: Card) =>
     (contaminated || !['decontamination', 'reinforced-suit', 'contagion'].includes(c.id))
-    && (alive.length > 1 || !['sabotage', 'supply-theft', 'exchange', 'contagion'].includes(c.id))
+    && (alive.length > 1 || !['sabotage', 'supply-theft', 'exchange', 'contagion', 'isotope-leak'].includes(c.id))
     && (!c.cost || alive.some(p => !cardUnavailable(p, c)));
   const supply = CARD_CATALOG.filter(c => c.category === 'supply' && eligible(c));
   const risk = CARD_CATALOG.filter(c => c.category === 'risk' && eligible(c));
@@ -106,6 +106,16 @@ export function resolveCards(room: Room, random = Math.random): void {
       if (!target) { note(p, 'Sin efecto: el objetivo ya no está en la sala.'); continue; }
       if (before.get(target.id)!.resources.radiation === 0) { affect(target, { radiation: 1 }); note(p, 'Contagio enviado; no reduce tu radiación.'); }
       else note(p, 'Sin efecto: el objetivo ya estaba contaminado.');
+    } else if (kind === 'isotope-leak') {
+      const target = players.find(q => q.id === p.selectedTargetId);
+      if (!target) { note(p, 'Sin efecto: el objetivo ya no está en la sala.'); continue; }
+      const wasShielded = target.protection.radiationShield;
+      affect(target, { radiation: 1 });
+      const blocked = wasShielded && !target.protection.radiationShield;
+      const energyGain = card.rules?.amount ?? 10;
+      affect(p, { energy: energyGain });
+      if (!blocked) note(target, 'Has recibido 1 de radiación por fuga de isótopos.');
+      note(p, blocked ? `El escudo bloqueó la fuga sobre ${target.name}; ganas +${energyGain} de energía.` : `Fuga enviada a ${target.name}; ganas +${energyGain} de energía.`);
     } else if (card.rules?.chance !== undefined) {
       const chance = card.rules.chance === 'alive/5' ? Math.min(1, players.length / 5) : card.rules.chance;
       if (random() < chance) { affect(p, card.effect); note(p, 'La misión ha tenido éxito.'); }
@@ -114,7 +124,7 @@ export function resolveCards(room: Room, random = Math.random): void {
         affect(p, failure); p.health = clamp(p.health + (card.rules.failureHealth ?? 0), 0, maxHealthFor(p));
         note(p, 'La misión ha fracasado.');
       }
-    } else if (['recycle-food', 'recycle-energy', 'emergency-landing'].includes(kind)) {
+    } else if (['recycle-food', 'recycle-energy', 'emergency-landing', 'nuclear-battery', 'solar-flare-harvest'].includes(kind)) {
       affect(p, card.effect); note(p, 'Acción completada.');
     }
   }

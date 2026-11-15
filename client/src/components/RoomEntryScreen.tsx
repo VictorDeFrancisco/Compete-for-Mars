@@ -17,6 +17,9 @@ export interface RoomEntryScreenProps {
   onSubmit: (code?: string) => void;
   onSwitchMode: (mode: 'create' | 'join') => void;
   onBack: () => void;
+  showBackdrop?: boolean;
+  exiting?: boolean;
+  entering?: boolean;
 }
 
 const STAT_STEPS = 3;
@@ -95,6 +98,9 @@ export default function RoomEntryScreen({
   onSubmit,
   onSwitchMode,
   onBack,
+  showBackdrop = true,
+  exiting = false,
+  entering = false,
 }: RoomEntryScreenProps) {
   const [code, setCode] = useState('');
   const [validationError, setValidationError] = useState('');
@@ -145,10 +151,10 @@ export default function RoomEntryScreen({
 
   return (
     <section
-      className="entry-stage"
+      className={`entry-stage ${exiting ? 'entry-stage--exiting' : ''} ${entering ? 'entry-stage--entering' : ''}`.trim()}
       aria-label={mode === 'create' ? 'Create room' : 'Join room'}
     >
-      <MarsBackdrop suitColor={suitColor} />
+      {showBackdrop && <MarsBackdrop suitColor={suitColor} src="/assets/mars-entry.png" />}
 
       <form className="entry-hud" onSubmit={handleSubmit}>
         {/* Top Row: Title + Compact Tabs + Compact ID Card on Left, Back on Right */}

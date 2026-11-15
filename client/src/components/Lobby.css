@@ -36,7 +36,14 @@
 .mars-base-bg__video {
   object-fit: cover;
   object-position: center;
+  filter: brightness(0.76) contrast(1.04);
+  opacity: 0;
+  transition: opacity 0.28s ease-out;
   pointer-events: none;
+}
+
+.mars-base-bg__video--ready {
+  opacity: 1;
 }
 
 .mars-base-bg__scrim {
@@ -45,10 +52,9 @@
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    rgba(6, 10, 20, 0.36) 0%,
-    rgba(6, 10, 20, 0.06) 35%,
-    rgba(6, 10, 20, 0.08) 68%,
-    rgba(6, 10, 20, 0.45) 100%
+    rgba(9, 15, 28, 0.48) 0%,
+    rgba(16, 12, 10, 0.24) 48%,
+    rgba(10, 8, 8, 0.56) 100%
   );
 }
 
@@ -484,15 +490,15 @@
 
 .crew-slot__avatar {
   flex-shrink: 0;
-  border-radius: 12px;
-  border: 2.5px solid var(--ink-black, #1A1817);
-  background: #E9DEC7;
-  padding: 2px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  padding: 0;
   line-height: 0;
 }
 
 .crew-slot__avatar--self {
-  background: #FFE5D9;
+  background: transparent;
 }
 
 .crew-slot__portrait {

@@ -94,6 +94,20 @@ main .briefing-tabs button.briefing-tab.is-active {
   box-shadow: 0 3px 0 var(--ink-black, #1A1817);
 }
 
+.briefing-control-item:only-child {
+  grid-column: 1 / -1;
+  gap: 16px;
+  padding: 15px 20px;
+}
+
+.briefing-control-item:only-child .briefing-control-item__copy strong {
+  font-size: 1rem;
+}
+
+.briefing-control-item:only-child .briefing-control-item__copy span {
+  font-size: 0.86rem;
+}
+
 .briefing-control-item__keys {
   display: flex;
   flex-wrap: wrap;
@@ -280,14 +294,14 @@ main .briefing-tabs button.briefing-tab.is-active {
   width: 44px;
   height: 44px;
   border-radius: 10px;
-  border: 2.5px solid var(--ink-black, #1A1817);
-  background: #E8DEC8;
-  padding: 2px;
+  border: none;
+  background: transparent;
+  padding: 0;
 }
 
 .briefing-crew__chip.is-ready {
-  background: #D2EEDD;
-  border-color: #15803D;
+  background: transparent;
+  border-color: transparent;
 }
 
 .briefing-crew__avatar {
@@ -356,5 +370,168 @@ main .briefing-tabs button.briefing-tab.is-active {
   .briefing-card__frame {
     max-width: 240px;
     margin: 0 auto;
+  }
+}
+
+.briefing-card-reveal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 20px 20px 120px;
+  background: rgba(11, 15, 24, 0.42);
+  cursor: pointer;
+  animation: briefingModalFade 0.16s ease-out both;
+}
+
+.briefing-played-card {
+  --card-accent: #2F6F4E;
+  position: relative;
+  width: min(330px, 100%);
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 22px 22px 24px;
+  background: var(--paper-cream, #F5EFE0);
+  color: var(--ink-black, #1A1817);
+  border: 3.5px solid var(--ink-black, #1A1817);
+  border-top: 10px solid var(--card-accent);
+  border-radius: 10px;
+  box-shadow: 0 10px 0 var(--ink-black, #1A1817), 0 18px 40px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  animation: playedCardEnter 0.25s cubic-bezier(0.22, 1.25, 0.36, 1) both, playedCardVibrate 0.72s ease-in-out 0.12s both;
+}
+
+.briefing-played-card--fail {
+  animation: playedCardEnter 0.25s cubic-bezier(0.22, 1.25, 0.36, 1) both, playedCardVibrateHard 0.85s ease-in-out 0.12s both;
+}
+
+.briefing-played-card[data-category='risk'] {
+  --card-accent: var(--mars-rust, #C1440E);
+}
+
+.briefing-played-card[data-category='defense'] {
+  --card-accent: var(--nasa-blue, #0B3D91);
+}
+
+.briefing-played-card[data-category='interaction'] {
+  --card-accent: #6D4B8C;
+}
+
+.briefing-played-card__top {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--card-accent);
+  font-family: 'Archivo', sans-serif;
+  font-weight: 900;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.briefing-played-card__patch {
+  width: 78px;
+  height: 78px;
+}
+
+.briefing-played-card__patch svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.briefing-played-card__title {
+  margin: 0;
+  font-family: 'Archivo', sans-serif;
+  font-size: 1.55rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
+.briefing-played-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.briefing-played-card__stamp {
+  margin-top: 6px;
+  padding: 6px 18px;
+  border: 3.5px solid currentColor;
+  border-radius: 6px;
+  font-family: 'Archivo', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: rgba(245, 239, 224, 0.96);
+  transform: rotate(-7deg);
+  animation: verdictStampSlam 0.28s cubic-bezier(0.22, 1.35, 0.36, 1) 0.28s both;
+}
+
+.briefing-played-card__stamp--success {
+  color: #15803D;
+}
+
+.briefing-played-card__stamp--fail {
+  color: #DC2626;
+}
+
+.briefing-played-card__stamp--neutral {
+  color: var(--nasa-blue, #0B3D91);
+}
+
+@keyframes briefingModalFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes playedCardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes playedCardVibrate {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  15% { transform: translate(-4px, 1px) rotate(-1.4deg); }
+  30% { transform: translate(4px, -1px) rotate(1.4deg); }
+  45% { transform: translate(-3px, 1px) rotate(-1deg); }
+  60% { transform: translate(3px, -1px) rotate(1deg); }
+  75% { transform: translate(-2px, 0) rotate(-0.5deg); }
+}
+
+@keyframes playedCardVibrateHard {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  12% { transform: translate(-7px, 2px) rotate(-2.2deg); }
+  24% { transform: translate(7px, -2px) rotate(2.2deg); }
+  36% { transform: translate(-6px, -2px) rotate(-1.8deg); }
+  48% { transform: translate(6px, 2px) rotate(1.8deg); }
+  62% { transform: translate(-4px, 1px) rotate(-1.2deg); }
+  76% { transform: translate(4px, -1px) rotate(1.2deg); }
+}
+
+@keyframes verdictStampSlam {
+  from {
+    opacity: 0;
+    transform: scale(1.65) rotate(-14deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(-7deg);
   }
 }

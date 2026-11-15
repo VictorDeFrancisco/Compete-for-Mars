@@ -7,6 +7,8 @@ export interface MinigameWrapperProps {
   definition: MinigameDefinition;
   context: MinigameContext;
   initialElapsedMs?: number;
+  paused?: boolean;
+  onRemainingChange?: (remainingMs: number) => void;
   onResult: (result: MinigameResult) => void;
   onScoreChange?: (score: number) => void;
   showChrome?: boolean;
@@ -16,17 +18,32 @@ export default function MinigameWrapper(props: MinigameWrapperProps) {
   if (!module) return <p role="alert">No está registrado el minijuego «{props.definition.id}».</p>;
   return <Runner {...props} module={module} />;
 }
-function Runner({ definition, context, initialElapsedMs = 0, onResult, onScoreChange, showChrome = true, module }: MinigameWrapperProps & { module: NonNullable<ReturnType<typeof getMinigameModule>> }) {
+function Runner({
+  definition,
+  context,
+  initialElapsedMs = 0,
+  paused = false,
+  onRemainingChange,
+  onResult,
+  onScoreChange,
+  showChrome = true,
+  module,
+}: MinigameWrapperProps & { module: NonNullable<ReturnType<typeof getMinigameModule>> }) {
   // El padre debe cambiar key cuando comienza un intento nuevo.
   const [run] = useState(() => module.createRun(definition, context));
   const { engine } = run;
   const snapshot = useSyncExternalStore(engine.subscribe, engine.getSnapshot);
   const callback = useRef(onResult); callback.current = onResult;
   const scoreCallback = useRef(onScoreChange); scoreCallback.current = onScoreChange;
+  const remainingCallback = useRef(onRemainingChange); remainingCallback.current = onRemainingChange;
+  const initialElapsedRef = useRef(initialElapsedMs); initialElapsedRef.current = initialElapsedMs;
   const lastReportedScore = useRef<number | null>(null);
+  const lastReportedSec = useRef<number | null>(null);
   const container = useRef<HTMLDivElement>(null);
   const sent = useRef(false);
   const lifecycle = useRef(0);
+  const engineStarted = useRef(false);
+
   useEffect(() => {
     if (!scoreCallback.current) return;
     if (lastReportedScore.current !== snapshot.score) {
@@ -34,9 +51,31 @@ function Runner({ definition, context, initialElapsedMs = 0, onResult, onScoreCh
       scoreCallback.current(snapshot.score);
     }
   }, [snapshot.score]);
+
+  useEffect(() => {
+    if (!remainingCallback.current) return;
+    const sec = Math.max(0, Math.ceil(snapshot.remainingMs / 1000));
+    if (lastReportedSec.current !== sec) {
+      lastReportedSec.current = sec;
+      remainingCallback.current(snapshot.remainingMs);
+    }
+  }, [snapshot.remainingMs]);
+
   useEffect(() => {
     const generation = ++lifecycle.current;
-    engine.start(initialElapsedMs); container.current?.focus();
+    return () => {
+      // StrictMode vuelve a ejecutar el efecto sin crear otra instancia.
+      queueMicrotask(() => { if (lifecycle.current === generation) engine.dispose(); });
+    };
+  }, [engine]);
+
+  useEffect(() => {
+    if (paused) return;
+    if (!engineStarted.current) {
+      engineStarted.current = true;
+      engine.start(initialElapsedRef.current);
+      container.current?.focus();
+    }
     let frame: number;
     const loop = () => {
       engine.tick();
@@ -52,18 +91,19 @@ function Runner({ definition, context, initialElapsedMs = 0, onResult, onScoreCh
     const initialResult = engine.getResult();
     if (initialResult && !sent.current) { sent.current = true; callback.current({ ...initialResult }); }
     return () => {
-      cancelAnimationFrame(frame); clearInterval(timer); unsubscribe();
-      // StrictMode vuelve a ejecutar el efecto sin crear otra instancia.
-      queueMicrotask(() => { if (lifecycle.current === generation) engine.dispose(); });
+      cancelAnimationFrame(frame);
+      clearInterval(timer);
+      unsubscribe();
     };
-  }, [engine]);
+  }, [engine, paused]);
+
   return <div ref={container} tabIndex={0} aria-label="Minigame area" className="minigame-area"
     onKeyDown={event => {
-      if (event.repeat) return;
+      if (paused || event.repeat) return;
       const actions = engine.controls.forKey(event.code);
       if (actions.length) { event.preventDefault(); actions.forEach(action => engine.dispatch(action, 'press')); }
     }}
-    onKeyUp={event => { engine.controls.forKey(event.code).forEach(action => engine.dispatch(action, 'release')); }}
+    onKeyUp={event => { if (paused) return; engine.controls.forKey(event.code).forEach(action => engine.dispatch(action, 'release')); }}
     onBlur={event => {
       if (!event.currentTarget.contains(event.relatedTarget)) engine.controls.getActions().forEach(action => engine.dispatch(action.id, 'release'));
     }}>

@@ -1,9 +1,27 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ROUND_RESOURCE_UPKEEP } from '../../../shared/constants';
 import type { PresentationProps } from '../../../shared/types';
 import AstronautPortraitSvg, { resolvePlayerSuitColor } from '../components/AstronautPortraitSvg';
 import { playUiClick, playUiConfirm } from '../utils/uiAudio';
+import { CardCategoryPatchSvg, categoryLabels, getCardHighlights } from './CardSelection';
 import './MinigamePresentation.css';
+
+function resolveCardVerdict(summary: string): { label: 'ACIERTO' | 'FALLO'; tone: 'success' | 'fail' } | null {
+  if (summary.includes('ha tenido éxito') || summary.includes('Descontaminación completada')) {
+    return { label: 'ACIERTO', tone: 'success' };
+  }
+  if (
+    summary.includes('ha fracasado') ||
+    summary.includes('Descontaminación cancelada') ||
+    summary.includes('Entraste sin contaminación') ||
+    summary.includes('Sin efecto') ||
+    summary.includes('cancelados') ||
+    summary.includes('No hay otra persona')
+  ) {
+    return { label: 'FALLO', tone: 'fail' };
+  }
+  return null;
+}
 
 function MinigamePreviewSvg({ id }: { id: string }) {
   switch (id) {
@@ -90,6 +108,7 @@ function MinigamePreviewSvg({ id }: { id: string }) {
 // Phase 2/3: Mario Party-inspired Retro-NASA Briefing Card with DESCRIPTION & CONTROLS tabs.
 export default function MinigamePresentation({ game, onReady }: PresentationProps) {
   const [activeTab, setActiveTab] = useState<'description' | 'controls'>('description');
+  const [dismissedOutcomePhaseId, setDismissedOutcomePhaseId] = useState<string | null>(null);
   const alivePlayers = game.players.filter(p => p.health > 0);
   const rewardFood = game.minigame.rewards.winner.resources?.food ?? 0;
   const rewardEnergy = game.minigame.rewards.winner.resources?.energy ?? 0;
@@ -98,6 +117,18 @@ export default function MinigamePresentation({ game, onReady }: PresentationProp
   const roundBonus = Math.max(0, baseBonus - Math.max(0, game.round - 1) * 2);
   const deaths = game.players.filter(p => p.health <= 0).length;
   const loserPenalty = Math.max(1, game.round) * 8 * (deaths + 1);
+  const cardOutcome = game.self.cardOutcome;
+  const resolvedCard = cardOutcome ? game.cards.find(c => c.id === cardOutcome.cardId) : undefined;
+  const cardVerdict = cardOutcome ? resolveCardVerdict(cardOutcome.summary) : null;
+  const showCardReveal = Boolean(cardOutcome) && dismissedOutcomePhaseId !== game.phaseId && !game.self.ready;
+
+  useEffect(() => {
+    if (!showCardReveal) return;
+    const timer = window.setTimeout(() => {
+      setDismissedOutcomePhaseId(game.phaseId);
+    }, 4000);
+    return () => window.clearTimeout(timer);
+  }, [showCardReveal, game.phaseId]);
 
   if (game.self.health <= 0) {
     return (
@@ -198,24 +229,27 @@ export default function MinigamePresentation({ game, onReady }: PresentationProp
         {/* Footer: Small Crew Avatars with Ready Tick + Single NASA Orange READY Button */}
         <footer className="briefing-card__footer">
           <div className="briefing-crew" aria-label="Crew readiness">
-            {alivePlayers.map((player, idx) => (
-              <div
-                key={player.id}
-                className={`briefing-crew__chip${player.ready ? ' is-ready' : ''}`}
-                title={`${player.name}: ${player.ready ? 'Ready' : 'Waiting'}`}
-              >
-                <AstronautPortraitSvg
-                  suitColor={resolvePlayerSuitColor(player, game.self.stats, player.id === game.self.id, idx)}
-                  variant={idx}
-                  className="briefing-crew__avatar"
-                />
-                {player.ready && (
-                  <span className="briefing-crew__tick" aria-label="Ready">
-                    ✓
-                  </span>
-                )}
-              </div>
-            ))}
+            {alivePlayers.map((player) => {
+              const slotIndex = Math.max(0, game.players.findIndex(p => p.id === player.id));
+              return (
+                <div
+                  key={player.id}
+                  className={`briefing-crew__chip${player.ready ? ' is-ready' : ''}`}
+                  title={`${player.name}: ${player.ready ? 'Ready' : 'Waiting'}`}
+                >
+                  <AstronautPortraitSvg
+                    suitColor={resolvePlayerSuitColor(player, game.self.stats, player.id === game.self.id, slotIndex)}
+                    variant={slotIndex}
+                    className="briefing-crew__avatar"
+                  />
+                  {player.ready && (
+                    <span className="briefing-crew__tick" aria-label="Ready">
+                      ✓
+                    </span>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
           <button
@@ -231,6 +265,47 @@ export default function MinigamePresentation({ game, onReady }: PresentationProp
           </button>
         </footer>
       </div>
+
+      {showCardReveal && cardOutcome && (
+        <div
+          className="briefing-card-reveal-backdrop"
+          onClick={() => setDismissedOutcomePhaseId(game.phaseId)}
+        >
+          <article
+            className={`briefing-played-card${cardVerdict ? ` briefing-played-card--${cardVerdict.tone}` : ''}`}
+            data-category={resolvedCard?.category ?? 'supply'}
+          >
+            <div className="briefing-played-card__top">
+              <span>{resolvedCard?.category ? categoryLabels[resolvedCard.category] : 'Carta jugada'}</span>
+              <span>RONDA {String(game.round).padStart(2, '0')}</span>
+            </div>
+
+            <div className="briefing-played-card__patch">
+              <CardCategoryPatchSvg category={resolvedCard?.category ?? 'supply'} />
+            </div>
+
+            <h3 className="briefing-played-card__title">
+              {resolvedCard?.title ?? cardOutcome.cardId}
+            </h3>
+
+            {resolvedCard && (
+              <div className="briefing-played-card__badges">
+                {getCardHighlights(resolvedCard, alivePlayers.length).map((item, i) => (
+                  <span key={i} className={`action-badge action-badge--${item.tone}`}>
+                    {item.label}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <span
+              className={`briefing-played-card__stamp briefing-played-card__stamp--${cardVerdict?.tone ?? 'neutral'}`}
+            >
+              {cardVerdict ? cardVerdict.label : 'ELEGIDA'}
+            </span>
+          </article>
+        </div>
+      )}
     </section>
   );
 }
